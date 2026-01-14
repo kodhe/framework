@@ -1,0 +1,42 @@
+# Dependencies
+/vendor/
+/node_modules/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+
+# Runtime
+cache/
+*.cache
+/temp/
+/tmp/
+
+# System
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Framework specific
+/writable/
+/public/uploads/
+/backups/
+
+# Composer
+composer.lock
+/composer.phar
+
+# Testing
+/coverage/
+.phpunit.result.cache
+
+# Development
+.php-cs-fixer.cache
