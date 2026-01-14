@@ -2,7 +2,7 @@
 
 use Kodhe\Framework\Support\Modules;
 
-class Language 
+class Language
 {
 
 	/**
