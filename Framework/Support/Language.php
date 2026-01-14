@@ -58,11 +58,7 @@ class Language
 
 		$_module OR $_module = app()->router->fetch_module();
 
-			$path = '';
-			list($module, $lang_file) = $this->detect_module($langfile.'_lang.php');
-			$path_file = $this->find_module($_module);
-			$langfile = $path_file. 'language/'.$idiom.'/' . $lang_file.'.php';
-		//[$path, $_langfile] = Modules::find($langfile.'_lang', $_module, '/language/'.$idiom.'/');
+		[$path, $_langfile] = Modules::find($langfile.'_lang', $_module, '/language/'.$idiom.'/');
 
 		if ($path === FALSE) 
 		{
@@ -72,11 +68,11 @@ class Language
 		else 
 		{
 			if(file_exists($path)){
-				//include $path;
-				//if ($return) return $lang;
-				//$this->language = array_merge($this->language, $lang);
-				//$this->is_loaded[] = $langfile.'_lang.php';
-				//unset($lang);
+				include $path;
+				if ($return) return $lang;
+				$this->language = array_merge($this->language, $lang);
+				$this->is_loaded[] = $langfile.'_lang.php';
+				unset($lang);
 			}
 
 		}
