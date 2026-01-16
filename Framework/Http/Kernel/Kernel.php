@@ -61,6 +61,7 @@ class Kernel
      */
     protected $modernRouter;
 
+    protected $router_ready = false;
     /**
      * Constructor
      */
@@ -90,14 +91,18 @@ class Kernel
         $this->servicemanager->setClassAliases();
 
         $this->startBenchmark();
-
+        
         $this->initializeFacade();
         $this->initializeRoutingComponents();
+
         $this->includeBaseController();
         $this->booted = true;
 
         register_shutdown_function([$this, 'shutdown']);
     }
+
+
+
 
     /**
      * Initialize routing components using container

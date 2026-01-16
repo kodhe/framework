@@ -287,33 +287,35 @@ class FileLoader extends LegacyLoader {
         // Handle array of models with namespace and alias mapping
         if (is_array($model)) {
             foreach ($model as $key => $value) {
-                
-                // Case 1: Associative array (namespace/class => alias)
                 if (is_string($key)) {
-                    // Check if key is a valid class name (namespaced or not)
-                    if (class_exists($key) || $this->isValidModelClass($key)) {
-                        // Key is the class, value is the alias
+                    if(strpos($key, '/') !== FALSE) {
+                        $this->model($key, $value, $db_conn);
+                    } else {
                         if (strpos($key, '\\') !== FALSE) {
                             $this->loadNamespacedModel($key, $value, $db_conn);
                         } else {
-                            // For non-namespaced models, use original behavior
-                            $this->loadLegacyModel($key, $value, $db_conn);
+                            try {
+                                $this->model($value, $key, $db_conn);
+                            } catch (\Throwable $th) {
+                                $this->model($key, $value, $db_conn);
+                            }
                         }
-                    } else {
-                        // If key is not a valid class, treat as legacy model name
-                        $this->loadLegacyModel($key, $value, $db_conn);
                     }
-                } 
-                // Case 2: Numeric index, value is class/model name
-                else if (is_string($value)) {
-                    if (strpos($value, '\\') !== FALSE) {
-                        // Namespaced class without alias
-                        $this->loadNamespacedModel($value, '', $db_conn);
+                } else {
+                    if(strpos($value, '/') !== FALSE) {
+                        $name = explode('/', $name);
+                        $name = end($name);
+                        $this->model($value, $name, $db_conn);
                     } else {
-                        // Legacy model without alias
-                        $this->loadLegacyModel($value, '', $db_conn);
+                        if (strpos($value, '\\') !== FALSE) {
+                            $name = is_string($key) ? $key : '';
+                            $this->loadNamespacedModel($value, $name, $db_conn);                               
+                        } else {
+                            $this->model($value, $value, $db_conn);
+                        }
                     }
                 }
+
             }
             return;
         }
@@ -783,12 +785,15 @@ class FileLoader extends LegacyLoader {
             $module = substr($class, 0, $first_slash);
             $class = substr($class, $first_slash + 1);
             
-            
-            // Check if module exists menggunakan Modules class
-            if ($this->find_module($module)) {
-                return array($module, $class);
-            }
         }
+
+        $module = $module ?? $this->_module;
+        
+        // Check if module exists menggunakan Modules class
+        if ($this->find_module($module)) {
+            return array($module, $class);
+        }
+
 
         return FALSE;
     }

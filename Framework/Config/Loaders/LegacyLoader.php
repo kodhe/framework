@@ -690,7 +690,7 @@ class LegacyLoader {
 				$base_helper = BASEPATH.'helpers/'.$helper.'.php';
 				if ( ! file_exists($base_helper))
 				{
-					$base_helper = dirname(BASEPATH).'/Core/Support/Helpers/'.$helper.'.php';
+					$base_helper = BASEPATH.'/Framework/Support/Helpers/'.$helper.'.php';
 				}
 
 				if ( ! file_exists($base_helper))
