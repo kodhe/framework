@@ -1,7 +1,6 @@
 <?php namespace Kodhe\Framework\View\Engine;
 
 use Kodhe\Framework\Config\Loaders\ViewLoader;
-use Kodhe\Framework\Routing\ModernRouter;
 
 class PhpEngine implements EngineInterface
 {
@@ -12,19 +11,10 @@ class PhpEngine implements EngineInterface
     {
         
         $this->CI =& get_instance();
-        app()->load->helper(['module']);
 
         $this->viewsPath = is_array($config) ? ($config['views_path'] ?? VIEWPATH) : VIEWPATH;
         $this->viewsPath = rtrim($this->viewsPath, '/') . '/';
 
-        $ModernRouter = new \Kodhe\Framework\Routing\ModernRouter();
-        $router = new \Kodhe\Framework\Routing\Router();
-        $routerManager = new \Kodhe\Framework\Routing\RoutingManager();
-
-        //echo $router->fetch_module();
-
-        //print_r($routerManager->getModule());
-        
         // Tambahkan path ke loader (bukan ganti semua)
         $this->CI->load->add_view_path($this->viewsPath);
     }
