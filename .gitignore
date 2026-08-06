@@ -1,73 +1,39 @@
-```php
-# Compiled and build artifacts
-*.pyc
-__pycache__/
-*.o
-*.obj
-*.class
-*.exe
-*.dll
-*.so
-*.a
-*.out
-
-# Dependencies
-node_modules/
-venv/
-.venv/
-.env
-.env.local
-.env.*
-
-# Logs and temp files
+```
+# Test-specific ignores if needed
+# (Tests directory usually contains source files, so minimal ignores)
 *.log
 *.tmp
 *.swp
 
-# Editors
-.vscode/
-.idea/
+# PHP specific
+*.php~
+*.php.bak
+*.orig
+*.rej
 
-# Build directories
-dist/
-build/
-target/
-.coverage
-coverage/
-htmlcov/
-
-# System files
+# General temp/cache files
 .DS_Store
 Thumbs.db
+.cache/
+.temp/
+tmp/
 
-# Cache directories
-.mypy_cache/
-.pytest_cache/
-.gradle/
-julia-*/
-zig*/
+# IDE/Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
 
-# Compressed files
-*.zip
-*.gz
-*.tar
-*.tgz
-*.bz2
-*.xz
-*.7z
-*.rar
-*.zst
-*.lz4
-*.lzh
-*.cab
-*.arj
-*.rpm
-*.deb
-*.Z
-*.lz
-*.lzo
-*.tar.gz
-*.tar.bz2
-*.tar.xz
-*.tar.zst
+# Environment files
+.env
+.env.local
+*.env.*
+
+# Coverage reports
+coverage/
+htmlcov/
+.coverage
+
+# PHPUnit cache
+.phpunit.result.cache
 ```
