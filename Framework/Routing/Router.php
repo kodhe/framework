@@ -1,4 +1,6 @@
-<?php namespace Kodhe\Framework\Routing;
+<?php declare(strict_types=1);
+
+namespace Kodhe\Framework\Routing;
 
 use Kodhe\Framework\Support\Modules;
 use Kodhe\Framework\Http\Request;

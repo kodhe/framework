@@ -1,4 +1,6 @@
-<?php namespace Kodhe\Framework\Config;
+<?php declare(strict_types=1);
+
+namespace Kodhe\Framework\Config;
 
 use Kodhe\Framework\Support\Modules;
 

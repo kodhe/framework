@@ -1,4 +1,5 @@
-<?php
+<?php declare(strict_types=1);
+
 namespace Kodhe\Framework\Database;
 
 defined('BASEPATH') OR exit('No direct script access allowed');

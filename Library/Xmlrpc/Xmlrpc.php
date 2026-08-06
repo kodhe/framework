@@ -1,4 +1,6 @@
-<?php namespace Kodhe\Library\Xmlrpc;
+<?php declare(strict_types=1);
+
+namespace Kodhe\Library\Xmlrpc;
 
 if ( ! function_exists('xml_parser_create'))
 {
