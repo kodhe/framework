@@ -178,7 +178,8 @@ class Migration
 
         // List all *_*.php files in the migrations path
         $files = glob("{$migrationsPath}*_*.php");
-        for ($i = 0; $i < count($files); $i++) {
+        $fileCount = count($files);
+        for ($i = 0; $i < $fileCount; $i++) {
             // Remove path and extension
             $files[$i] = basename($files[$i], '.php');
 

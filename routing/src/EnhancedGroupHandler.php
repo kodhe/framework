@@ -214,7 +214,8 @@ class EnhancedGroupHandler extends GroupHandler
             return false;
         }
         
-        for ($i = 0; $i < count($patternParts); $i++) {
+        $partCount = count($patternParts);
+        for ($i = 0; $i < $partCount; $i++) {
             if ($patternParts[$i] !== '*' && $patternParts[$i] !== $domainParts[$i]) {
                 return false;
             }
