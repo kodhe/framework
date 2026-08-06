@@ -1,39 +1,76 @@
 ```
-# Test-specific ignores if needed
-# (Tests directory usually contains source files, so minimal ignores)
+# Dependencies
+vendor/
+
+# Logs and temp files
 *.log
 *.tmp
-*.swp
 
-# PHP specific
-*.php~
-*.php.bak
-*.orig
-*.rej
+# Environment
+.env
+.env.local
+.env.*
 
-# General temp/cache files
-.DS_Store
-Thumbs.db
-.cache/
-.temp/
-tmp/
-
-# IDE/Editor files
+# Editor/IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# Environment files
-.env
-.env.local
-*.env.*
+# Build artifacts
+dist/
+build/
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.a
+*.out
+
+# Python specific
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+.eggs/
+
+# PHP specific
+*.php~
+*.php.bak
 
 # Coverage reports
 coverage/
 htmlcov/
 .coverage
 
-# PHPUnit cache
-.phpunit.result.cache
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Compression files
+*.zip
+*.gz
+*.tar
+*.tgz
+*.bz2
+*.xz
+*.7z
+*.rar
+*.zst
+*.lz4
+*.lzh
+*.cab
+*.arj
+*.rpm
+*.deb
+*.Z
+*.lz
+*.lzo
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.tar.zst
 ```
