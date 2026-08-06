@@ -39,8 +39,8 @@
       "Kodhe\\Framework\\": "src/"
     },
     "files": [
-      "src/Support/Legacy/common.php",
-      "src/Support/Helpers.php"
+      "frameworks/rc/Support/Legacy/common.php",
+      "framework/src/Support/Helpers.php"
     ]
   },
   "minimum-stability": "dev",
