@@ -31,7 +31,7 @@ class LegacyLoader
 	 *
 	 * @var	array
 	 */
-	protected $_ci_library_paths =	array(APPPATH, BASEPATH, FRAMEWORKPATH);
+	protected $_ci_library_paths =	array(APPPATH, BASEPATH);
 
 	/**
 	 * List of paths to load models from
