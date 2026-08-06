@@ -1,0 +1,12 @@
+{
+  "name": "kodhe/validation",
+  "description": "Kodhe Form Validation",
+  "type": "library",
+  "version": "1.1.0",
+  "license": "MIT",
+  "require": { "php": ">=8.1" },
+  "autoload": {
+    "psr-4": { "Kodhe\\Framework\\Validation\\": "src/" },
+    "files": [ "src/helpers/form.php" ]
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "kodhe/cache",
+  "description": "Kodhe Cache component",
+  "type": "library",
+  "version": "1.1.0",
+  "license": "MIT",
+  "require": {
+    "php": ">=8.1",
+    "kodhe/driver": "^1.0"
+  },
+  "suggest": {
+    "ext-apc": "APC driver",
+    "ext-memcached": "Memcached driver",
+    "ext-redis": "Redis driver"
+  },
+  "autoload": {
+    "psr-4": {
+      "Kodhe\\Framework\\Cache\\": "src/",
+      "Kodhe\\Framework\\Cache\\Drivers\\": "src/Drivers/"
+    },
+    "files": [
+      "src/compat.php"
+    ]
+  }
+}
