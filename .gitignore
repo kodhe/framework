@@ -4,23 +4,17 @@
 __pycache__/
 *.o
 *.obj
-*.class
-*.exe
-*.dll
-*.so
-*.a
-*.out
+dist/
+build/
+target/
 
 # Dependencies
 .venv/
 venv/
 node_modules/
-target/
-.gradle/
 .mypy_cache/
 .pytest_cache/
-dist/
-build/
+.gradle/
 
 # Logs and temp files
 *.log
@@ -31,7 +25,7 @@ build/
 # Environment
 .env
 .env.local
-*.env.*
+.env.*
 
 # Editors
 .vscode/
