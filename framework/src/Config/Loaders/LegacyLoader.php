@@ -8,6 +8,15 @@ use Kodhe\Framework\Database\Loader as DB;
 use Kodhe\Framework\Support\Facades\Facade;
 use RuntimeException;
 
+// Define FRAMEWORKPATH if not already defined
+if (!defined('FRAMEWORKPATH')) {
+    // Try to determine framework path from the current file location
+    $currentFile = __DIR__;
+    // Navigate from Config/Loaders to the framework root
+    $frameworkPath = dirname(dirname(dirname($currentFile))) . DIRECTORY_SEPARATOR;
+    define('FRAMEWORKPATH', $frameworkPath);
+}
+
 class LegacyLoader
 {
 
