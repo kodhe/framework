@@ -71,52 +71,15 @@ class Router extends LegacyRouter
     }
 
 
-    // =========== ROUTE LOADING ===========
     /**
-     * Load routes from config files (LEGACY + MODERN)
+     * Load routes from config files (MODERN)
      */
     protected function _load_routes(): void
     {
-        $route = [];
-        
-        // ===== LEGACY ROUTES =====
-        // Load main routes
-        if (file_exists(APPPATH.'config/routes.php')) {
-            include(APPPATH.'config/routes.php');
-        }
-
-        // Load environment routes
-        if (file_exists(APPPATH.'config/'.ENVIRONMENT.'/routes.php')) {
-            include(APPPATH.'config/'.ENVIRONMENT.'/routes.php');
-        }
-
-        // Validate & get reserved routes
-        if (isset($route) && is_array($route)) {
-            // Set default controller dengan fallback
-            if (isset($route['default_controller'])) {
-                $this->default_controller = $route['default_controller'];
-            } else {
-                // Default fallback jika tidak ada di config
-                $this->default_controller = 'welcome';
-            }
-            
-            // Set translate uri dashes
-            if (isset($route['translate_uri_dashes'])) {
-                $this->translate_uri_dashes = $route['translate_uri_dashes'];
-            }
-            
-            // Remove reserved keys
-            unset($route['default_controller'], $route['translate_uri_dashes']);
-            $this->routes = $route;
-        } else {
-            // Jika tidak ada route config, set default
-            $this->default_controller = 'welcome';
-        }
-        
-        // ===== MODERN ROUTES =====
+        // ===== MODERN ROUTES ONLY =====
         // Coba load dari cache dulu
         if ($this->collection->loadFromCache()) {
-            log_message('debug', 'Routes loaded from cache');
+            log_message('debug', 'Modern routes loaded from cache');
             return;
         }
         
@@ -162,7 +125,7 @@ class Router extends LegacyRouter
             $this->collection->cache();
         }
         
-        log_message('debug', 'Routes loaded from files');
+        log_message('debug', 'Modern routes loaded from files');
     }
 
     /**
@@ -192,8 +155,8 @@ class Router extends LegacyRouter
         return $modules;
     }
 
-     /**
-     * Match request to route
+    /**
+     * Match request to route (MODERN)
      */
     public function matchRequest(Request $request): ?array
     {
@@ -243,7 +206,7 @@ class Router extends LegacyRouter
     }
 
     /**
-     * Execute route
+     * Execute route (MODERN)
      */
     public function execute(array $routing, Request $request, Response $response): mixed
     {
@@ -270,17 +233,18 @@ class Router extends LegacyRouter
         // Otherwise, set result as response body
         $response->setBody((string)$result);
         return $response;
-    }   
-        /**
-     * Clear route cache
+    }
+
+    /**
+     * Clear route cache (MODERN)
      */
     public function clearCache(): void
     {
         $this->collection->clearCache();
     }
 
-     /**
-     * Get all routes (for debugging)
+    /**
+     * Get all routes (for debugging) (MODERN)
      */
     public function getRoutes(): array
     {

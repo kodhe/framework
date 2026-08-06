@@ -60,7 +60,7 @@ abstract class LegacyRouter
     }
     
     /**
-     * Load routes from config files
+     * Load routes from config files (LEGACY ONLY)
      */
     protected function _load_routes(): void
     {
@@ -94,7 +94,7 @@ abstract class LegacyRouter
             // Remove reserved keys
             unset($route['default_controller'], $route['translate_uri_dashes']);
             
-            // ===== PERBAIKAN: Proses routes dengan method HTTP =====
+            // Process routes with HTTP method support
             $this->routes = $this->parseRoutes($route);
             
         } else {
@@ -103,12 +103,11 @@ abstract class LegacyRouter
             $this->routes = [];
         }
         
-        log_message('debug', 'Default controller: ' . $this->default_controller);
-        log_message('debug', 'Total routes loaded: ' . count($this->routes));
+        log_message('debug', 'Legacy routes loaded: ' . count($this->routes));
     }
 
     /**
-     * Parse routes to support HTTP method syntax
+     * Parse routes to support HTTP method syntax (LEGACY)
      * 
      * @param array $routes
      * @return array
@@ -343,6 +342,9 @@ abstract class LegacyRouter
         return $segments;
     }
 
+    /**
+     * Parse legacy routes from config (LEGACY)
+     */
     protected function _parse_routes()
     {
         $uri = implode('/', $this->uri->segments);
@@ -351,7 +353,7 @@ abstract class LegacyRouter
 
         foreach ($this->routes as $key => $val)
         {
-            // ===== PERBAIKAN: Handle array route dengan method HTTP =====
+            // Handle array route with HTTP method (LEGACY)
             if (is_array($val))
             {
                 $val = array_change_key_case($val, CASE_LOWER);
@@ -529,7 +531,7 @@ abstract class LegacyRouter
     }
     
     /**
-     * Match request to route
+     * Match request to route (LEGACY)
      */
     public function matchRequest(Request $request): ?array
     {
@@ -553,7 +555,7 @@ abstract class LegacyRouter
     }
 
     /**
-     * Execute route
+     * Execute route (LEGACY)
      */
     public function execute(array $routing, Request $request, Response $response): mixed
     {
@@ -562,7 +564,7 @@ abstract class LegacyRouter
     }
 
     /**
-     * Get routing info
+     * Get routing info (LEGACY)
      */
     public function getRouting(): ?array
     {
@@ -570,12 +572,14 @@ abstract class LegacyRouter
             'class' => $this->class,
             'method' => $this->method,
             'directory' => $this->directory,
-            'params' => $this->uri->rsegments ?? []
+            'params' => $this->uri->rsegments ?? [],
+            'type' => 'legacy',
+            'source' => 'legacy_router'
         ];
     }
 
     /**
-     * Check if route exists for current request
+     * Check if route exists for current request (LEGACY)
      */
     public function hasRoute(): bool
     {
@@ -583,7 +587,7 @@ abstract class LegacyRouter
     }
 
     /**
-     * Get route by name (if implemented)
+     * Get route by name (if implemented) (LEGACY)
      */
     public function getRouteByName(string $name): ?array
     {
