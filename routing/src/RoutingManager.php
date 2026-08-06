@@ -423,20 +423,17 @@ class RoutingManager
 
     protected function resolveFromLegacy(Request $request): array
     {
-
-
         try {
+            // Call matchRequest to perform legacy routing
+            $this->router->matchRequest($request);
+            $legacyRouting = $this->router->getRouting();
 
-            //$this->router->matchRequest($request);
-            $legacyRouting = $this->router->getRouting();  //$this->router->matchRequest($request);
-
-    
             if ($legacyRouting && !empty($legacyRouting['class'])) {
                 return [
                     'directory' => $legacyRouting['directory'] ?? '',
                     'class' => $legacyRouting['class'],
                     'method' => $legacyRouting['method'] ?? 'index',
-                    'segments' => $legacyRouting['segments'] ?? [],
+                    'segments' => $legacyRouting['params'] ?? [],
                     'source' => 'legacy',
                     'type' => 'legacy',
                     'query_params' => $request->get()
