@@ -161,6 +161,55 @@ class LegacyLoader
         return strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $className));
     }
     
+    /**
+     * Get modern class name from legacy CI3 class name
+     * Maps CI3 library names to modern Kodhe\Framework namespace classes
+     * 
+     * @param string $class Legacy CI3 class name (e.g., 'User_agent', 'Email')
+     * @return string|null Modern namespaced class name or null if not found
+     */
+    protected function _get_modern_class_name($class)
+    {
+        // Mapping dari nama library CI3 ke namespace modern
+        $library_map = [
+            'User_agent' => 'Kodhe\\Framework\\Agent\\UserAgent',
+            'Agent' => 'Kodhe\\Framework\\Agent\\UserAgent',
+            'Cache' => 'Kodhe\\Framework\\Cache\\Cache',
+            'Calendar' => 'Kodhe\\Framework\\Calendar\\Calendar',
+            'Cart' => 'Kodhe\\Framework\\Cart\\Cart',
+            'Database' => 'Kodhe\\Framework\\Database\\Database',
+            'DB' => 'Kodhe\\Framework\\Database\\Database',
+            'Driver' => 'Kodhe\\Framework\\Driver\\Driver',
+            'Email' => 'Kodhe\\Framework\\Email\\Email',
+            'Encrypt' => 'Kodhe\\Framework\\Encrypt\\Encrypt',
+            'Encryption' => 'Kodhe\\Framework\\Encryption\\Encryption',
+            'Ftp' => 'Kodhe\\Framework\\Ftp\\Ftp',
+            'Image_lib' => 'Kodhe\\Framework\\Image\\ImageLib',
+            'Image' => 'Kodhe\\Framework\\Image\\ImageLib',
+            'Javascript' => 'Kodhe\\Framework\\Javascript\\Javascript',
+            'Migration' => 'Kodhe\\Framework\\Migration\\Migration',
+            'Pagination' => 'Kodhe\\Framework\\Pagination\\Pagination',
+            'Parser' => 'Kodhe\\Framework\\Parser\\Parser',
+            'Profiler' => 'Kodhe\\Framework\\Profiler\\Profiler',
+            'Session' => 'Kodhe\\Framework\\Session\\Session',
+            'Table' => 'Kodhe\\Framework\\Table\\Table',
+            'Trackback' => 'Kodhe\\Framework\\Trackback\\Trackback',
+            'Typography' => 'Kodhe\\Framework\\Typography\\Typography',
+            'Upload' => 'Kodhe\\Framework\\Upload\\Upload',
+            'Form_validation' => 'Kodhe\\Framework\\Validation\\FormValidation',
+            'Validation' => 'Kodhe\\Framework\\Validation\\FormValidation',
+            'Xmlrpc' => 'Kodhe\\Framework\\Xmlrpc\\Xmlrpc',
+            'Xmlrpcs' => 'Kodhe\\Framework\\Xmlrpcs\\Xmlrpcs',
+            'Zip' => 'Kodhe\\Framework\\Zip\\Zip',
+        ];
+        
+        if (isset($library_map[$class])) {
+            return $library_map[$class];
+        }
+        
+        return null;
+    }
+    
 	function separateCamelCase($string) {
 		return strtolower(preg_replace('/([a-z])([A-Z])/', '$1_$2', $string));
 	}
@@ -1038,6 +1087,31 @@ class LegacyLoader
 		}
 
 		$class = ucfirst($class);
+
+		// CEK MODERN LIBRARY: Cek apakah ada versi modern dengan namespace Kodhe\Framework
+		$modern_class = $this->_get_modern_class_name($class);
+		if ($modern_class)
+		{
+			// Trigger autoloader untuk class modern
+			if (class_exists($modern_class))
+			{
+				$property = $object_name;
+				if (empty($property))
+				{
+					$property = strtolower($class);
+					isset($this->_ci_varmap[$property]) && $property = $this->_ci_varmap[$property];
+				}
+
+				$CI =& $this->_getInstance();
+				if (!$CI->has($property))
+				{
+					return $this->_ci_init_library($modern_class, '', $params, $object_name);
+				}
+
+				log_message('debug', $class.' class already loaded. Second attempt ignored.');
+				return;
+			}
+		}
 
 		// Is this a stock library? There are a few special conditions if so ...
 		if (file_exists(BASEPATH.'libraries/'.$subdir.$class.'.php'))
