@@ -39,7 +39,7 @@
       "Kodhe\\Framework\\": "src/"
     },
     "files": [
-      "framework/rc/Support/Legacy/common.php",
+      "framework/src/Support/Legacy/common.php",
       "framework/src/Support/Helpers.php"
     ]
   },
