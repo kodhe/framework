@@ -10,31 +10,38 @@ use Kodhe\Framework\Exceptions\Http\{
     BadRequestException,
     ForbiddenException
 };
+use Kodhe\Framework\Routing\Modern\ModernRouter;
 
+/**
+ * Unified Router - Bridges Legacy CI3 and Modern Routing
+ * 
+ * This class maintains backward compatibility with CodeIgniter 3
+ * while delegating modern routing to ModernRouter.
+ */
 class Router extends LegacyRouter
 {
-
-    protected $collection;
-
-    public $module = '';
-    protected $located = 0;
+    protected ?RouteCollection $collection = null;
+    protected ?ModernRouter $modernRouter = null;
+    
+    public string $module = '';
+    protected int $located = 0;
     
     protected const CONTROLLER_SEPARATORS = ['::', '@', '/'];
     protected const DEFAULT_CONTROLLER_NAMES = ['Home', 'Index', 'Main', 'Welcome'];
     protected const URI_DASH_REPLACEMENT_RANGE = [0, 1, 2];
     
-    // =========== CONFIGURATION ===========
-    protected $config = [
+    protected array $config = [
         'enable_modern_routing' => true,
         'enable_legacy_routing' => true,
-        'prefer_modern' => true, // Modern first, legacy fallback
-        'cache_routes' => ENVIRONMENT === 'production',
+        'prefer_modern' => true,
+        'cache_routes' => false,
         'auto_detect_namespace' => true,
         'allow_namespace_in_routes' => true,
         'controller_suffix' => '',
         'default_404_controller' => 'FileNotFound',
         'default_404_namespace' => 'Kodhe\\Controllers\\Error\\'
     ];
+    
     public function __construct(array $config = []) 
     {
         $this->config = array_merge($this->config, $config);
@@ -43,18 +50,23 @@ class Router extends LegacyRouter
         $this->uri = new \Kodhe\Framework\Support\Legacy\URI();
         $this->enable_query_strings = (!is_cli() && app()->config->item('enable_query_strings') === true);
 
-         // Initialize modern components
-         $this->collection = new RouteCollection();
-         Route::setCollection($this->collection);
-         
-         // Load routes
-         $this->_load_routes();
-         
-         // Initialize modules
-         Modules::init();
+        // Initialize modern router if enabled
+        if ($this->config['enable_modern_routing']) {
+            $this->modernRouter = new ModernRouter([
+                'cache_routes' => $this->config['cache_routes'],
+                'auto_detect_namespace' => $this->config['auto_detect_namespace'],
+                'allow_namespace_in_routes' => $this->config['allow_namespace_in_routes'],
+                'controller_suffix' => $this->config['controller_suffix'],
+                'default_404_controller' => $this->config['default_404_controller'],
+                'default_404_namespace' => $this->config['default_404_namespace']
+            ]);
+            $this->collection = $this->modernRouter->getCollection();
+        }
+        
+        // Initialize modules
+        Modules::init();
 
-         parent::__construct();
-
+        parent::__construct();
     }
 
     // =========== CONFIGURATION METHODS ===========
@@ -72,12 +84,29 @@ class Router extends LegacyRouter
     // =========== ROUTE LOADING ===========
     /**
      * Load routes from config files (LEGACY + MODERN)
+     * 
+     * Legacy routes are loaded for CI3 compatibility.
+     * Modern routes are delegated to ModernRouter if enabled.
      */
     protected function _load_routes(): void
     {
+        // ===== LEGACY ROUTES =====
+        $this->loadLegacyRoutes();
+        
+        // ===== MODERN ROUTES =====
+        // Modern routes are loaded by ModernRouter if enabled
+        if ($this->modernRouter !== null) {
+            log_message('debug', 'Modern routes loaded by ModernRouter');
+        }
+    }
+
+    /**
+     * Load legacy CI3 routes
+     */
+    protected function loadLegacyRoutes(): void
+    {
         $route = [];
         
-        // ===== LEGACY ROUTES =====
         // Load main routes
         if (file_exists(APPPATH.'config/routes.php')) {
             include(APPPATH.'config/routes.php');
@@ -90,200 +119,94 @@ class Router extends LegacyRouter
 
         // Validate & get reserved routes
         if (isset($route) && is_array($route)) {
-            // Set default controller dengan fallback
-            if (isset($route['default_controller'])) {
-                $this->default_controller = $route['default_controller'];
-            } else {
-                // Default fallback jika tidak ada di config
-                $this->default_controller = 'welcome';
-            }
+            $this->default_controller = $route['default_controller'] ?? 'welcome';
+            $this->translate_uri_dashes = $route['translate_uri_dashes'] ?? false;
             
-            // Set translate uri dashes
-            if (isset($route['translate_uri_dashes'])) {
-                $this->translate_uri_dashes = $route['translate_uri_dashes'];
-            }
-            
-            // Remove reserved keys
             unset($route['default_controller'], $route['translate_uri_dashes']);
             $this->routes = $route;
         } else {
-            // Jika tidak ada route config, set default
             $this->default_controller = 'welcome';
         }
-        
-        // ===== MODERN ROUTES =====
-        // Coba load dari cache dulu
-        if ($this->collection->loadFromCache()) {
-            log_message('debug', 'Routes loaded from cache');
-            return;
-        }
-        
-        $routeFiles = [];
-
-        // Tambahkan route files dari semua lokasi module
-        $moduleLocations = Modules::folders();
-        foreach ($moduleLocations as $location) {
-            $modules = $this->scanModulesInLocation($location);
-            
-            foreach ($modules as $module) {
-                // Set module context
-                $this->module = $module;
-                
-                // Load module routes
-                $moduleWebRoutes = $location . $module . '/routes/web.php';
-                if (file_exists($moduleWebRoutes)) {
-                    $routeFiles[] = $moduleWebRoutes;
-                }
-                
-                $moduleApiRoutes = $location . $module . '/routes/api.php';
-                if (file_exists($moduleApiRoutes)) {
-                    $routeFiles[] = $moduleApiRoutes;
-                }
-                
-            }
-        }
-
-        // Add base routes
-        $routeFiles[] = APPPATH . 'routes/api.php';
-        $routeFiles[] = APPPATH . 'routes/console.php';
-        $routeFiles[] = APPPATH . 'routes/web.php';
- 
-        // Load semua file route
-        foreach ($routeFiles as $file) {
-            if (file_exists($file)) {
-                require $file;
-            }
-        }
-
-        // Cache routes
-        if ($this->config['cache_routes']) {
-            $this->collection->cache();
-        }
-        
-        log_message('debug', 'Routes loaded from files');
     }
 
     /**
-     * Scan modules dalam sebuah lokasi
-     */
-    protected function scanModulesInLocation(string $location): array
-    {
-        $modules = [];
-        
-        if (!is_dir($location)) {
-            return $modules;
-        }
-        
-        // Scan directory untuk module
-        $items = scandir($location);
-        foreach ($items as $item) {
-            if ($item === '.' || $item === '..') {
-                continue;
-            }
-            
-            $modulePath = $location . $item;
-            if (is_dir($modulePath)) {
-                $modules[] = $item;
-            }
-        }
-        
-        return $modules;
-    }
-
-     /**
-     * Match request to route
+     * Match request to route - delegates to ModernRouter if available
      */
     public function matchRequest(Request $request): ?array
     {
-        $route = $this->collection->match($request);
-
-        if (!$route) {
-            return null;
-        }
-
-        // Extract routing information
-        $action = $route->getAction();
-        $parameters = $route->getParameters();
-
-        // Determine controller and method
-        if ($action instanceof \Closure) {
-            $class = 'Closure';
-            $method = '__invoke';
-            $type = 'closure';
-        } elseif (is_string($action)) {
-            if (strpos($action, '@') !== false) {
-                list($class, $method) = explode('@', $action, 2);
-            } else {
-                $class = $action;
-                $method = 'index';
+        // Try modern router first if enabled
+        if ($this->modernRouter !== null && $this->config['prefer_modern']) {
+            $routing = $this->modernRouter->matchRequest($request);
+            
+            if ($routing !== null) {
+                return $routing;
             }
-            $type = 'controller';
-        } elseif (is_array($action)) {
-            @list($class, $method) = $action;
-            $type = 'controller';
-        } else {
-            return null;
+            
+            // If modern routing fails and legacy is enabled, fallback
+            if (!$this->config['enable_legacy_routing']) {
+                return null;
+            }
         }
-
-        $routing = [
-            'class' => $class,
-            'method' => $method,
-            'segments' => array_values($parameters),
-            'type' => 'modern',
-            'source' => 'modern_router',
-            'route' => $route,
-            'parameters' => $parameters,
-            'middleware' => $route->getMiddleware(),
-            'namespace' => $route->getNamespace()
-        ];
-
-        return $routing;
+        
+        // Legacy routing fallback
+        return $this->matchLegacyRequest($request);
     }
 
     /**
-     * Execute route
+     * Match request using legacy CI3 routing
+     */
+    protected function matchLegacyRequest(Request $request): ?array
+    {
+        $uri = $request->getUri()->getQuery();
+        $uri = trim($uri, '/');
+        
+        $this->uri->uri_string = $uri;
+        $this->uri->segments = explode('/', $uri);
+        
+        $this->class = '';
+        $this->method = 'index';
+        $this->directory = '';
+        
+        $this->_set_routing();
+        
+        return $this->getRouting();
+    }
+
+    /**
+     * Execute route - delegates to ModernRouter if available
      */
     public function execute(array $routing, Request $request, Response $response): mixed
     {
-        if (!isset($routing['route']) || !$routing['route'] instanceof RouteItem) {
-            throw new BadRequestException('ModernRouter: Invalid route for execution');
-        }
-
-        /** @var RouteItem $route */
-        $route = $routing['route'];
-
-        // Execute the route
-        $result = $route->run($request, $response);
-        
-        // If result is routing info (for controllers), return it
-        if (is_array($result) && isset($result['type'])) {
-            return $result;
+        // Use modern router for modern routes
+        if (isset($routing['type']) && $routing['type'] === 'modern' && $this->modernRouter !== null) {
+            return $this->modernRouter->execute($routing, $request, $response);
         }
         
-        // If result is already a response, return it
-        if ($result instanceof Response) {
-            return $result;
-        }
-        
-        // Otherwise, set result as response body
-        $response->setBody((string)$result);
+        // Legacy execution - just return response, Kernel handles controller execution
         return $response;
-    }   
-        /**
+    }
+
+    /**
      * Clear route cache
      */
     public function clearCache(): void
     {
-        $this->collection->clearCache();
+        if ($this->modernRouter !== null) {
+            $this->modernRouter->clearCache();
+        }
     }
 
-     /**
+    /**
      * Get all routes (for debugging)
      */
     public function getRoutes(): array
     {
-        return $this->collection->getRoutes();
-    }   
+        if ($this->modernRouter !== null) {
+            return $this->modernRouter->getRoutes();
+        }
+        
+        return [];
+    }
 
     protected function _set_request(array $segments = []): void
     {
