@@ -506,8 +506,9 @@ class RoutingManager
         // Coba identifikasi namespace dalam URI
         if ($this->configuration['allow_namespace_in_routes']) {
             $potentialPath = '';
+            $segmentCount = count($segments);
             
-            for ($i = 0; $i < count($segments); $i++) {
+            for ($i = 0; $i < $segmentCount; $i++) {
                 $potentialPath .= ($i > 0 ? '/' : '') . $segments[$i];
                 $potentialNamespace = str_replace('/', '\\', $potentialPath) . '\\';
                 
@@ -555,8 +556,9 @@ class RoutingManager
     {
         $directory = '';
         $controllerIndex = 0;
+        $segmentCount = count($segments);
 
-        for ($i = 0; $i < count($segments); $i++) {
+        for ($i = 0; $i < $segmentCount; $i++) {
             $potentialDir = implode('/', array_slice($segments, 0, $i + 1)) . '/';
             $potentialController = $segments[$i + 1] ?? null;
             
