@@ -1,4 +1,6 @@
-<?php namespace Kodhe\Library\Typography;
+<?php declare(strict_types=1);
+
+namespace Kodhe\Library\Typography;
 
 /**
  * Typography Class

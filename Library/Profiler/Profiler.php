@@ -1,4 +1,6 @@
-<?php namespace Kodhe\Library\Profiler;
+<?php declare(strict_types=1);
+
+namespace Kodhe\Library\Profiler;
 
 /**
  * CodeIgniter Profiler Class

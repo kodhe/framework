@@ -1,1 +1,26 @@
-Nothing should be ignored based on the provided file changes, as they consist only of PHP source files (.php) which are legitimate code files that should be tracked in version control.
+```
+# Test results and logs
+*.log
+tests/.phpunit.result.cache
+
+# Environment specific
+.env
+.env.local
+.env.*
+
+# Cache and temporary files
+*.tmp
+*.swp
+
+# Dependencies
+vendor/
+composer.lock
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+```

@@ -1,4 +1,6 @@
-<?php namespace Kodhe\Library\Javascript;
+<?php declare(strict_types=1);
+
+namespace Kodhe\Library\Javascript;
 
 /**
  * Jquery Class

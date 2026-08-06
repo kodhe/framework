@@ -1,4 +1,6 @@
-<?php namespace Kodhe\Framework\Container;
+<?php declare(strict_types=1);
+
+namespace Kodhe\Framework\Container;
 
 use Closure;
 use Exception;

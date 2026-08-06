@@ -1,4 +1,6 @@
-<?php namespace Kodhe\Library\Session;
+<?php declare(strict_types=1);
+
+namespace Kodhe\Library\Session;
 
 interface HandlerInterface {
 

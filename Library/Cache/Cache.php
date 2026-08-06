@@ -1,4 +1,6 @@
-<?php namespace Kodhe\Library\Cache;
+<?php declare(strict_types=1);
+
+namespace Kodhe\Library\Cache;
 use Kodhe\Library\Driver\Library as DriverLibrary;
 /**
  * CodeIgniter Caching Class

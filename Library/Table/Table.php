@@ -1,4 +1,6 @@
-<?php namespace Kodhe\Library\Table;
+<?php declare(strict_types=1);
+
+namespace Kodhe\Library\Table;
 
 /**
  * HTML Table Generating Class

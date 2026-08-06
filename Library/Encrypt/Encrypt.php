@@ -1,4 +1,6 @@
-<?php namespace Kodhe\Library\Encrypt;
+<?php declare(strict_types=1);
+
+namespace Kodhe\Library\Encrypt;
 
 /**
  * CodeIgniter Encryption Class
