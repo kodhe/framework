@@ -1,4 +1,6 @@
-<?php namespace Kodhe\Framework\Http;
+<?php declare(strict_types=1);
+
+namespace Kodhe\Framework\Http;
 
 
 final class ResponseFactory

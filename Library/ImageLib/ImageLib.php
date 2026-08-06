@@ -1,4 +1,6 @@
-<?php namespace Kodhe\Library\ImageLib;
+<?php declare(strict_types=1);
+
+namespace Kodhe\Library\ImageLib;
 
 /**
  * Image Manipulation class

@@ -1,4 +1,6 @@
-<?php namespace Kodhe\Library\Upload;
+<?php declare(strict_types=1);
+
+namespace Kodhe\Library\Upload;
 
 /**
  * File Uploading Class

@@ -1,4 +1,6 @@
-<?php namespace Kodhe\Controllers\Error;
+<?php declare(strict_types=1);
+
+namespace Kodhe\Controllers\Error;
 
 use Kodhe\Framework\Http\Controllers\BaseController;
 
