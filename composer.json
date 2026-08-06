@@ -40,7 +40,7 @@
       "Framework/Support/Helpers.php"
     ],
     "psr-4": {
-      "Kodhe\\": "/"
+      "Kodhe\\": ""
     }
   },
   "minimum-stability": "dev",

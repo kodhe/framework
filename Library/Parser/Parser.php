@@ -1,4 +1,6 @@
-<?php namespace Kodhe\Library\Parser;
+<?php declare(strict_types=1);
+
+namespace Kodhe\Library\Parser;
 
 /**
  * Parser Class

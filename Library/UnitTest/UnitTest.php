@@ -1,4 +1,6 @@
-<?php namespace Kodhe\Library\UnitTest;
+<?php declare(strict_types=1);
+
+namespace Kodhe\Library\UnitTest;
 
 /**
  * Unit Testing Class

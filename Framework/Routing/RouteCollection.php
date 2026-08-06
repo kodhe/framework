@@ -1,4 +1,6 @@
-<?php namespace Kodhe\Framework\Routing;
+<?php declare(strict_types=1);
+
+namespace Kodhe\Framework\Routing;
 
 use Kodhe\Framework\Http\Request;
 use Kodhe\Framework\Exceptions\Http\BadRequestException;

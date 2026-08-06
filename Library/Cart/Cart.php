@@ -1,4 +1,6 @@
-<?php namespace Kodhe\Library\Cart;
+<?php declare(strict_types=1);
+
+namespace Kodhe\Library\Cart;
 
 /**
  * Shopping Cart Class

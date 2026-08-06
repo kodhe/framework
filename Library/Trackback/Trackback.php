@@ -1,4 +1,6 @@
-<?php namespace Kodhe\Library\Trackback;
+<?php declare(strict_types=1);
+
+namespace Kodhe\Library\Trackback;
 
 /**
  * Trackback Class

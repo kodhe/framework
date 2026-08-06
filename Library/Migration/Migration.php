@@ -1,4 +1,6 @@
-<?php namespace Kodhe\Library\Migration; 
+<?php declare(strict_types=1);
+
+namespace Kodhe\Library\Migration; 
 /**
  * Migrations Library
  *

@@ -1,4 +1,6 @@
-<?php namespace Kodhe\Library\Zip;
+<?php declare(strict_types=1);
+
+namespace Kodhe\Library\Zip;
 
 /**
  * Zip Compression Class

@@ -1,4 +1,6 @@
-<?php namespace Kodhe\Library\FormValidation;
+<?php declare(strict_types=1);
+
+namespace Kodhe\Library\FormValidation;
 
 /**
  * Form Validation Class
