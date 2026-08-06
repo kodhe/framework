@@ -1,21 +1,43 @@
 ```
+# Compiled and build artifacts
+*.pyc
+__pycache__/
+*.o
+*.obj
+*.class
+*.exe
+*.dll
+*.so
+*.a
+*.out
+
 # Dependencies
-vendor/
+.venv/
+venv/
+node_modules/
+target/
+.gradle/
+.mypy_cache/
+.pytest_cache/
+dist/
+build/
 
 # Logs and temp files
 *.log
 *.tmp
+*.swp
+*.swo
 
 # Environment
 .env
 .env.local
-.env.*
+*.env.*
 
-# IDE
+# Editors
 .vscode/
 .idea/
 
-# OS
+# System files
 .DS_Store
 Thumbs.db
 
@@ -24,45 +46,7 @@ coverage/
 htmlcov/
 .coverage
 
-# Build artifacts
-dist/
-build/
-target/
-
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-*.so
-*.egg-info/
-.Python
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Node
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# PHP
-*.php~
-*.php.bak
-*.php.swp
-*.php.swo
-
-# Compiled
-*.class
-*.o
-*.obj
-*.out
-*.exe
-*.dll
-*.so
-*.a
-
-# Compressed
+# Compressed files
 *.zip
 *.gz
 *.tar
@@ -85,10 +69,4 @@ yarn-error.log*
 *.tar.bz2
 *.tar.xz
 *.tar.zst
-
-# Cache
-.cache/
-.mypy_cache/
-.pytest_cache/
-.gradle/
 ```
