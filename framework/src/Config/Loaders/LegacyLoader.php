@@ -1090,23 +1090,27 @@ class LegacyLoader
 
 		// CEK MODERN LIBRARY: Cek apakah ada versi modern dengan namespace Kodhe\Framework
 		$modern_class = $this->_get_modern_class_name($class);
-		if ($modern_class && class_exists($modern_class, FALSE))
+		if ($modern_class)
 		{
-			$property = $object_name;
-			if (empty($property))
+			// Trigger autoloader untuk class modern
+			if (class_exists($modern_class))
 			{
-				$property = strtolower($class);
-				isset($this->_ci_varmap[$property]) && $property = $this->_ci_varmap[$property];
-			}
+				$property = $object_name;
+				if (empty($property))
+				{
+					$property = strtolower($class);
+					isset($this->_ci_varmap[$property]) && $property = $this->_ci_varmap[$property];
+				}
 
-			$CI =& $this->_getInstance();
-			if (!$CI->has($property))
-			{
-				return $this->_ci_init_library($modern_class, '', $params, $object_name);
-			}
+				$CI =& $this->_getInstance();
+				if (!$CI->has($property))
+				{
+					return $this->_ci_init_library($modern_class, '', $params, $object_name);
+				}
 
-			log_message('debug', $class.' class already loaded. Second attempt ignored.');
-			return;
+				log_message('debug', $class.' class already loaded. Second attempt ignored.');
+				return;
+			}
 		}
 
 		// Is this a stock library? There are a few special conditions if so ...
