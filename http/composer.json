@@ -1,0 +1,22 @@
+{
+  "name": "kodhe/http",
+  "description": "Kodhe HTTP - Request, Response, Middleware & Pipeline",
+  "type": "library",
+  "version": "1.1.0",
+  "license": "MIT",
+  "require": {
+    "php": ">=8.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "Kodhe\\Framework\\Http\\": "src/"
+    },
+    "files": [
+      "src/helpers/url.php"
+    ]
+  },
+  "suggest": {
+    "kodhe/view": "ViewFactory used by BaseController theme binding",
+    "kodhe/user-agent": "Loaded optionally by BaseController"
+  }
+}

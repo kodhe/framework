@@ -1,0 +1,11 @@
+{
+  "name": "kodhe/profiler",
+  "description": "Kodhe profiler library",
+  "type": "library",
+  "version": "1.1.0",
+  "license": "MIT",
+  "require": { "php": ">=8.1" },
+  "autoload": {
+    "psr-4": { "Kodhe\\Profiler\\": "src/" }
+  }
+}
