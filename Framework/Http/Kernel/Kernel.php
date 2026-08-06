@@ -32,7 +32,7 @@ class Kernel
     protected $running = false;
 
     /**
-     * @var Application Application instance
+     * @var ServiceManager Application instance
      */
     protected $servicemanager = null;
 
@@ -61,7 +61,13 @@ class Kernel
      */
     protected $modernRouter;
 
+    /**
+     * @var MiddlewarePipelineManager Middleware pipeline manager
+     */
+    protected $pipelineManager;
+
     protected $router_ready = false;
+    
     /**
      * Constructor
      */
@@ -70,7 +76,6 @@ class Kernel
         // Initialize container
         $this->container = $container ?? new Container();
         $this->facade = Facade::getInstance();
-
 
         if (method_exists($this->container, 'setThrowOnDuplicate')) {
             $this->container->setThrowOnDuplicate(false);
@@ -111,24 +116,27 @@ class Kernel
     {
         log_message('debug', 'Initializing routing components');
         
+        // Initialize middleware pipeline manager
+        $this->pipelineManager = new MiddlewarePipelineManager($this->container, $this->getConfigPath());
+        
         // Register RoutingManager with modern router support
         $this->container->registerSingleton('RoutingManager', function ($di) {
-            // Buat router legacy sebagai fallback
+            // Create legacy router as fallback
             $legacyRouter = new Router();
             
-            // Buat routing manager dengan konfigurasi
+            // Create routing manager with configuration
             $manager = new RoutingManager();
             
-            // Configure untuk mendukung modern routing
+            // Configure to support modern routing
             $config = [
                 'enable_modern_routing' => true,
                 'cache_routes' => ENVIRONMENT === 'production',
-                'router_type' => 'hybrid', // Mendukung kedua tipe
+                'router_type' => 'hybrid', // Supports both types
             ];
             
             $manager->setConfig($config);
             
-            // Clear cache di development
+            // Clear cache in development
             if (ENVIRONMENT !== 'production') {
                 $manager->clearCache();
             }
@@ -136,7 +144,7 @@ class Kernel
             return $manager;
         });
 
-        // Register ControllerExecutor dengan semua dependencies
+        // Register ControllerExecutor with all dependencies
         $this->container->registerSingleton('ControllerExecutor', function ($di) {
             $facade = $this->facade;
             $routingManager = $di->make('RoutingManager');
@@ -164,6 +172,7 @@ class Kernel
         $this->container->register('routing.manager', $this->routingManager);
         $this->container->register('controller.executor', $this->controllerExecutor);
         $this->container->register('modern.router', $this->modernRouter);
+        $this->container->register('pipeline.manager', $this->pipelineManager);
         
         log_message('debug', 'Routing components initialized');
     }
@@ -241,13 +250,12 @@ class Kernel
         $servicemanager->setResponse($response);
         $this->container->register('Response', $response);
 
-        // Jalankan middleware pipeline jika routing modern
+        // Run middleware pipeline for modern routing
         if (isset($routing['type']) && $routing['type'] === 'modern') {
-            $middlewareResponse = $this->runMiddlewarePipeline($servicemanager, $routing);
+            $middlewareResponse = $this->pipelineManager->run($servicemanager, $routing);
             
             if ($middlewareResponse !== null) {
                 log_message('debug', 'Middleware pipeline completed');
-                // Return response dari middleware
                 return $middlewareResponse;
             }
         }
@@ -266,200 +274,12 @@ class Kernel
     }
 
     /**
-     * Run middleware pipeline untuk routing modern
+     * Run middleware pipeline for modern routing using PipelineManager
      */
     protected function runMiddlewarePipeline($servicemanager, $routing)
     {
-        // Hanya jalankan middleware untuk routing modern
-        if (!isset($routing['type']) || $routing['type'] !== 'modern') {
-            log_message('debug', 'Skipping middleware for non-modern routing');
-            return null;
-        }
-        
-        log_message('debug', '=== START MIDDLEWARE PIPELINE ===');
-        
-        // Get request and response dari container
-        $request = $this->container->make('Request');
-        $response = $this->container->make('Response');
-        
-        // Disable throw on duplicate untuk sementara
-        $originalThrowSetting = true;
-        if (method_exists($this->container, 'getThrowOnDuplicate')) {
-            $originalThrowSetting = $this->container->getThrowOnDuplicate();
-        }
-        
-        try {
-            // Create pipeline
-            $pipeline = new Pipeline($request, $response);
-            
-            // Tambahkan global middlewares
-            $this->addGlobalMiddlewares($pipeline);
-            
-            // Tambahkan route-specific middlewares jika ada
-            if (isset($routing['middleware']) && !empty($routing['middleware'])) {
-                log_message('debug', 'Route has middleware: ' . print_r($routing['middleware'], true));
-                $this->addRouteMiddlewares($pipeline, $routing['middleware']);
-            } else {
-                log_message('debug', 'Route has no middleware');
-            }
-            
-            // Set handler
-            $pipeline->setHandler(function ($request, $response, $params) use ($routing, $servicemanager) {
-                log_message('debug', '=== MIDDLEWARE HANDLER CALLED ===');
-                
-                // Update response di servicemanager
-                $servicemanager->setResponse($response);
-                
-                // Eksekusi controller
-                $controllerExecutor = $this->container->make('ControllerExecutor');
-                $controllerExecutor->execute($routing);
-                
-                // Return response dari servicemanager
-                return $servicemanager->getResponse();
-            });
-            
-            // Jalankan pipeline
-            $pipelineResponse = $pipeline->run($routing['segments']);
-            
-            if ($pipelineResponse instanceof Response) {
-                log_message('debug', '=== PIPELINE RETURNED RESPONSE ===');
-                
-                // Update response di container menggunakan set() (replace jika ada)
-                if (method_exists($this->container, 'set')) {
-                    $this->container->set('Response', $pipelineResponse);
-                } elseif (method_exists($this->container, 'replace')) {
-                    $this->container->replace('Response', $pipelineResponse);
-                } else {
-                    // Fallback: langsung assign ke registry
-                    $this->container->register('Response', $pipelineResponse);
-                }
-                
-                // Update di servicemanager
-                $servicemanager->setResponse($pipelineResponse);
-                
-                // Restore throw setting
-                if (method_exists($this->container, 'setThrowOnDuplicate')) {
-                    $this->container->setThrowOnDuplicate($originalThrowSetting);
-                }
-                
-                return $pipelineResponse;
-            }
-            
-            log_message('debug', '=== PIPELINE RETURNED NULL ===');
-            
-            // Restore throw setting
-            if (method_exists($this->container, 'setThrowOnDuplicate')) {
-                $this->container->setThrowOnDuplicate($originalThrowSetting);
-            }
-            
-            return null;
-            
-        } catch (\Exception $e) {
-            // Restore throw setting jika error
-            if (method_exists($this->container, 'setThrowOnDuplicate')) {
-                $this->container->setThrowOnDuplicate($originalThrowSetting);
-            }
-            
-            log_message('error', 'Middleware pipeline error: ' . $e->getMessage());
-            log_message('error', 'Stack trace: ' . $e->getTraceAsString());
-            
-            // Fallback
-            log_message('debug', 'Falling back to direct controller execution');
-            return null;
-        }
-    }
-
-    /**
-     * Execute single middleware
-     */
-    protected function executeMiddleware($middleware, $request, $response, $next)
-    {
-        $registry = new MiddlewareRegistry();
-        $resolved = $registry->resolve($middleware);
-        
-        if ($resolved instanceof MiddlewareInterface) {
-            log_message('debug', 'Executing middleware: ' . get_class($resolved));
-            return $resolved->handle($request, $response, $next, []);
-        }
-        
-        log_message('error', 'Cannot execute middleware: ' . print_r($middleware, true));
-        return $next($request, $response);
-    }
-    /**
-     * Add route-specific middlewares
-     */
-    protected function addRouteMiddlewares(Pipeline $pipeline, $middlewares)
-    {
-        // Normalize input
-        if (is_string($middlewares)) {
-            // Bisa berupa single middleware atau comma-separated list
-            if (strpos($middlewares, ',') !== false) {
-                $middlewares = array_map('trim', explode(',', $middlewares));
-            } else {
-                $middlewares = [$middlewares];
-            }
-        }
-        
-        if (!is_array($middlewares)) {
-            log_message('error', 'Route middlewares must be string or array');
-            return;
-        }
-        
-        log_message('debug', 'Adding ' . count($middlewares) . ' route middlewares');
-        
-        foreach ($middlewares as $index => $middleware) {
-            log_message('debug', "Route middleware [{$index}]: " . 
-                (is_string($middleware) ? $middleware : gettype($middleware)));
-            
-            // Jika middleware adalah array, pipe sebagai inline group
-            if (is_array($middleware)) {
-                log_message('debug', "Piping array as inline group with " . count($middleware) . " items");
-                foreach ($middleware as $mw) {
-                    $pipeline->pipe($mw);
-                }
-            } else {
-                $pipeline->pipe($middleware);
-            }
-        }
-    }
-    
-    /**
-     * Add global middlewares
-     */
-    protected function addGlobalMiddlewares(Pipeline $pipeline)
-    {
-        // Load global middlewares dari config
-        $configPath = $this->getConfigPath() . 'middleware.php';
-        
-        log_message('debug', 'Looking for middleware config at: ' . $configPath);
-        
-        if (file_exists($configPath)) {
-            $config = require $configPath;
-            log_message('debug', 'Middleware config loaded successfully');
-            
-            if (isset($config['global']) && is_array($config['global'])) {
-                log_message('debug', 'Found ' . count($config['global']) . ' global middlewares');
-                
-                foreach ($config['global'] as $index => $middleware) {
-                    log_message('debug', "Adding global middleware [{$index}]: " . $middleware);
-                    $pipeline->pipe($middleware);
-                }
-            } else {
-                log_message('debug', 'No global middlewares found in config');
-            }
-            
-            // Log groups dan aliases untuk debugging
-            if (isset($config['aliases'])) {
-                log_message('debug', 'Available aliases: ' . implode(', ', array_keys($config['aliases'])));
-            }
-            
-            if (isset($config['groups'])) {
-                log_message('debug', 'Available groups: ' . implode(', ', array_keys($config['groups'])));
-            }
-            
-        } else {
-            log_message('warning', 'Middleware config file not found at: ' . $configPath);
-        }
+        // Delegate to pipeline manager
+        return $this->pipelineManager->run($servicemanager, $routing);
     }
 
     /**
