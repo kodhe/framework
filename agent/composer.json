@@ -9,7 +9,7 @@
   },
   "autoload": {
     "psr-4": {
-      "Kodhe\\Framework\\Agent\\": "src/"
+      "Kodhe\\UserAgent\\": "src/"
     },
     "files": [
       "src/compat.php"
