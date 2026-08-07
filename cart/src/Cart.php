@@ -4,6 +4,15 @@ declare(strict_types=1);
 
 namespace Kodhe\Cart;
 
+use Kodhe\Cart\Contracts\CartInterface;
+use Kodhe\Cart\Contracts\CartStorageInterface;
+use Kodhe\Cart\Storage\SessionStorage;
+use Kodhe\Cart\Calculator\TaxCalculator;
+use Kodhe\Cart\Calculator\DiscountCalculator;
+use Kodhe\Cart\Calculator\ShippingCalculator;
+use Kodhe\Cart\Models\CartItem;
+use Kodhe\Cart\Models\CartSummary;
+
 /**
  * Shopping Cart Class
  *
@@ -13,11 +22,14 @@ namespace Kodhe\Cart;
  * - Automatic cart total calculation
  * - Item subtotal calculation
  * - Cart persistence via session
+ * - Tax calculations
+ * - Discount calculations
+ * - Shipping calculations
+ * - Multiple storage backends (Session, Database, Memory)
  *
- * @package     CodeIgniter
- * @subpackage  Libraries
+ * @package     Kodhe\Cart
  * @category    Shopping Cart
- * @author      EllisLab Dev Team
+ * @author      EllisLab Dev Team, Kodhe Team
  * @link        https://codeigniter.com/user_guide/libraries/cart.html
  *
  * @example
@@ -38,9 +50,13 @@ namespace Kodhe\Cart;
  * 
  * // Display cart contents
  * print_r($cart->contents());
+ * 
+ * // With tax and discounts
+ * $cart->getTaxCalculator()->setTaxRate(10);
+ * $cart->getDiscountCalculator()->applyPercentageDiscount('SAVE10', 10);
  * ```
  */
-class Cart
+class Cart implements CartInterface
 {
     /**
      * Regular expression rules for validating product ID
@@ -80,6 +96,48 @@ class Cart
     protected $_cart_contents = [];
 
     /**
+     * Cart storage handler
+     *
+     * @var CartStorageInterface
+     */
+    protected $storage;
+
+    /**
+     * Tax calculator
+     *
+     * @var TaxCalculator
+     */
+    protected $taxCalculator;
+
+    /**
+     * Discount calculator
+     *
+     * @var DiscountCalculator
+     */
+    protected $discountCalculator;
+
+    /**
+     * Shipping calculator
+     *
+     * @var ShippingCalculator
+     */
+    protected $shippingCalculator;
+
+    /**
+     * Cache for calculated totals
+     *
+     * @var CartSummary|null
+     */
+    protected $totalsCache = null;
+
+    /**
+     * Whether totals cache is dirty
+     *
+     * @var bool
+     */
+    protected $totalsDirty = true;
+
+    /**
      * Shopping Class Constructor
      *
      * @param array $params Configuration parameters
@@ -91,18 +149,87 @@ class Cart
 
         $config = is_array($params) ? $params : [];
 
-        // Load the Sessions class
-        $this->CI->load->driver('session', $config);
+        // Initialize storage (default to session for backward compatibility)
+        $this->storage = new SessionStorage($this->CI);
 
-        // Grab the shopping cart array from the session
-        $this->_cart_contents = $this->CI->session->userdata('cart_contents');
+        // Load cart data from storage
+        $this->_cart_contents = $this->storage->load();
         
         if ($this->_cart_contents === null) {
             // No cart exists so we'll set some base values
             $this->_cart_contents = ['cart_total' => 0, 'total_items' => 0];
         }
 
+        // Initialize calculators
+        $this->taxCalculator = new TaxCalculator(
+            $config['tax_rate'] ?? 0.0,
+            $config['tax_included'] ?? false
+        );
+
+        $this->discountCalculator = new DiscountCalculator(
+            $config['discounts_stackable'] ?? false
+        );
+
+        $this->shippingCalculator = new ShippingCalculator(
+            $config['shipping_method'] ?? 'flat',
+            $config['shipping_rate'] ?? 0.0
+        );
+
         log_message('info', 'Cart Class Initialized');
+    }
+
+    /**
+     * Set custom storage handler
+     *
+     * @param CartStorageInterface $storage
+     * @return self
+     */
+    public function setStorage(CartStorageInterface $storage): self
+    {
+        $this->storage = $storage;
+        $this->_cart_contents = $storage->load() ?? ['cart_total' => 0, 'total_items' => 0];
+        $this->markTotalsDirty();
+        return $this;
+    }
+
+    /**
+     * Get current storage handler
+     *
+     * @return CartStorageInterface
+     */
+    public function getStorage(): CartStorageInterface
+    {
+        return $this->storage;
+    }
+
+    /**
+     * Get tax calculator
+     *
+     * @return TaxCalculator
+     */
+    public function getTaxCalculator(): TaxCalculator
+    {
+        return $this->taxCalculator;
+    }
+
+    /**
+     * Get discount calculator
+     *
+     * @return DiscountCalculator
+     */
+    public function getDiscountCalculator(): DiscountCalculator
+    {
+        return $this->discountCalculator;
+    }
+
+    /**
+     * Get shipping calculator
+     *
+     * @return ShippingCalculator
+     */
+    public function getShippingCalculator(): ShippingCalculator
+    {
+        return $this->shippingCalculator;
     }
 
     /**
@@ -202,6 +329,8 @@ class Cart
         $items['qty'] += $old_quantity;
         $this->_cart_contents[$rowid] = $items;
 
+        $this->markTotalsDirty();
+
         return $rowid;
     }
 
@@ -261,6 +390,7 @@ class Cart
             
             if ($items['qty'] == 0) {
                 unset($this->_cart_contents[$items['rowid']]);
+                $this->markTotalsDirty();
                 return true;
             }
         }
@@ -281,11 +411,13 @@ class Cart
             $this->_cart_contents[$items['rowid']][$key] = $items[$key];
         }
 
+        $this->markTotalsDirty();
+
         return true;
     }
 
     /**
-     * Save the cart array to the session
+     * Save the cart array to the storage
      *
      * @return bool TRUE on success, FALSE if cart is empty
      */
@@ -305,25 +437,88 @@ class Cart
             $this->_cart_contents[$key]['subtotal'] = ($val['price'] * $val['qty']);
         }
 
-        // If cart is empty, delete from session
+        // If cart is empty, delete from storage
         if (count($this->_cart_contents) <= 2) {
-            $this->CI->session->unset_userdata('cart_contents');
+            $this->storage->delete();
             return false;
         }
 
-        // Save to session
-        $this->CI->session->set_userdata(['cart_contents' => $this->_cart_contents]);
-        return true;
+        // Save to storage
+        $result = $this->storage->save($this->_cart_contents);
+        
+        // Clear totals cache after save
+        $this->recalculateTotals();
+        
+        return $result;
     }
 
     /**
-     * Get Cart Total
+     * Get Cart Total (base total without tax, shipping, discounts)
+     * For detailed totals, use getTotals()
      *
      * @return float
      */
     public function total()
     {
         return $this->_cart_contents['cart_total'];
+    }
+
+    /**
+     * Get detailed cart totals including tax, discounts, and shipping
+     *
+     * @return CartSummary
+     */
+    public function getTotals(): CartSummary
+    {
+        if ($this->totalsDirty) {
+            $this->recalculateTotals();
+        }
+        return $this->totalsCache;
+    }
+
+    /**
+     * Recalculate all cart totals
+     *
+     * @return void
+     */
+    protected function recalculateTotals(): void
+    {
+        $items = $this->contents();
+        $subtotal = $this->total();
+
+        // Calculate tax
+        $tax = $this->taxCalculator->calculate($items, $subtotal);
+
+        // Calculate discounts
+        $discount = $this->discountCalculator->calculate($items, $subtotal);
+
+        // Calculate shipping
+        $shipping = $this->shippingCalculator->calculate($items, $subtotal);
+
+        // Calculate grand total
+        $total = $subtotal + $tax + $shipping - $discount;
+
+        $this->totalsCache = new CartSummary(
+            $this->total_items(),
+            $subtotal,
+            $tax,
+            $discount,
+            $shipping,
+            $total
+        );
+
+        $this->totalsDirty = false;
+    }
+
+    /**
+     * Mark totals as dirty (needs recalculation)
+     *
+     * @return void
+     */
+    protected function markTotalsDirty(): void
+    {
+        $this->totalsDirty = true;
+        $this->totalsCache = null;
     }
 
     /**
@@ -335,6 +530,7 @@ class Cart
     public function remove($rowid)
     {
         unset($this->_cart_contents[$rowid]);
+        $this->markTotalsDirty();
         $this->_save_cart();
         return true;
     }
@@ -428,6 +624,103 @@ class Cart
     public function destroy()
     {
         $this->_cart_contents = ['cart_total' => 0, 'total_items' => 0];
-        $this->CI->session->unset_userdata('cart_contents');
+        $this->storage->delete();
+        $this->markTotalsDirty();
+    }
+
+    /**
+     * Get cart subtotal (alias for total())
+     *
+     * @return float
+     */
+    public function subtotal()
+    {
+        return $this->total();
+    }
+
+    /**
+     * Get cart tax amount
+     *
+     * @return float
+     */
+    public function getTax(): float
+    {
+        return $this->getTotals()->getTax();
+    }
+
+    /**
+     * Get cart discount amount
+     *
+     * @return float
+     */
+    public function getDiscount(): float
+    {
+        return $this->getTotals()->getDiscount();
+    }
+
+    /**
+     * Get shipping cost
+     *
+     * @return float
+     */
+    public function getShipping(): float
+    {
+        return $this->getTotals()->getShipping();
+    }
+
+    /**
+     * Get grand total (including tax and shipping, minus discounts)
+     *
+     * @return float
+     */
+    public function grandTotal(): float
+    {
+        return $this->getTotals()->getTotal();
+    }
+
+    /**
+     * Convert cart to CartItem objects
+     *
+     * @return CartItem[]
+     */
+    public function getItems(): array
+    {
+        $items = [];
+        foreach ($this->contents() as $rowId => $itemData) {
+            if (is_array($itemData)) {
+                $items[] = CartItem::fromArray($itemData);
+            }
+        }
+        return $items;
+    }
+
+    /**
+     * Get item count (number of distinct items, not total quantity)
+     *
+     * @return int
+     */
+    public function itemCount(): int
+    {
+        return count($this->contents());
+    }
+
+    /**
+     * Check if cart is empty
+     *
+     * @return bool
+     */
+    public function isEmpty(): bool
+    {
+        return $this->total_items() == 0;
+    }
+
+    /**
+     * Clear cart totals cache (useful for testing)
+     *
+     * @return void
+     */
+    public function clearTotalsCache(): void
+    {
+        $this->markTotalsDirty();
     }
 }
