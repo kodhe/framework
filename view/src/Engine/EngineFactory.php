@@ -1,124 +1,177 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Kodhe\Framework\View\Engine;
 
-use Kodhe\Framework\View\Exceptions\EngineException;
+use Exception;
 
-/**
- * Class EngineFactory
- *
- * @package Kodhe\Framework\View\Engine
- */
 class EngineFactory
 {
+    protected static $engines = [];
+    protected static $defaultEngine = 'blade';
+    
     /**
-     * @var array
+     * Register template engine
      */
-    protected $engines = [];
-
-    /**
-     * @var array
-     */
-    protected $defaultPaths = [];
-
-    /**
-     * Create a new EngineFactory instance
-     *
-     * @param array $paths
-     */
-    public function __construct(array $paths = [])
+    public static function register($name, $engineClass, $config = [])
     {
-        $this->defaultPaths = $paths;
-        $this->registerDefaults();
+        self::$engines[$name] = [
+            'class' => $engineClass,
+            'config' => $config
+        ];
     }
-
+    
     /**
-     * Register default engines
-     *
-     * @return void
+     * Get template engine instance
      */
-    protected function registerDefaults(): void
+    public static function make($engine = null, $config = [])
     {
-        $this->register('php', PhpEngine::class);
-        $this->register('blade', BladeEngine::class);
-        $this->register('twig', TwigEngine::class);
-    }
-
-    /**
-     * Create an engine instance
-     *
-     * @param string $name
-     * @return EngineInterface
-     */
-    public function create(string $name): EngineInterface
-    {
-        if (!$this->has($name)) {
-            throw EngineException::notFound($name);
+        if ($engine === null) {
+            $engine = self::$defaultEngine;
         }
-
-        $class = $this->engines[$name];
-        $engine = new $class($this->defaultPaths);
-
-        if (!$engine instanceof EngineInterface) {
-            throw EngineException::unsupported($name);
+        
+        if (!isset(self::$engines[$engine])) {
+            throw new Exception("Template engine '{$engine}' not registered");
         }
-
-        return $engine;
+        
+        $engineConfig = self::$engines[$engine];
+        
+        // Merge config
+        $finalConfig = array_merge($engineConfig['config'], $config);
+        
+        // Check if class exists
+        if (!class_exists($engineConfig['class'])) {
+            throw new Exception("Template engine class '{$engineConfig['class']}' not found");
+        }
+        
+        // Create instance
+        return new $engineConfig['class']($finalConfig);
     }
-
+    
     /**
-     * Register an engine
-     *
-     * @param string $name
-     * @param string $class
-     * @return self
+     * Set default engine
      */
-    public function register(string $name, string $class): self
+    public static function setDefault($engine)
     {
-        $this->engines[$name] = $class;
-        return $this;
+        if (isset(self::$engines[$engine])) {
+            self::$defaultEngine = $engine;
+        }
     }
-
-    /**
-     * Check if engine is registered
-     *
-     * @param string $name
-     * @return bool
-     */
-    public function has(string $name): bool
-    {
-        return isset($this->engines[$name]);
-    }
-
+    
     /**
      * Get all registered engines
-     *
-     * @return array
      */
-    public function getEngines(): array
+    public static function getEngines()
     {
-        return array_keys($this->engines);
+        return array_keys(self::$engines);
+    }
+    
+    /**
+     * Check if engine is registered
+     */
+    public static function hasEngine($engine)
+    {
+        return isset(self::$engines[$engine]);
+    }
+    
+    /**
+     * Unregister engine
+     */
+    public static function unregister($engine)
+    {
+        if (isset(self::$engines[$engine])) {
+            unset(self::$engines[$engine]);
+        }
+    }
+    
+    /**
+     * Clear all registered engines
+     */
+    public static function clear()
+    {
+        self::$engines = [];
     }
 
-    /**
-     * Set default view paths
-     *
-     * @param array $paths
-     * @return self
-     */
-    public function setDefaultPaths(array $paths): self
-    {
-        $this->defaultPaths = $paths;
-        return $this;
-    }
 
-    /**
-     * Get default view paths
-     *
-     * @return array
-     */
-    public function getDefaultPaths(): array
-    {
-        return $this->defaultPaths;
+/**
+ * ======================
+ * VIEW HELPERS
+ * ======================
+ */
+
+/**
+ * Render theme partial
+ */
+public function partial($view, $data = [])
+{
+    $partialPath = 'partials/' . $view;
+    return $this->view($partialPath, $data, true);
+}
+
+/**
+ * Render widget
+ */
+public function widget($widget, $params = [])
+{
+    $widgetPath = 'widgets/' . $widget;
+    return $this->view($widgetPath, $params, true);
+}
+
+/**
+ * Render section
+ */
+public function section_view($section, $data = [])
+{
+    $sectionPath = 'sections/' . $section;
+    return $this->view($sectionPath, $data, true);
+}
+
+/**
+ * Render element
+ */
+public function element($element, $data = [])
+{
+    $elementPath = 'elements/' . $element;
+    return $this->view($elementPath, $data, true);
+}
+
+/**
+ * Render block
+ */
+public function block($block, $data = [])
+{
+    $blockPath = 'blocks/' . $block;
+    return $this->view($blockPath, $data, true);
+}
+
+/**
+ * Render module
+ */
+public function module($module, $data = [])
+{
+    $modulePath = 'modules/' . $module;
+    return $this->view($modulePath, $data, true);
+}
+
+/**
+ * Render region
+ */
+public function region($region, $data = [])
+{
+    $regionPath = 'regions/' . $region;
+    return $this->view($regionPath, $data, true);
+}
+
+/**
+ * Include any view from theme with subfolder
+ */
+public function include_view($view, $data = [], $subfolder = null)
+{
+    if ($subfolder) {
+        $view = $subfolder . '/' . $view;
     }
+    return $this->view($view, $data, true);
+}
+
 }
