@@ -1,1 +1,22 @@
-Nothing should be ignored based on the provided file changes. The only modified file is a PHP source file (`view/src/View/ViewFactory.php`), which is a legitimate source code file that should not be ignored. There are no build artifacts, dependency directories, temporary files, or other items that need to be added to the .gitignore file.
+```
+# Dependencies
+vendor/
+composer.lock
+
+# Logs and temp files
+*.log
+*.tmp
+
+# Environment
+.env
+.env.local
+*.env.*
+
+# Tests
+.phpunit.result.cache
+
+# IDE
+.vscode/
+.idea/
+*.swp
+```
