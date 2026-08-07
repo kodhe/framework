@@ -1,12 +1,34 @@
 {
   "name": "kodhe/routing",
-  "description": "Kodhe Routing component",
+  "description": "Kodhe Routing component - Modular, PSR-4/PSR-12 compliant, PHPUnit ready, CodeIgniter 3 backward compatible",
   "type": "library",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "license": "MIT",
-  "require": { "php": ">=8.1" },
+  "require": {
+    "php": ">=8.1"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^10.0",
+    "phpstan/phpstan": "^1.10",
+    "squizlabs/php_codesniffer": "^3.7"
+  },
   "autoload": {
-    "psr-4": { "Kodhe\\Framework\\Routing\\": "src/" },
-    "files": [ "src/helpers/routing.php" ]
+    "psr-4": {
+      "Kodhe\\Framework\\Routing\\": "src/"
+    },
+    "files": [
+      "src/helpers/routing.php"
+    ]
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Kodhe\\Framework\\Routing\\Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "test": "phpunit",
+    "phpstan": "phpstan analyse src --level=max",
+    "phpcs": "phpcs --standard=PSR12 src/",
+    "phpcbf": "phpcbf --standard=PSR12 src/"
   }
 }
