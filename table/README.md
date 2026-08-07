@@ -1,99 +1,122 @@
+# Kodhe Table Library
 
-## File Test `test_parser.php`
+A modular, maintainable, and testable table generation library following PSR-4/PSR-12 standards.
+
+## Features
+
+- **Modular Architecture**: Separated concerns using Builder, Strategy, Factory, and Value Object patterns
+- **Backward Compatible**: 100% compatible with CodeIgniter 3 Table library API
+- **Extensible Renderers**: Support for HTML and plain text rendering, easily extendable
+- **Dependency Injection**: Clean separation of concerns with injectable dependencies
+
+## Installation
+
+```bash
+composer require kodhe/table
+```
+
+## Usage
+
+### Basic Usage
 
 ```php
-<?php
+use Kodhe\Table\Table;
 
-require_once __DIR__ . '/vendor/autoload.php';
+$table = new Table();
 
-use Kodhe\Library\Parser\Parser;
+$table->set_heading('Name', 'Email', 'Role');
+$table->add_row('John Doe', 'john@example.com', 'Admin');
+$table->add_row('Jane Smith', 'jane@example.com', 'User');
 
-echo "=== Kodhe Parser Tests ===\n\n";
+echo $table->generate();
+```
 
-$parser = new Parser();
+### With Array Data
 
-// Test 1: Simple variable replacement
-echo "Test 1: Simple Variable Replacement\n";
-$template = "Hello, {name}! Welcome to {site}.";
-$data = ['name' => 'John', 'site' => 'MyApp'];
-$result = $parser->parse_string($template, $data, true);
-echo "Template: {$template}\n";
-echo "Result: {$result}\n\n";
-assert($result === 'Hello, John! Welcome to MyApp.', 'Test 1 failed');
-echo "✓ Passed\n\n";
-
-// Test 2: Tag pair (loop)
-echo "Test 2: Tag Pair Loop\n";
-$template = "<ul>{items}<li>{item}</li>{/items}</ul>";
+```php
 $data = [
-    'items' => [
-        ['item' => 'First'],
-        ['item' => 'Second'],
-        ['item' => 'Third']
-    ]
+    ['Name' => 'John Doe', 'Email' => 'john@example.com'],
+    ['Name' => 'Jane Smith', 'Email' => 'jane@example.com']
 ];
-$result = $parser->parse_string($template, $data, true);
-echo "Template: {$template}\n";
-echo "Result: {$result}\n\n";
-assert($result === '<ul><li>First</li><li>Second</li><li>Third</li></ul>', 'Test 2 failed');
-echo "✓ Passed\n\n";
 
-// Test 3: Nested tag pairs
-echo "Test 3: Nested Tag Pairs\n";
-$template = "{menu}{items}<li>{item}</li>{/items}{/menu}";
-$data = [
-    'menu' => [
-        [
-            'items' => [
-                ['item' => 'Home'],
-                ['item' => 'About']
-            ]
-        ],
-        [
-            'items' => [
-                ['item' => 'Contact'],
-                ['item' => 'Help']
-            ]
-        ]
-    ]
+echo $table->generate($data);
+```
+
+### Custom Template
+
+```php
+$template = [
+    'table_open' => '<table class="my-table">',
+    'heading_cell_start' => '<th class="header">',
+    'cell_start' => '<td class="cell">'
 ];
-$result = $parser->parse_string($template, $data, true);
-echo "Template: {$template}\n";
-echo "Result: {$result}\n\n";
-assert(str_contains($result, '<li>Home</li>'), 'Test 3 failed');
-assert(str_contains($result, '<li>Contact</li>'), 'Test 3 failed');
-echo "✓ Passed\n\n";
 
-// Test 4: Custom delimiters
-echo "Test 4: Custom Delimiters\n";
-$parser->set_delimiters('{{', '}}');
-$template = "Hello, {{name}}!";
-$result = $parser->parse_string($template, ['name' => 'World'], true);
-echo "Template: {$template}\n";
-echo "Result: {$result}\n\n";
-assert($result === 'Hello, World!', 'Test 4 failed');
-echo "✓ Passed\n\n";
+$table->set_template($template);
+```
 
-// Test 5: Empty template
-echo "Test 5: Empty Template\n";
-$result = $parser->parse_string('', [], true);
-echo "Result: " . var_export($result, true) . "\n\n";
-assert($result === false, 'Test 5 failed');
-echo "✓ Passed\n\n";
+### Custom Renderer
 
-// Test 6: Multiple variables
-echo "Test 6: Multiple Variables\n";
-$parser->set_delimiters('{', '}'); // Reset to default
-$template = "{greeting}, {name}! You have {count} new messages.";
-$data = [
-    'greeting' => 'Good morning',
-    'name' => 'Alice',
-    'count' => 5
-];
-$result = $parser->parse_string($template, $data, true);
-echo "Template: {$template}\n";
-echo "Result: {$result}\n\n";
-assert($result === 'Good morning, Alice! You have 5 new messages.', 'Test 6 failed');
-echo "✓ Passed\n\n";
+```php
+use Kodhe\Table\Renderers\PlainTextRenderer;
 
-echo "=== All Tests Passed ===\n";
+$renderer = new PlainTextRenderer();
+$table->setRenderer($renderer);
+
+echo $table->generate();
+```
+
+## Structure
+
+```
+table/
+├── Table.php                 # Main facade class
+├── Contracts/
+│   ├── TableInterface.php    # Table contract
+│   ├── RendererInterface.php # Renderer contract
+│   └── TemplateInterface.php # Template contract
+├── Builder/
+│   ├── HeaderBuilder.php     # Header building logic
+│   └── RowBuilder.php        # Row building logic
+├── Renderers/
+│   ├── HtmlRenderer.php      # HTML output renderer
+│   └── PlainTextRenderer.php # Plain text renderer
+├── Templates/
+│   ├── DefaultTemplate.php   # Default template implementation
+│   └── TemplateAdapter.php   # Template adapter for BC
+├── Factory/
+│   └── RendererFactory.php   # Renderer factory
+├── Support/
+│   ├── ColumnNormalizer.php  # Column data normalization
+│   ├── TableValidator.php    # Table data validation
+│   └── TemplateResolver.php  # Template resolution
+└── ValueObjects/
+    ├── TableCell.php         # Table cell value object
+    ├── TableRow.php          # Table row value object
+    └── TableDefinition.php   # Table definition value object
+```
+
+## Design Patterns Used
+
+- **Builder Pattern**: For constructing complex table structures
+- **Strategy Pattern**: For interchangeable rendering strategies
+- **Factory Pattern**: For creating renderer instances
+- **Value Object Pattern**: For immutable table data representation
+- **Dependency Injection**: For clean separation of concerns
+
+## API Methods
+
+All original CodeIgniter 3 Table methods are preserved:
+
+- `set_heading()` - Set table heading
+- `set_columns()` - Set table columns
+- `add_row()` - Add a table row
+- `make_columns()` - Create multi-dimensional array from flat array
+- `set_template()` - Set custom template
+- `set_empty()` - Set empty cell content
+- `set_caption()` - Set table caption
+- `clear()` - Clear table data
+- `generate()` - Generate table HTML
+
+## License
+
+MIT
