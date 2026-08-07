@@ -270,7 +270,7 @@ class Table implements TableInterface
 	 * @param	mixed	$table_data
 	 * @return	string
 	 */
-	public function generate($table_data = NULL)
+	public function generate($table_data = NULL): string
 	{
 		// The table data can optionally be passed to this function
 		// either as a database result object or an array
