@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kodhe\Framework\Cache\Drivers;
 
 use Kodhe\Driver\Driver as Driver;
+use Kodhe\Framework\Cache\Contracts\CacheDriverInterface;
 
 /**
  * CodeIgniter Memcached Caching Class
@@ -15,7 +16,7 @@ use Kodhe\Driver\Driver as Driver;
  * @author		EllisLab Dev Team
  * @link
  */
-class Memcached extends Driver 
+class Memcached extends Driver implements CacheDriverInterface
 {
 
 	/**
@@ -45,9 +46,10 @@ class Memcached extends Driver
 	 *
 	 * Setup Memcache(d)
 	 *
+	 * @param	array	$config	Optional configuration array
 	 * @return	void
 	 */
-	public function __construct()
+	public function __construct(array $config = [])
 	{
 		// Try to load memcached server info from the config file.
 		$CI = kodhe();
@@ -60,11 +62,11 @@ class Memcached extends Driver
 
 		if (class_exists('Memcached', FALSE))
 		{
-			$this->_memcached = new Memcached();
+			$this->_memcached = new \Memcached();
 		}
 		elseif (class_exists('Memcache', FALSE))
 		{
-			$this->_memcached = new Memcache();
+			$this->_memcached = new \Memcache();
 		}
 		else
 		{
@@ -78,7 +80,7 @@ class Memcached extends Driver
 			isset($cache_server['port']) OR $cache_server['port'] = $defaults['port'];
 			isset($cache_server['weight']) OR $cache_server['weight'] = $defaults['weight'];
 
-			if ($this->_memcached instanceof Memcache)
+			if ($this->_memcached instanceof \Memcache)
 			{
 				// Third parameter is persistence and defaults to TRUE.
 				$this->_memcached->addServer(
@@ -88,7 +90,7 @@ class Memcached extends Driver
 					$cache_server['weight']
 				);
 			}
-			elseif ($this->_memcached instanceof Memcached)
+			elseif ($this->_memcached instanceof \Memcached)
 			{
 				$this->_memcached->addServer(
 					$cache_server['hostname'],
@@ -202,7 +204,7 @@ class Memcached extends Driver
 	 *
 	 * @return	bool	false on failure/true on success
 	 */
-	public function clean()
+	public function clean(): bool
 	{
 		return $this->_memcached->flush();
 	}
@@ -214,7 +216,7 @@ class Memcached extends Driver
 	 *
 	 * @return	mixed	array on success, false on failure
 	 */
-	public function cache_info()
+	public function cacheInfo()
 	{
 		return $this->_memcached->getStats();
 	}
@@ -227,7 +229,7 @@ class Memcached extends Driver
 	 * @param	mixed	$id	key to get cache metadata on
 	 * @return	mixed	FALSE on failure, array on success.
 	 */
-	public function get_metadata($id)
+	public function getMetadata(string $id)
 	{
 		$stored = $this->_memcached->get($id);
 
@@ -255,7 +257,7 @@ class Memcached extends Driver
 	 *
 	 * @return	bool
 	 */
-	public function is_supported()
+	public function isSupported(): bool
 	{
 		return (extension_loaded('memcached') OR extension_loaded('memcache'));
 	}
@@ -271,11 +273,11 @@ class Memcached extends Driver
 	 */
 	public function __destruct()
 	{
-		if ($this->_memcached instanceof Memcache)
+		if ($this->_memcached instanceof \Memcache)
 		{
 			$this->_memcached->close();
 		}
-		elseif ($this->_memcached instanceof Memcached && method_exists($this->_memcached, 'quit'))
+		elseif ($this->_memcached instanceof \Memcached && method_exists($this->_memcached, 'quit'))
 		{
 			$this->_memcached->quit();
 		}

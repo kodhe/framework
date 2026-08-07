@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kodhe\Framework\Cache\Drivers;
 
 use Kodhe\Driver\Driver as Driver;
+use Kodhe\Framework\Cache\Contracts\CacheDriverInterface;
 
 /**
  * CodeIgniter File Caching Class
@@ -15,7 +16,7 @@ use Kodhe\Driver\Driver as Driver;
  * @author		EllisLab Dev Team
  * @link
  */
-class File extends Driver 
+class File extends Driver implements CacheDriverInterface
 {
 
 	/**
@@ -28,16 +29,18 @@ class File extends Driver
 	/**
 	 * Initialize file-based cache
 	 *
+	 * @param	array	$config	Optional configuration array
 	 * @return	void
 	 */
-	public function __construct()
+	public function __construct(array $config = [])
 	{
 		$CI = app();
 		$CI->load->helper('file');
-		$path = $CI->config->item('cache_path');
+		
+		// Allow config override
+		$path = $config['cache_path'] ?? $CI->config->item('cache_path');
 		$this->_cache_path = ($path === '') ? resolve_path(STORAGEPATH, 'cache').'/' : $path;
 		file_exists($this->_cache_path) OR mkdir($this->_cache_path, 0755, TRUE);
-
 	}
 
 	// ------------------------------------------------------------------------
@@ -155,28 +158,15 @@ class File extends Driver
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Clean the Cache
+	 * Is supported
 	 *
-	 * @return	bool	false on failure/true on success
+	 * In the file driver, check to see that the cache directory is indeed writable
+	 *
+	 * @return	bool
 	 */
-	public function clean()
+	public function isSupported(): bool
 	{
-		return delete_files($this->_cache_path, FALSE, TRUE);
-	}
-
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Cache Info
-	 *
-	 * Not supported by file-based caching
-	 *
-	 * @param	string	user/filehits
-	 * @return	mixed	FALSE
-	 */
-	public function cache_info($type = NULL)
-	{
-		return get_dir_file_info($this->_cache_path);
+		return is_really_writable($this->_cache_path);
 	}
 
 	// ------------------------------------------------------------------------
@@ -187,7 +177,7 @@ class File extends Driver
 	 * @param	mixed	key to get cache metadata on
 	 * @return	mixed	FALSE on failure, array on success.
 	 */
-	public function get_metadata($id)
+	public function getMetadata(string $id)
 	{
 		if ( ! is_file($this->_cache_path.$id))
 		{
@@ -217,15 +207,28 @@ class File extends Driver
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Is supported
+	 * Cache Info
 	 *
-	 * In the file driver, check to see that the cache directory is indeed writable
+	 * Not supported by file-based caching
 	 *
-	 * @return	bool
+	 * @param	string	user/filehits
+	 * @return	mixed	FALSE
 	 */
-	public function is_supported()
+	public function cacheInfo(?string $type = null)
 	{
-		return is_really_writable($this->_cache_path);
+		return get_dir_file_info($this->_cache_path);
+	}
+
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Clean the Cache
+	 *
+	 * @return	bool	false on failure/true on success
+	 */
+	public function clean(): bool
+	{
+		return delete_files($this->_cache_path, FALSE, TRUE);
 	}
 
 	// ------------------------------------------------------------------------
@@ -255,5 +258,4 @@ class File extends Driver
 
 		return $data;
 	}
-
 }

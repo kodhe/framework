@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kodhe\Framework\Cache\Drivers;
 
 use Kodhe\Driver\Driver as Driver;
+use Kodhe\Framework\Cache\Contracts\CacheDriverInterface;
 
 /**
  * CodeIgniter Dummy Caching Class
@@ -15,7 +16,7 @@ use Kodhe\Driver\Driver as Driver;
  * @author		EllisLab Dev Team
  * @link
  */
-class Dummy extends Driver 
+class Dummy extends Driver implements CacheDriverInterface
 {
 
 	/**
@@ -95,7 +96,7 @@ class Dummy extends Driver
 	 *
 	 * @return	bool	TRUE, simulating success
 	 */
-	public function clean()
+	public function clean(): bool
 	{
 		return TRUE;
 	}
@@ -108,7 +109,7 @@ class Dummy extends Driver
 	 * @param	string	user/filehits
 	 * @return	bool	FALSE
 	 */
-	 public function cache_info($type = NULL)
+	 public function cacheInfo(?string $type = NULL)
 	 {
 		 return FALSE;
 	 }
@@ -121,7 +122,7 @@ class Dummy extends Driver
 	 * @param	mixed	key to get cache metadata on
 	 * @return	bool	FALSE
 	 */
-	public function get_metadata($id)
+	public function getMetadata(string $id)
 	{
 		return FALSE;
 	}
@@ -134,7 +135,7 @@ class Dummy extends Driver
 	 *
 	 * @return	bool	TRUE
 	 */
-	public function is_supported()
+	public function isSupported(): bool
 	{
 		return TRUE;
 	}
