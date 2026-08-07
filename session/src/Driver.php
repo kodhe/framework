@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Kodhe\Framework\Session;
 
+use Kodhe\Framework\Session\Contracts\SessionHandlerInterface;
+
 /**
  * CodeIgniter Session Driver Class
  *
@@ -13,7 +15,7 @@ namespace Kodhe\Framework\Session;
  * @author	Andrey Andreev
  * @link	https://codeigniter.com/user_guide/libraries/sessions.html
  */
-abstract class Driver implements \SessionHandlerInterface {
+abstract class Driver implements SessionHandlerInterface {
 
 	protected $_config;
 
