@@ -1,0 +1,14 @@
+{
+    "name": "kodhe/typography",
+    "description": "Modular Typography library for CodeIgniter 3",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Kodhe\\Typography\\": ""
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.0"
+    }
+}
