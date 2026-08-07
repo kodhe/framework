@@ -77,7 +77,7 @@ class ViewFactory
         $data = array_merge($this->sharedData, $data);
         $context->setData($data);
 
-        return new View($name, $viewEngine, $context);
+        return new View($name, $viewEngine, $data);
     }
 
     /**
