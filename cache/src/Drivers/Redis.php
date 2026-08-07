@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kodhe\Framework\Cache\Drivers;
 
 use Kodhe\Driver\Driver as Driver;
+use Kodhe\Framework\Cache\Contracts\CacheDriverInterface;
 
 /**
  * CodeIgniter Redis Caching Class
@@ -15,7 +16,7 @@ use Kodhe\Driver\Driver as Driver;
  * @author	   Anton Lindqvist <anton@qvister.se>
  * @link
  */
-class Redis extends Driver
+class Redis extends Driver implements CacheDriverInterface
 {
 	/**
 	 * Default config
@@ -62,12 +63,13 @@ class Redis extends Driver
 	 * Loads Redis config file if present. Will halt execution
 	 * if a Redis connection can't be established.
 	 *
+	 * @param	array	$config	Optional configuration array
 	 * @return	void
 	 * @see		Redis::connect()
 	 */
-	public function __construct()
+	public function __construct(array $config = [])
 	{
-		if ( ! $this->is_supported())
+		if ( ! $this->isSupported())
 		{
 			log_message('error', 'Cache: Failed to create Redis object; extension not loaded?');
 			return;
@@ -79,16 +81,15 @@ class Redis extends Driver
 
 		$CI = kodhe();
 
+		// Merge default config with provided config
+		$config = array_merge(self::$_default_config, $config);
+		
 		if (kodhe()->config->load('redis', TRUE, TRUE))
 		{
-			$config = array_merge(self::$_default_config, kodhe()->config->item('redis'));
-		}
-		else
-		{
-			$config = self::$_default_config;
+			$config = array_merge($config, kodhe()->config->item('redis'));
 		}
 
-		$this->_redis = new Redis();
+		$this->_redis = new \Redis();
 
 		try
 		{
@@ -111,7 +112,7 @@ class Redis extends Driver
 				log_message('error', 'Cache: Redis authentication failed.');
 			}
 		}
-		catch (RedisException $e)
+		catch (\RedisException $e)
 		{
 			log_message('error', 'Cache: Redis connection refused ('.$e->getMessage().')');
 		}
@@ -275,9 +276,61 @@ class Redis extends Driver
 	 *
 	 * @return	bool
 	 */
-	public function is_supported()
+	public function isSupported(): bool
 	{
 		return extension_loaded('redis');
+	}
+
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Get cache metadata
+	 *
+	 * @param	string	$key	Cache key
+	 * @return	array
+	 */
+	public function getMetadata(string $key)
+	{
+		$value = $this->get($key);
+
+		if ($value !== FALSE)
+		{
+			return array(
+				'expire' => time() + $this->_redis->ttl($key),
+				'data' => $value
+			);
+		}
+
+		return FALSE;
+	}
+
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Clean cache
+	 *
+	 * @return	bool
+	 * @see		Redis::flushDB()
+	 */
+	public function clean(): bool
+	{
+		return $this->_redis->flushDB();
+	}
+
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Get cache driver info
+	 *
+	 * @param	string	$type	Not supported in Redis.
+	 * 			Only included in order to offer a
+	 * 			consistent cache API.
+	 * @return	array
+	 * @see		Redis::info()
+	 */
+	public function cacheInfo(?string $type = NULL)
+	{
+		return $this->_redis->info();
 	}
 
 	// ------------------------------------------------------------------------
