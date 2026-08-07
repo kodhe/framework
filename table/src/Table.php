@@ -146,7 +146,7 @@ class Table implements TableInterface
 	 * @param	array	$template
 	 * @return	bool
 	 */
-	public function set_template($template)
+	public function set_template($template): bool
 	{
 		if (!is_array($template)) {
 			return FALSE;
@@ -166,7 +166,7 @@ class Table implements TableInterface
 	 * @param	mixed
 	 * @return	Table
 	 */
-	public function set_heading($args = array())
+	public function set_heading($args = array()): self
 	{
 		$this->heading = $this->_prep_args(func_get_args());
 		return $this;
@@ -211,7 +211,7 @@ class Table implements TableInterface
 	 * @param	mixed	$value
 	 * @return	Table
 	 */
-	public function set_empty($value)
+	public function set_empty($value): self
 	{
 		$this->empty_cells = $value;
 		return $this;
@@ -227,7 +227,7 @@ class Table implements TableInterface
 	 * @param	mixed
 	 * @return	Table
 	 */
-	public function add_row($args = array())
+	public function add_row($args = array()): self
 	{
 		$this->rows[] = $this->_prep_args(func_get_args());
 		return $this;
@@ -256,7 +256,7 @@ class Table implements TableInterface
 	 * @param	string	$caption
 	 * @return	Table
 	 */
-	public function set_caption($caption)
+	public function set_caption($caption): self
 	{
 		$this->caption = $caption;
 		return $this;
@@ -319,7 +319,7 @@ class Table implements TableInterface
 	 *
 	 * @return	Table
 	 */
-	public function clear()
+	public function clear(): self
 	{
 		$this->rows = array();
 		$this->heading = array();
