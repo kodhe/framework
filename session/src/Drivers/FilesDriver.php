@@ -16,7 +16,7 @@ use Kodhe\Framework\Session\HandlerInterface;
  * @author	Andrey Andreev
  * @link	https://codeigniter.com/user_guide/libraries/sessions.html
  */
-class Files extends Driver implements HandlerInterface
+class FilesDriver extends Driver implements SessionHandlerInterface
 {
     /**
      * Save path
