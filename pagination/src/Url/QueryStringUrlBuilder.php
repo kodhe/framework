@@ -6,49 +6,70 @@ namespace Kodhe\Pagination\Url;
 
 use Kodhe\Pagination\Contracts\UrlBuilderInterface;
 
-/**
- * Query String URL Builder
- * 
- * Builds URLs using query strings for pagination
- */
 class QueryStringUrlBuilder implements UrlBuilderInterface
 {
-    private string $baseUrl = '';
-    private string $queryStringSegment = 'per_page';
-    private bool $reuseQueryString = false;
-    private array $queryParams = [];
-    
-    public function build(string $baseUrl, $page, array $queryParams = []): string
-    {
-        $separator = (strpos($baseUrl, '?') === false) ? '?' : '&';
-        
-        $params = array_merge($queryParams, [$this->queryStringSegment => $page]);
-        
-        return $baseUrl . $separator . http_build_query($params);
+    /**
+     * @var array<string, mixed>
+     */
+    protected array $config = [];
+
+    /**
+     * Build a query-string pagination URL.
+     */
+    public function build(
+        string $baseUrl,
+        $page,
+        array $queryParams = []
+    ): string {
+        $baseUrl = rtrim($baseUrl, '/');
+
+        $segment = (string) (
+            $this->config['query_string_segment']
+            ?? 'per_page'
+        );
+
+        $params = $queryParams;
+
+        $params[$segment] = (int) $page;
+
+        $query = http_build_query(
+            $params,
+            '',
+            '&',
+            PHP_QUERY_RFC3986
+        );
+
+        return $baseUrl . '?' . $query;
     }
-    
-    public function getCurrentPage(string $segment, bool $usePageNumbers): int
-    {
-        // Default implementation returns 0
-        // Concrete implementations should integrate with framework
-        return 0;
+
+    /**
+     * Get current page.
+     */
+    public function getCurrentPage(
+        string $segment,
+        bool $usePageNumbers
+    ): int {
+        $page = isset($_GET[$segment])
+            ? (int) $_GET[$segment]
+            : 0;
+
+        if ($usePageNumbers) {
+            return max(1, $page);
+        }
+
+        return max(0, $page);
     }
-    
+
+    /**
+     * Set configuration.
+     *
+     * @param array<string, mixed> $config
+     */
     public function setConfig(array $config): void
     {
-        $this->baseUrl = $config['base_url'] ?? $this->baseUrl;
-        $this->queryStringSegment = $config['query_string_segment'] ?? $this->queryStringSegment;
-        $this->reuseQueryString = $config['reuse_query_string'] ?? $this->reuseQueryString;
-        $this->queryParams = $config['query_params'] ?? $this->queryParams;
-    }
-    
-    public function setQueryStringSegment(string $segment): void
-    {
-        $this->queryStringSegment = $segment;
-    }
-    
-    public function setQueryParams(array $params): void
-    {
-        $this->queryParams = $params;
+        $this->config = array_merge(
+            $this->config,
+            $config
+        );
     }
 }
