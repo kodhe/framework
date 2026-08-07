@@ -9,14 +9,7 @@ vendor/
 *.a
 *.dll
 *.exe
-*.pyc
-__pycache__/
-*.class
-
-# Build directories
-build/
-dist/
-target/
+*.out
 
 # Logs and temp files
 *.log
@@ -31,33 +24,17 @@ target/
 # Editors
 .vscode/
 .idea/
+*.swp
+*.swo
 
-# Coverage
-coverage/
-htmlcov/
+# PHP specific
+*.php~
+phpunit.xml.dist
 .coverage
+coverage/
+.php_cs.cache
 
-# Compression
-*.zip
-*.gz
-*.tar
-*.tgz
-*.bz2
-*.xz
-*.7z
-*.rar
-*.zst
-*.lz4
-*.lzh
-*.cab
-*.arj
-*.rpm
-*.deb
-*.Z
-*.lz
-*.lzo
-*.tar.gz
-*.tar.bz2
-*.tar.xz
-*.tar.zst
+# Composer (PHP dependency manager)
+composer.lock
+vendor/
 ```
