@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kodhe\Framework\Cache\Drivers;
 
 use Kodhe\Driver\Driver as Driver;
+use Kodhe\Framework\Cache\Contracts\CacheDriverInterface;
 
 /**
  * CodeIgniter Wincache Caching Class
@@ -18,7 +19,7 @@ use Kodhe\Driver\Driver as Driver;
  * @author		Mike Murkovic
  * @link
  */
-class Wincache extends Driver 
+class Wincache extends Driver implements CacheDriverInterface
 {
 
 	/**
@@ -27,11 +28,12 @@ class Wincache extends Driver
 	 * Only present so that an error message is logged
 	 * if APC is not available.
 	 *
+	 * @param	array	$config	Optional configuration array
 	 * @return	void
 	 */
-	public function __construct()
+	public function __construct(array $config = [])
 	{
-		if ( ! $this->is_supported())
+		if ( ! $this->isSupported())
 		{
 			log_message('error', 'Cache: Failed to initialize Wincache; extension not loaded/enabled?');
 		}
@@ -127,7 +129,7 @@ class Wincache extends Driver
 	 *
 	 * @return	bool	false on failure/true on success
 	 */
-	public function clean()
+	public function clean(): bool
 	{
 		return wincache_ucache_clear();
 	}
@@ -139,7 +141,7 @@ class Wincache extends Driver
 	 *
 	 * @return	mixed	array on success, false on failure
 	 */
-	 public function cache_info()
+	 public function cacheInfo()
 	 {
 		 return wincache_ucache_info(TRUE);
 	 }
@@ -152,7 +154,7 @@ class Wincache extends Driver
 	 * @param	mixed	key to get cache metadata on
 	 * @return	mixed	array on success/false on failure
 	 */
-	public function get_metadata($id)
+	public function getMetadata(string $id)
 	{
 		if ($stored = wincache_ucache_info(FALSE, $id))
 		{
@@ -180,7 +182,7 @@ class Wincache extends Driver
 	 *
 	 * @return	bool
 	 */
-	public function is_supported()
+	public function isSupported(): bool
 	{
 		return (extension_loaded('wincache') && ini_get('wincache.ucenabled'));
 	}
