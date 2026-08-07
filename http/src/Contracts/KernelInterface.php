@@ -2,82 +2,85 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Http\Contracts;
+namespace CodeIgniter\Http\Contracts;
 
-use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
 /**
- * Interface KernelInterface
- * 
- * HTTP Kernel for handling requests
+ * Kernel Interface
  */
 interface KernelInterface
 {
     /**
-     * Handle an incoming request
+     * Handle an incoming HTTP request
      */
-    public function handle(RequestInterface $request): ResponseInterface;
+    public function handle(ServerRequestInterface $request): ResponseInterface;
 
     /**
      * Bootstrap the kernel
      */
-    public function bootstrap(): self;
+    public function bootstrap(): void;
 
     /**
-     * Terminate the kernel
+     * Terminate the kernel after response is sent
      */
-    public function terminate(RequestInterface $request, ResponseInterface $response): void;
+    public function terminate(ServerRequestInterface $request, ResponseInterface $response): void;
 
     /**
      * Get the application instance
      */
-    public function getApplication();
+    public function getApplication(): object;
 
     /**
      * Set the application instance
      */
-    public function setApplication($app): self;
+    public function setApplication(object $app): self;
 
     /**
-     * Get the request
+     * Register a service provider
      */
-    public function getRequest(): RequestInterface;
+    public function registerServiceProvider(string $provider): self;
 
     /**
-     * Set the request
+     * Get registered middleware groups
      */
-    public function setRequest(RequestInterface $request): self;
+    public function getMiddlewareGroups(): array;
 
     /**
-     * Get the response
-     */
-    public function getResponse(): ResponseInterface;
-
-    /**
-     * Set the response
-     */
-    public function setResponse(ResponseInterface $response): self;
-
-    /**
-     * Register middleware
-     */
-    public function registerMiddleware(array $middleware): self;
-
-    /**
-     * Get global middleware
+     * Get global middleware stack
      */
     public function getGlobalMiddleware(): array;
 
     /**
-     * Get route middleware groups
+     * Add global middleware
      */
-    public function getRouteMiddlewareGroups(): array;
+    public function addGlobalMiddleware($middleware): self;
 
     /**
-     * Check if kernel is bootstrapped
+     * Prepend global middleware
      */
-    public function isBootstrapped(): bool;
+    public function prependGlobalMiddleware($middleware): self;
+
+    /**
+     * Get route middleware
+     */
+    public function getRouteMiddleware(): array;
+
+    /**
+     * Register route middleware
+     */
+    public function registerRouteMiddleware(string $alias, string $middleware): self;
+
+    /**
+     * Check if kernel is booted
+     */
+    public function isBooted(): bool;
+
+    /**
+     * Get boot time
+     */
+    public function getBootTime(): ?float;
 
     /**
      * Load configuration
@@ -88,4 +91,24 @@ interface KernelInterface
      * Get configuration value
      */
     public function getConfig(string $key, $default = null);
+
+    /**
+     * Set configuration value
+     */
+    public function setConfig(string $key, $value): self;
+
+    /**
+     * Get all configuration
+     */
+    public function getAllConfig(): array;
+
+    /**
+     * Handle exception during request processing
+     */
+    public function handleException(\Throwable $e, ServerRequestInterface $request): ResponseInterface;
+
+    /**
+     * Shutdown the kernel
+     */
+    public function shutdown(): void;
 }

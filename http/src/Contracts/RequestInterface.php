@@ -2,22 +2,32 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Http\Contracts;
+namespace CodeIgniter\Http\Contracts;
 
-use Psr\Http\Message\RequestInterface as PsrRequestInterface;
-use Psr\Http\Message\UriInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\UploadedFileInterface;
 
 /**
- * Interface RequestInterface
+ * Request Interface
  * 
- * Extended PSR-7 RequestInterface with CodeIgniter 3 compatibility
+ * Represents an HTTP request, compatible with PSR-7
  */
-interface RequestInterface extends PsrRequestInterface
+interface RequestInterface extends ServerRequestInterface
 {
+    /**
+     * Get the request method (GET, POST, PUT, DELETE, etc.)
+     */
+    public function getMethod(): string;
+
+    /**
+     * Set the request method
+     */
+    public function setMethod(string $method): self;
+
     /**
      * Get the request URI
      */
-    public function getUri(): UriInterface;
+    public function getUri(): \Psr\Http\Message\UriInterface;
 
     /**
      * Get all headers
@@ -25,39 +35,59 @@ interface RequestInterface extends PsrRequestInterface
     public function getHeaders(): array;
 
     /**
+     * Get a specific header value
+     */
+    public function getHeader(string $name): array;
+
+    /**
+     * Get a single header value as string
+     */
+    public function getHeaderLine(string $name): string;
+
+    /**
      * Check if header exists
      */
     public function hasHeader(string $name): bool;
 
     /**
-     * Get a specific header
+     * Get all query parameters ($_GET)
      */
-    public function getHeader(string $name): array;
+    public function getQueryParams(): array;
 
     /**
-     * Get header line
+     * Get a specific query parameter
      */
-    public function getHeaderLine(string $name): string;
+    public function getQueryParam(string $key, $default = null);
 
     /**
-     * Get request method
+     * Get all parsed body parameters ($_POST)
      */
-    public function getMethod(): string;
+    public function getParsedBody(): array;
 
     /**
-     * Get request body
+     * Get a specific post parameter
      */
-    public function getBody();
+    public function getPostField(string $key, $default = null);
 
     /**
-     * Get protocol version
+     * Get all cookies
      */
-    public function getProtocolVersion(): string;
+    public function getCookieParams(): array;
 
     /**
-     * Get IP address
+     * Get a specific cookie value
      */
-    public function ipAddress(): ?string;
+    public function getCookie(string $key, $default = null);
+
+    /**
+     * Get uploaded files
+     */
+    public function getUploadedFiles(): array;
+
+    /**
+     * Get a specific uploaded file
+     */
+    public function getFile(string $key): ?UploadedFileInterface;
 
     /**
      * Check if request is AJAX
@@ -70,112 +100,62 @@ interface RequestInterface extends PsrRequestInterface
     public function isSecure(): bool;
 
     /**
+     * Get client IP address
+     */
+    public function getClientIp(): ?string;
+
+    /**
      * Get user agent
      */
-    public function userAgent(): ?string;
+    public function getUserAgent(): ?string;
 
     /**
-     * Get valid IP address
+     * Get the request content type
      */
-    public function getValidIp(): ?string;
+    public function getContentType(): ?string;
 
     /**
-     * Set IP address
-     */
-    public function setIpAddress(?string $ip): self;
-
-    /**
-     * Get request data (GET, POST, etc.)
-     */
-    public function getData(?string $key = null, $default = null);
-
-    /**
-     * Get GET data
-     */
-    public function getGet(?string $key = null, $default = null);
-
-    /**
-     * Get POST data
-     */
-    public function getPost(?string $key = null, $default = null);
-
-    /**
-     * Get cookie data
-     */
-    public function getCookie(?string $key = null, $default = null);
-
-    /**
-     * Get server data
-     */
-    public function getServer(?string $key = null, $default = null);
-
-    /**
-     * Check if method is POST
-     */
-    public function isPost(): bool;
-
-    /**
-     * Check if method is GET
-     */
-    public function isGet(): bool;
-
-    /**
-     * Check if method is PUT
-     */
-    public function isPut(): bool;
-
-    /**
-     * Check if method is DELETE
-     */
-    public function isDelete(): bool;
-
-    /**
-     * Check if method is PATCH
-     */
-    public function isPatch(): bool;
-
-    /**
-     * Check if method is HEAD
-     */
-    public function isHead(): bool;
-
-    /**
-     * Check if method is OPTIONS
-     */
-    public function isOptions(): bool;
-
-    /**
-     * Check if request expects JSON
+     * Check if request expects JSON response
      */
     public function wantsJson(): bool;
 
     /**
-     * Check if request accepts JSON
+     * Get session data
      */
-    public function acceptsJson(): bool;
+    public function getSessionData(string $key, $default = null);
 
     /**
-     * Get segment from URI
+     * Get old input (for form validation)
      */
-    public function getSegment(int $index, $default = '');
+    public function getOldInput(string $key = null, $default = null);
 
     /**
-     * Get all segments
+     * Get all input data (query + post)
      */
-    public function getSegments(): array;
+    public function getAllInput(): array;
 
     /**
-     * Get total segments
+     * Get only specified keys from input
      */
-    public function getTotalSegments(): int;
+    public function only(array $keys): array;
 
     /**
-     * Get referrer URL
+     * Get input except specified keys
      */
-    public function getReferrer(): ?string;
+    public function except(array $keys): array;
 
     /**
-     * Get client IP with proxy support
+     * Check if input key exists
      */
-    public function getClientIp(): ?string;
+    public function hasInput(string $key): bool;
+
+    /**
+     * Validate input against rules
+     */
+    public function validate(array $rules): bool;
+
+    /**
+     * Get validation errors
+     */
+    public function validationErrors(): array;
 }

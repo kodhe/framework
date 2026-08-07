@@ -1,210 +1,174 @@
 <?php
 
-/**
- * URL Helper Functions
- * 
- * Provides helper functions for URL generation and manipulation
- */
-
-use Kodhe\Framework\Http\Http\Uri;
-use Kodhe\Framework\Http\Http\Request;
-use Kodhe\Framework\Http\Http\Response;
-use Kodhe\Framework\Http\Http\RedirectResponse;
-use Kodhe\Framework\Http\Http\JsonResponse;
+declare(strict_types=1);
 
 if (!function_exists('site_url')) {
-    /**
-     * Generate a site URL
-     */
     function site_url(string $uri = '', ?string $protocol = null): string
     {
-        $base = base_url();
+        $baseUrl = rtrim(base_url(), '/');
+        $uri = ltrim($uri, '/');
         
         if ($uri !== '') {
-            $uri = ltrim($uri, '/');
-            $base .= $uri;
+            return $baseUrl . '/' . $uri;
         }
         
-        return $base;
+        return $baseUrl;
     }
 }
 
 if (!function_exists('base_url')) {
-    /**
-     * Get the base URL
-     */
-    function base_url(?string $protocol = null): string
+    function base_url(?string $uri = ''): string
     {
-        $isSecure = (
-            (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ||
-            (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') ||
-            (isset($_SERVER['REQUEST_SCHEME']) && $_SERVER['REQUEST_SCHEME'] === 'https')
-        );
+        static $baseUrl;
         
-        $scheme = $protocol ?? ($isSecure ? 'https' : 'http');
-        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        if ($baseUrl === null) {
+            $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http';
+            $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+            $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
+            
+            $basePath = dirname($scriptName);
+            if ($basePath === '/' || $basePath === '\\') {
+                $basePath = '';
+            }
+            
+            $baseUrl = $protocol . '://' . $host . $basePath;
+        }
         
-        return "{$scheme}://{$host}/";
-    }
-}
-
-if (!function_exists('current_url')) {
-    /**
-     * Get the current URL
-     */
-    function current_url(bool $returnObject = false)
-    {
-        $uri = new Uri(
-            (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') .
-            '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') .
-            ($_SERVER['REQUEST_URI'] ?? '/')
-        );
-        
-        return $returnObject ? $uri : (string) $uri;
-    }
-}
-
-if (!function_exists('previous_url')) {
-    /**
-     * Get the previous URL (referrer)
-     */
-    function previous_url(): ?string
-    {
-        return $_SERVER['HTTP_REFERER'] ?? null;
+        return $baseUrl . ($uri ? '/' . ltrim($uri, '/') : '');
     }
 }
 
 if (!function_exists('redirect')) {
-    /**
-     * Redirect to a URL
-     */
-    function redirect(string $uri = '', int $status = 302): RedirectResponse
+    function redirect(string $uri = '', int $status = 302): void
     {
         if ($uri === '') {
             $uri = site_url();
+        } elseif (strpos($uri, '://') === false) {
+            $uri = site_url($uri);
         }
         
-        return new RedirectResponse(site_url($uri), $status);
+        header('Location: ' . $uri, true, $status);
+        exit;
     }
 }
 
-if (!function_exists('response')) {
-    /**
-     * Create a response
-     */
-    function response(string $body = '', int $status = 200, array $headers = []): Response
+if (!function_exists('current_url')) {
+    function current_url(bool $returnObject = false)
     {
-        return new Response($status, $headers, $body);
-    }
-}
-
-if (!function_exists('json_response')) {
-    /**
-     * Create a JSON response
-     */
-    function json_response($data, int $status = 200, array $headers = []): JsonResponse
-    {
-        return new JsonResponse($data, $status, $headers);
-    }
-}
-
-if (!function_exists('request')) {
-    /**
-     * Get the current request or create a new one
-     */
-    function request(?array $server = null, ?array $get = null, ?array $post = null, ?array $cookie = null): Request
-    {
-        return Request::createFromGlobals(
-            $server ?? $_SERVER,
-            $get ?? $_GET,
-            $post ?? $_POST,
-            $cookie ?? $_COOKIE
-        );
-    }
-}
-
-if (!function_exists('uri_string')) {
-    /**
-     * Get the URI string
-     */
-    function uri_string(): string
-    {
-        return $_SERVER['REQUEST_URI'] ?? '/';
-    }
-}
-
-if (!function_exists('index_page')) {
-    /**
-     * Get the index page
-     */
-    function index_page(): string
-    {
-        return ''; // Typically empty in modern setups
+        $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        $uri = $_SERVER['REQUEST_URI'] ?? '/';
+        
+        $url = $protocol . '://' . $host . $uri;
+        
+        if ($returnObject) {
+            return new \CodeIgniter\Http\Http\Uri(
+                $protocol,
+                explode(':', $host)[0],
+                strpos($host, ':') !== false ? (int)explode(':', $host)[1] : null,
+                parse_url($uri, PHP_URL_PATH) ?: '/',
+                parse_url($uri, PHP_URL_QUERY) ?: ''
+            );
+        }
+        
+        return $url;
     }
 }
 
 if (!function_exists('anchor')) {
-    /**
-     * Create an anchor link
-     */
-    function anchor(
-        string $uri = '',
-        string $title = '',
-        array $attributes = [],
-        ?string $protocol = null
-    ): string {
-        $url = site_url($uri, $protocol);
-        $title = $title ?: $url;
+    function anchor(string $uri = '', string $title = '', array $attributes = []): string
+    {
+        $url = site_url($uri);
+        
+        if ($title === '') {
+            $title = $url;
+        }
         
         $attrString = '';
         foreach ($attributes as $key => $value) {
-            $attrString .= " {$key}=\"{$value}\"";
+            $attrString .= ' ' . $key . '="' . htmlspecialchars($value, ENT_QUOTES, 'UTF-8') . '"';
         }
         
-        return "<a href=\"{$url}\"{$attrString}>{$title}</a>";
+        return '<a href="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '"' . $attrString . '>' . $title . '</a>';
     }
 }
 
-if (!function_exists('safe_mailto')) {
-    /**
-     * Create a safe mailto link
-     */
-    function safe_mailto(
-        string $email,
-        string $title = '',
-        array $attributes = []
-    ): string {
-        $title = $title ?: $email;
-        
-        $attrString = '';
-        foreach ($attributes as $key => $value) {
-            $attrString .= " {$key}=\"{$value}\"";
-        }
-        
-        // Simple obfuscation
-        $obfuscated = str_replace('@', ' [at] ', $email);
-        
-        return "<a href=\"mailto:{$email}\"{$attrString}>{$obfuscated}</a>";
+if (!function_exists('safe_anchor')) {
+    function safe_anchor(string $uri = '', string $title = '', array $attributes = []): string
+    {
+        return anchor($uri, $title, $attributes);
     }
 }
 
 if (!function_exists('popup_anchor')) {
-    /**
-     * Create a popup anchor link
-     */
-    function popup_anchor(
-        string $uri = '',
-        string $title = '',
-        array $attributes = []
-    ): string {
-        $url = site_url($uri);
-        $title = $title ?: $url;
+    function popup_anchor(string $uri = '', string $title = '', array $attributes = []): string
+    {
+        $defaultAttributes = [
+            'onclick' => "window.open(this.href, '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes'); return false;"
+        ];
         
-        $width = $attributes['width'] ?? 800;
-        $height = $attributes['height'] ?? 600;
+        $mergedAttributes = array_merge($defaultAttributes, $attributes);
         
-        $js = "window.open(this.href, '_blank', 'width={$width},height={$height}'); return false;";
+        return anchor($uri, $title, $mergedAttributes);
+    }
+}
+
+if (!function_exists('mailto')) {
+    function mailto(string $email, string $title = '', array $attributes = []): string
+    {
+        if ($title === '') {
+            $title = $email;
+        }
         
-        return "<a href=\"{$url}\" onclick=\"{$js}\">{$title}</a>";
+        $attrString = '';
+        foreach ($attributes as $key => $value) {
+            $attrString .= ' ' . $key . '="' . htmlspecialchars($value, ENT_QUOTES, 'UTF-8') . '"';
+        }
+        
+        return '<a href="mailto:' . htmlspecialchars($email, ENT_QUOTES, 'UTF-8') . '"' . $attrString . '>' . $title . '</a>';
+    }
+}
+
+if (!function_exists('safe_mailto')) {
+    function safe_mailto(string $email, string $title = '', array $attributes = []): string
+    {
+        return mailto($email, $title, $attributes);
+    }
+}
+
+if (!function_exists('auto_link')) {
+    function auto_link(string $str, string $type = 'both', bool $popup = false): string
+    {
+        if ($type !== 'none') {
+            if ($type === 'both' || $type === 'url') {
+                $str = preg_replace_callback(
+                    '#(\w+://[^\s<]+)#i',
+                    function ($matches) use ($popup) {
+                        $url = $matches[1];
+                        $display = strlen($url) > 50 ? substr($url, 0, 47) . '...' : $url;
+                        
+                        if ($popup) {
+                            return '<a href="' . $url . '" target="_blank" rel="noopener">' . $display . '</a>';
+                        }
+                        
+                        return '<a href="' . $url . '">' . $display . '</a>';
+                    },
+                    $str
+                );
+            }
+            
+            if ($type === 'both' || $type === 'email') {
+                $str = preg_replace_callback(
+                    '#([\w\.\-]+@[\w\.\-]+\.[a-zA-Z]{2,6})#',
+                    function ($matches) {
+                        $email = $matches[1];
+                        return '<a href="mailto:' . $email . '">' . $email . '</a>';
+                    },
+                    $str
+                );
+            }
+        }
+        
+        return $str;
     }
 }
