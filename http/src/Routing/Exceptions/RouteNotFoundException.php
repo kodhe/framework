@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Routing\Exceptions;
+namespace Kodhe\Framework\Http\Routing\Exceptions;
 
 /**
  * RouteNotFoundException - Exception when route is not found
