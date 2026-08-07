@@ -63,6 +63,17 @@ if (!function_exists('template')) {
         // Get CI super object for backward compatibility
         $CI =& get_instance();
         
+        // Handle backward compatibility: if $view is array, swap with $data
+        if (is_array($view)) {
+            $data = $view;
+            $view = ''; // Empty view name, will be handled by legacy mode or error
+        }
+        
+        // Ensure view name is a string
+        if (!is_string($view)) {
+            $view = (string) $view;
+        }
+        
         // Create view context with view name and data
         $context = new ViewContext($view, $data);
         
