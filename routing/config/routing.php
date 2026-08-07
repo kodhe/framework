@@ -17,8 +17,8 @@ return [
     |
     */
     'enable_modern_routing' => true,
-    'enable_legacy_routing' => true,
-    'prefer_modern' => true,
+    'enable_legacy_routing' => false,
+    'prefer_modern' => false,
 
     /*
     |--------------------------------------------------------------------------

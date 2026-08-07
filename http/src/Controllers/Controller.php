@@ -4,66 +4,117 @@ declare(strict_types=1);
 
 namespace Kodhe\Framework\Http\Controllers;
 
-use Kodhe\Framework\Http\Contracts\RequestInterface;
-use Kodhe\Framework\Http\Contracts\ResponseInterface;
+use Kodhe\Framework\Support\Facades\Facade;
 
-/**
- * Controller - Standard controller class extending BaseController
- * 
- * Compatible with CodeIgniter 3 while providing modern PSR-based architecture
- */
-class Controller extends BaseController
+class Controller
 {
+    protected static ?Facade $facade = null;
+        
     /**
-     * Execute an action
-     *
-     * @param string $method
-     * @param array $parameters
-     * @return ResponseInterface|mixed
+     * Constructor
      */
-    public function execute(string $method, array $parameters = [])
+    public function __construct()
     {
-        return $this->callAction($method, $parameters);
+        log_message('debug', "Controller Class Initialized");
+        
+        // Inisialisasi facade jika belum ada
+        if (self::$facade === null) {
+            $this->initializeFacade();
+        }
+        
+        // Store controller reference
+        self::$facade->set('__legacy_controller', $this);
+        
+        // Initialize loader jika ada
+        if (self::$facade->has('load')) {
+            self::$facade->get('load')->initialize();
+        }
     }
-
+    
     /**
-     * Handle options request for CORS preflight
-     *
-     * @return ResponseInterface
+     * Initialize facade dari Application/Kernel
      */
-    public function options(): ResponseInterface
+    protected function initializeFacade(): void
     {
-        return $this->response->withStatus(204)
-            ->withHeader('Allow', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-    }
-
-    /**
-     * Get the middleware that should be applied to this controller's actions
-     *
-     * @return array
-     */
-    public function getMiddlewareForAction(string $action): array
-    {
-        $middleware = [];
-
-        foreach ($this->middleware as $mwConfig) {
-            $mw = $mwConfig['middleware'];
-            $options = $mwConfig['options'] ?? [];
-
-            // Check if middleware applies to this action
-            if (isset($options['only'])) {
-                if (in_array($action, (array) $options['only'])) {
-                    $middleware[] = $mw;
-                }
-            } elseif (isset($options['except'])) {
-                if (!in_array($action, (array) $options['except'])) {
-                    $middleware[] = $mw;
-                }
-            } else {
-                $middleware[] = $mw;
+        // Coba dapatkan dari global Application
+        if (isset($GLOBALS['CI_APP'])) {
+            $app = $GLOBALS['CI_APP'];
+            if (method_exists($app, 'getKernel')) {
+                self::$facade = $app->getKernel()->getFacade();
+                return;
             }
         }
-
-        return $middleware;
+        
+        // Coba dari global Kernel
+        if (isset($GLOBALS['CI_KERNEL'])) {
+            $kernel = $GLOBALS['CI_KERNEL'];
+            if (method_exists($kernel, 'getFacade')) {
+                self::$facade = $kernel->getFacade();
+                return;
+            }
+        }
+        
+        // Fallback ke singleton
+        self::$facade = Facade::getInstance();
+    }
+    
+    public function __get($name)
+    {
+        $facade = self::getFacade();
+        
+        // 1. Coba dari facade service
+        if ($facade->has($name)) {
+            return $facade->get($name);
+        }
+        
+        // 2. Coba dari container di facade
+        if ($facade->has('di')) {
+            $container = $facade->get('di');
+            try {
+                return $container->make($name);
+            } catch (\Exception $e) {
+                // Continue
+            }
+        }
+        
+        // 3. Coba akses sebagai property
+        if (property_exists($facade, $name)) {
+            return $facade->$name;
+        }
+        
+        // 4. Throw error dengan informasi lebih jelas
+        $availableServices = implode(', ', $facade->keys());
+        throw new \RuntimeException(
+            "Property {$name} not found in controller. " .
+            "Available services in facade: " . ($availableServices ?: 'none')
+        );
+    }
+    
+    public function __set($name, $value)
+    {
+        $facade = self::getFacade();
+        
+        // Jangan override service yang sudah ada
+        if ($facade->has($name)) {
+            log_message('debug', "Cannot override service {$name} in facade");
+            return false;
+        }
+        
+        // Set sebagai property facade
+        $facade->$name = $value;
+        return true;
+    }
+    
+    public static function setFacade(Facade $facade): void
+    {
+        self::$facade = $facade;
+    }
+    
+    public static function getFacade(): Facade
+    {
+        if (self::$facade === null) {
+            self::$facade = Facade::getInstance();
+        }
+        return self::$facade;
     }
 }

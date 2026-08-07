@@ -4,239 +4,443 @@ declare(strict_types=1);
 
 namespace Kodhe\Framework\Http\Kernel;
 
-use Kodhe\Framework\Http\Contracts\PipelineInterface;
-use Kodhe\Framework\Http\Contracts\RequestInterface;
-use Kodhe\Framework\Http\Contracts\ResponseInterface;
-use Closure;
-use Exception;
+use Kodhe\Framework\Exceptions\BaseException;
+use Kodhe\Framework\Exceptions\Http\HttpException;
+use Kodhe\Framework\Http\Middleware\MiddlewareGroup;
+use Kodhe\Framework\Http\Middleware\MiddlewareInterface;
+use Kodhe\Framework\Http\Middleware\MiddlewareRegistry;
+use Kodhe\Framework\Http\Request;
+use Kodhe\Framework\Http\Response;
+use Throwable;
 
-/**
- * Pipeline - Pass request through a stack of middleware
- * 
- * Compatible with CodeIgniter 3 while providing modern PSR-based architecture
- */
-class Pipeline implements PipelineInterface
+class Pipeline
 {
+    protected $middlewares = [];
+    protected $handler;
+    protected $request;
+    protected $response;
+    
     /**
-     * The application instance
-     *
-     * @var mixed
+     * @var MiddlewareRegistry|null
      */
-    protected $app;
-
+    protected $registry = null;
+    
     /**
-     * The object being passed through the pipeline
-     *
-     * @var mixed
+     * @var bool Whether exception handling is enabled
      */
-    protected $passable;
-
+    protected $exceptionHandling = true;
+    
     /**
-     * The array of pipes (middleware)
-     *
-     * @var array
+     * @var callable|null Custom exception handler
      */
-    protected $pipes = [];
-
-    /**
-     * The method to call on each pipe
-     *
-     * @var string
-     */
-    protected $method = 'handle';
-
-    /**
-     * Create a new pipeline instance
-     *
-     * @param mixed $app
-     */
-    public function __construct($app)
+    protected $exceptionHandler = null;
+    
+    public function __construct(Request $request = null, Response $response = null)
     {
-        $this->app = $app;
+        $this->request = $request ?: Request::fromGlobals();
+        $this->response = $response ?: new Response();
+        
+        $this->handler = function($request, $response, $params) {
+            log_message('debug', 'Default pipeline handler called');
+            return $response;
+        };
     }
-
+    
     /**
-     * Set the object being sent through the pipeline
-     *
-     * @param mixed $passable
-     * @return $this
+     * Pipe middleware (bisa string, array, atau object)
      */
-    public function send($passable): self
+    public function pipe($middleware)
     {
-        $this->passable = $passable;
-
+        $this->middlewares[] = $middleware;
+        log_message('debug', 'Middleware added to pipeline: ' . $this->getMiddlewareDescription($middleware));
         return $this;
     }
-
+    
     /**
-     * Set the array of pipes
-     *
-     * @param array|mixed $pipes
-     * @return $this
+     * Pipe multiple middlewares sekaligus
      */
-    public function through($pipes): self
+    public function pipeMany(array $middlewares)
     {
-        if (is_array($pipes)) {
-            $this->pipes = $pipes;
-        } else {
-            $this->pipes[] = $pipes;
+        foreach ($middlewares as $middleware) {
+            $this->pipe($middleware);
         }
-
         return $this;
     }
-
+    
     /**
-     * Set the method to call on the pipes
-     *
-     * @param string $method
-     * @return $this
+     * Set controller handler
      */
-    public function via(string $method): self
+    public function setHandler(callable $handler)
     {
-        $this->method = $method;
-
+        $this->handler = $handler;
+        log_message('debug', 'Pipeline handler set');
         return $this;
     }
-
+    
     /**
-     * Run the pipeline with a final destination callback
-     *
-     * @param Closure $destination
-     * @return mixed
-     * @throws Exception
+     * Enable exception handling
      */
-    public function then(Closure $destination)
+    public function enableExceptionHandling(): self
     {
-        $pipeline = array_reduce(
-            array_reverse($this->pipes),
-            [$this, 'carry'],
-            $this->prepareDestination($destination)
+        $this->exceptionHandling = true;
+        return $this;
+    }
+    
+    /**
+     * Disable exception handling
+     */
+    public function disableExceptionHandling(): self
+    {
+        $this->exceptionHandling = false;
+        return $this;
+    }
+    
+    /**
+     * Set custom exception handler
+     */
+    public function setExceptionHandler(callable $handler): self
+    {
+        $this->exceptionHandler = $handler;
+        return $this;
+    }
+    
+    /**
+     * Run pipeline
+     */
+    public function run(array $params = [])
+    {
+        log_message('debug', 'MiddlewarePipeline::run() started with ' . count($this->middlewares) . ' middlewares');
+        
+        // Debug: list semua middlewares
+        foreach ($this->middlewares as $index => $mw) {
+            log_message('debug', "Pipeline middleware [{$index}]: " . $this->getMiddlewareDescription($mw));
+        }
+        
+        if (empty($this->middlewares)) {
+            log_message('debug', 'No middlewares in pipeline, calling handler directly');
+            return call_user_func($this->handler, $this->request, $this->response, $params);
+        }
+        
+        // Build pipeline
+        $pipeline = $this->buildPipeline();
+        
+        // Execute
+        try {
+            $response = call_user_func($pipeline, $this->request, $this->response, $params);
+            
+            // Pastikan response adalah Response object
+            if (!$response instanceof Response) {
+                log_message('debug', 'Pipeline did not return Response, creating new Response');
+                $newResponse = clone $this->response;
+                
+                if ($response !== null) {
+                    if (is_array($response)) {
+                        $newResponse->setBody(json_encode($response));
+                        $newResponse->setHeader('Content-Type', 'application/json');
+                    } else {
+                        $newResponse->setBody((string)$response);
+                    }
+                }
+                
+                $response = $newResponse;
+            }
+            
+            log_message('debug', 'MiddlewarePipeline::run() completed successfully');
+            return $response;
+            
+        } catch (Throwable $e) {
+            return $this->handlePipelineException($e, $params);
+        }
+    }
+    
+    /**
+     * Handle pipeline exception
+     */
+    protected function handlePipelineException(Throwable $e, array $params): Response
+    {
+        log_message('error', 'Middleware pipeline error: ' . $e->getMessage());
+        
+        // Jika custom exception handler diset, gunakan itu
+        if ($this->exceptionHandler && is_callable($this->exceptionHandler)) {
+            try {
+                log_message('debug', 'Using custom exception handler');
+                return call_user_func($this->exceptionHandler, $e, $this->request, $this->response, $params);
+            } catch (Throwable $handlerError) {
+                log_message('error', 'Custom exception handler failed: ' . $handlerError->getMessage());
+                // Fallback ke default handler
+            }
+        }
+        
+        // Jika exception handling disabled, re-throw
+        if (!$this->exceptionHandling) {
+            log_message('debug', 'Exception handling disabled, re-throwing exception');
+            throw $e;
+        }
+        
+        // Handle exception based on type
+        if ($e instanceof BaseException) {
+            log_message('error', 'Handling BaseException: ' . $e->getLogMessage());
+            return $this->handleBaseException($e);
+        }
+        
+        if ($e instanceof HttpException) {
+            log_message('warning', 'Handling HttpException: ' . $e->getMessage());
+            return $this->handleHttpException($e);
+        }
+        
+        // Convert unknown exception to BaseException
+        log_message('error', 'Converting unknown exception to BaseException');
+        $baseException = new BaseException(
+            'Internal server error: ' . $e->getMessage(),
+            $e->getCode(),
+            $e
         );
-
-        return $pipeline($this->passable);
+        $baseException
+            ->withData([
+                'pipeline_middleware_count' => count($this->middlewares),
+                'request_method' => $this->request->method(),
+                'request_path' => $this->request->getUri()->getPath()
+            ])
+            ->withLogContext([
+                'exception_type' => get_class($e),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'pipeline_error' => true
+            ])
+            ->setLogLevel('error');
+        
+        return $this->handleBaseException($baseException);
     }
-
+    
     /**
-     * Run the pipeline with a final destination callback, but catch exceptions
-     *
-     * @param Closure $destination
-     * @return mixed
+     * Handle BaseException
      */
-    public function thenReturn(Closure $destination)
+    protected function handleBaseException(BaseException $e): Response
+    {
+        $response = clone $this->response;
+        $response->setStatus($e->getHttpStatusCode());
+        
+        // Add headers from exception
+        $headers = $e->getHeaders();
+        foreach ($headers as $name => $value) {
+            $response->setHeader($name, $value);
+        }
+        
+        // Build error response
+        $errorData = [
+            'error' => [
+                'code' => $e->getErrorCode(),
+                'message' => $e->getMessage(),
+                'status' => $e->getHttpStatusCode()
+            ]
+        ];
+        
+        // Add exception data if available
+        $exceptionData = $e->getData();
+        if (!empty($exceptionData)) {
+            $errorData['error']['data'] = $exceptionData;
+        }
+        
+        // Add debug info if in debug mode
+        if (defined('ENVIRONMENT') && ENVIRONMENT !== 'production') {
+            $errorData['debug'] = [
+                'exception' => get_class($e),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTrace()
+            ];
+            
+            // Add previous exception if exists
+            $previous = $e->getPrevious();
+            if ($previous) {
+                $errorData['debug']['previous'] = [
+                    'exception' => get_class($previous),
+                    'message' => $previous->getMessage(),
+                    'file' => $previous->getFile(),
+                    'line' => $previous->getLine()
+                ];
+            }
+        }
+        
+        $response->json($errorData);
+        return $response;
+    }
+    
+    /**
+     * Handle HttpException
+     */
+    protected function handleHttpException(HttpException $e): Response
+    {
+        $response = clone $this->response;
+        $response->setStatus($e->getHttpStatusCode());
+        
+        // Add headers from exception
+        $headers = $e->getHeaders();
+        foreach ($headers as $name => $value) {
+            $response->setHeader($name, $value);
+        }
+        
+        // Build error response
+        $errorData = [
+            'error' => [
+                'code' => $e->getErrorCode(),
+                'message' => $e->getMessage(),
+                'status' => $e->getHttpStatusCode(),
+                'status_text' => $e->getStatusText()
+            ]
+        ];
+        
+        // Add exception data if available
+        $exceptionData = $e->getData();
+        if (!empty($exceptionData)) {
+            $errorData['error']['data'] = $exceptionData;
+        }
+        
+        $response->json($errorData);
+        return $response;
+    }
+    
+    /**
+     * Build pipeline dengan middleware resolving
+     */
+    protected function buildPipeline()
+    {
+        $pipeline = $this->handler;
+        
+        // Reverse array untuk membangun pipeline dari dalam ke luar
+        foreach (array_reverse($this->middlewares) as $index => $middleware) {
+            log_message('debug', "Building pipeline step [{$index}]: " . $this->getMiddlewareDescription($middleware));
+            
+            $resolved = $this->resolveMiddleware($middleware);
+            
+            if ($resolved instanceof MiddlewareInterface) {
+                $pipeline = function($request, $response, $params) use ($resolved, $pipeline, $index) {
+                    log_message('debug', "Executing middleware [{$index}]: " . get_class($resolved));
+                    return $resolved->handle($request, $response, $pipeline, $params);
+                };
+            } elseif (is_callable($resolved)) {
+                $pipeline = function($request, $response, $params) use ($resolved, $pipeline, $index) {
+                    log_message('debug', "Executing callable middleware [{$index}]");
+                    return call_user_func($resolved, $request, $response, $pipeline, $params);
+                };
+            } else {
+                log_message('error', 'Cannot resolve middleware at index ' . $index . ': ' . $this->getMiddlewareDescription($middleware));
+                // Lanjut tanpa middleware ini
+                continue;
+            }
+        }
+        
+        log_message('debug', 'Pipeline built successfully');
+        return $pipeline;
+    }
+    
+    /**
+     * Resolve middleware dari berbagai format
+     */
+    protected function resolveMiddleware($middleware)
     {
         try {
-            return $this->then($destination);
-        } catch (Exception $e) {
-            return $this->app->get('response')
-                ->setStatusCode(500)
-                ->setBody($e->getMessage());
+            // Gunakan registry singleton
+            $registry = $this->getRegistry();
+            $resolved = $registry->resolve($middleware);
+            
+            if ($resolved === null) {
+                log_message('error', 'Middleware registry returned null for: ' . $this->getMiddlewareDescription($middleware));
+                
+                // Jika array, coba sebagai inline group
+                if (is_array($middleware)) {
+                    log_message('debug', 'Trying to resolve array as inline group');
+                    $group = new MiddlewareGroup();
+                    foreach ($middleware as $mw) {
+                        $resolvedMw = $registry->resolve($mw);
+                        if ($resolvedMw) {
+                            $group->add($resolvedMw);
+                        }
+                    }
+                    if (!$group->isEmpty()) {
+                        return $group;
+                    }
+                }
+            } else {
+                log_message('debug', 'Successfully resolved middleware: ' . get_class($resolved));
+            }
+            
+            return $resolved;
+            
+        } catch (\Exception $e) {
+            log_message('error', 'Error resolving middleware: ' . $e->getMessage());
+            log_message('error', 'Middleware: ' . $this->getMiddlewareDescription($middleware));
+            
+            // Throw exception dengan context
+            $baseException = new BaseException(
+                'Failed to resolve middleware: ' . $e->getMessage(),
+                $e->getCode(),
+                $e
+            );
+            $baseException
+                ->withData([
+                    'middleware_description' => $this->getMiddlewareDescription($middleware),
+                    'middleware_type' => gettype($middleware)
+                ])
+                ->withLogContext([
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'middleware_resolution_error' => true
+                ])
+                ->setLogLevel('error');
+            
+            throw $baseException;
         }
     }
-
+    
     /**
-     * Prepare the destination callback
-     *
-     * @param Closure $destination
-     * @return Closure
+     * Get registry instance (singleton pattern)
      */
-    protected function prepareDestination(Closure $destination): Closure
+    protected function getRegistry()
     {
-        return function ($passable) use ($destination) {
-            try {
-                return $destination($passable);
-            } catch (Exception $e) {
-                return $this->app->get('response')
-                    ->setStatusCode(500)
-                    ->setBody($e->getMessage());
-            }
-        };
-    }
-
-    /**
-     * Get a Closure that represents a slice of the pipeline onion
-     *
-     * @param mixed $pipe
-     * @return Closure
-     */
-    protected function carry($stack, $pipe): Closure
-    {
-        return function ($passable) use ($stack, $pipe) {
-            try {
-                // Resolve the pipe
-                $resolvedPipe = $this->resolvePipe($pipe);
-
-                // Call the pipe's handle method
-                if (is_callable($resolvedPipe)) {
-                    return $resolvedPipe($passable, $stack);
-                }
-
-                if (is_object($resolvedPipe)) {
-                    return $resolvedPipe->{$this->method}($passable, $stack);
-                }
-
-                // If it's a class name, resolve it from the container
-                if (is_string($resolvedPipe)) {
-                    $instance = $this->app->make($resolvedPipe);
-                    return $instance->{$this->method}($passable, $stack);
-                }
-
-                // If it's an array [Class, method]
-                if (is_array($resolvedPipe)) {
-                    $instance = is_object($resolvedPipe[0]) 
-                        ? $resolvedPipe[0] 
-                        : $this->app->make($resolvedPipe[0]);
-                    
-                    return $instance->{$resolvedPipe[1]}($passable, $stack);
-                }
-
-                return $stack($passable);
-            } catch (Exception $e) {
-                throw $e;
-            }
-        };
-    }
-
-    /**
-     * Resolve a pipe instance
-     *
-     * @param mixed $pipe
-     * @return mixed
-     */
-    protected function resolvePipe($pipe)
-    {
-        if (is_object($pipe) || is_callable($pipe)) {
-            return $pipe;
+        if ($this->registry === null) {
+            $this->registry = new MiddlewareRegistry();
         }
-
-        if (is_string($pipe)) {
-            // Check if it's a middleware alias
-            if ($this->app->has('middleware.registry')) {
-                $registry = $this->app->get('middleware.registry');
-                if ($registry->has($pipe)) {
-                    return $registry->get($pipe);
-                }
-            }
-
-            // Try to resolve from container
-            if ($this->app->has($pipe)) {
-                return $this->app->get($pipe);
-            }
-
-            // Return as class name to be instantiated later
-            return $pipe;
-        }
-
-        return $pipe;
+        
+        return $this->registry;
     }
-
+    
     /**
-     * Get the prepared Closure
-     *
-     * @param Closure $destination
-     * @return callable
+     * Get middleware description for logging
      */
-    protected function getSlice(Closure $destination): callable
+    protected function getMiddlewareDescription($middleware)
     {
-        return $this->prepareDestination($destination);
+        if (is_string($middleware)) {
+            return 'string: ' . $middleware;
+        }
+        
+        if (is_array($middleware)) {
+            $count = count($middleware);
+            $first = $count > 0 ? (is_string($middleware[0]) ? $middleware[0] : gettype($middleware[0])) : 'empty';
+            return "array[{$count} items, first: {$first}]";
+        }
+        
+        if (is_object($middleware)) {
+            return 'object: ' . get_class($middleware);
+        }
+        
+        return gettype($middleware);
+    }
+    
+    /**
+     * Get all middlewares in pipeline
+     */
+    public function getMiddlewares()
+    {
+        return $this->middlewares;
+    }
+    
+    /**
+     * Clear all middlewares
+     */
+    public function clear()
+    {
+        $this->middlewares = [];
+        return $this;
     }
 }
