@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kodhe\Framework\Cache\Drivers;
 
 use Kodhe\Driver\Driver as Driver;
+use Kodhe\Framework\Cache\Contracts\CacheDriverInterface;
 
 /**
  * CodeIgniter APC Caching Class
@@ -15,7 +16,7 @@ use Kodhe\Driver\Driver as Driver;
  * @author		EllisLab Dev Team
  * @link
  */
-class Apc extends Driver 
+class Apc extends Driver implements CacheDriverInterface
 {
 
 	/**
@@ -24,11 +25,12 @@ class Apc extends Driver
 	 * Only present so that an error message is logged
 	 * if APC is not available.
 	 *
+	 * @param	array	$config	Optional configuration array
 	 * @return	void
 	 */
-	public function __construct()
+	public function __construct(array $config = [])
 	{
-		if ( ! $this->is_supported())
+		if ( ! $this->isSupported())
 		{
 			log_message('error', 'Cache: Failed to initialize APC; extension not loaded/enabled?');
 		}
@@ -117,7 +119,7 @@ class Apc extends Driver
 	 *
 	 * @return	bool	false on failure/true on success
 	 */
-	public function clean()
+	public function clean(): bool
 	{
 		return apc_clear_cache('user');
 	}
@@ -130,7 +132,7 @@ class Apc extends Driver
 	 * @param	string	user/filehits
 	 * @return	mixed	array on success, false on failure
 	 */
-	 public function cache_info($type = NULL)
+	 public function cacheInfo(?string $type = NULL)
 	 {
 		 return apc_cache_info($type);
 	 }
@@ -143,7 +145,7 @@ class Apc extends Driver
 	 * @param	mixed	key to get cache metadata on
 	 * @return	mixed	array on success/false on failure
 	 */
-	public function get_metadata($id)
+	public function getMetadata(string $id)
 	{
 		$cache_info = apc_cache_info('user', FALSE);
 		if (empty($cache_info) OR empty($cache_info['cache_list']))
@@ -180,7 +182,7 @@ class Apc extends Driver
 	 *
 	 * @return	bool
 	 */
-	public function is_supported()
+	public function isSupported(): bool
 	{
 		return (extension_loaded('apc') && ini_get('apc.enabled'));
 	}
