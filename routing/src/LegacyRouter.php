@@ -7,7 +7,7 @@ namespace Kodhe\Framework\Routing;
 use Kodhe\Framework\Http\Request;
 use Kodhe\Framework\Http\Response;
 use Kodhe\Framework\Support\Legacy\URI;
-abstract class LegacyRouter
+class LegacyRouter
 {
     public $routes = [];
     public $class = '';
