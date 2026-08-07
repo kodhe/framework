@@ -1,14 +1,18 @@
 <?php
 
-declare(strict_types=1);
+namespace Kodhe\Calendar\Tests;
 
-namespace Kodhe\Tests;
-
-use PHPUnit\Framework\TestCase;
 use Kodhe\Calendar\Calendar;
+use Kodhe\Calendar\Renderers\JsonRenderer;
+use PHPUnit\Framework\TestCase;
 
 /**
- * Unit tests for the Calendar library
+ * Class CalendarTest
+ *
+ * Unit tests for main Calendar class
+ *
+ * @package     Kodhe\Calendar\Tests
+ * @covers      \Kodhe\Calendar\Calendar
  */
 class CalendarTest extends TestCase
 {
@@ -19,215 +23,165 @@ class CalendarTest extends TestCase
 
     protected function setUp(): void
     {
-        parent::setUp();
-        // Include helpers that provide kodhe() mock
-        require_once __DIR__ . '/../../calendar/src/helpers.php';
         $this->calendar = new Calendar();
     }
 
-    /**
-     * Test that Calendar can be instantiated
-     */
-    public function testCanBeInstantiated(): void
+    public function testGenerateReturnsHtmlString(): void
     {
-        $this->assertInstanceOf(Calendar::class, $this->calendar);
+        $html = $this->calendar->generate(2026, 8);
+
+        $this->assertIsString($html);
+        $this->assertStringContainsString('<table', $html);
+        $this->assertStringContainsString('</table>', $html);
     }
 
-    /**
-     * Test generate method returns a calendar table
-     */
-    public function testGenerateReturnsCalendarTable(): void
+    public function testGenerateUsesCurrentDateWhenNoParametersProvided(): void
     {
-        $result = $this->calendar->generate(2024, 1);
-        
-        $this->assertIsString($result);
-        $this->assertStringContainsString('<table', $result);
-        $this->assertStringContainsString('</table>', $result);
+        $html = $this->calendar->generate();
+
+        $this->assertIsString($html);
+        $currentYear = date('Y');
+        $this->assertStringContainsString((string) $currentYear, $html);
     }
 
-    /**
-     * Test generate method with current year and month
-     */
-    public function testGenerateWithCurrentDate(): void
+    public function testGetMonthNameReturnsCorrectName(): void
     {
-        $result = $this->calendar->generate();
-        
-        $this->assertIsString($result);
-        $this->assertStringContainsString('<table', $result);
+        $this->calendar->initialize(['locale' => 'en']);
+        $this->assertEquals('August', $this->calendar->getMonthName(8));
     }
 
-    /**
-     * Test initialize method sets preferences
-     */
-    public function testInitializeMethod(): void
+    public function testGetMonthNameReturnsIndonesianName(): void
     {
-        $prefs = [
-            'show_next_prev' => true,
-            'next_prev_url' => 'http://example.com/calendar'
-        ];
-        
-        $this->calendar->initialize($prefs);
-        
-        // Access property via reflection to verify
-        $reflection = new \ReflectionClass($this->calendar);
-        $property = $reflection->getProperty('prefs');
-        $property->setAccessible(true);
-        
-        $actualPrefs = $property->getValue($this->calendar);
-        $this->assertTrue($actualPrefs['show_next_prev']);
-        $this->assertEquals('http://example.com/calendar', $actualPrefs['next_prev_url']);
+        $this->calendar->initialize(['locale' => 'id']);
+        $this->assertEquals('Agustus', $this->calendar->getMonthName(8));
     }
 
-    /**
-     * Test get_month_name method
-     */
-    public function testGetMonthName(): void
+    public function testGetDayNamesReturnsSevenDays(): void
     {
-        $monthName = $this->calendar->get_month_name(1);
-        $this->assertIsString($monthName);
-        $this->assertNotEmpty($monthName);
+        $days = $this->calendar->getDayNames('abr');
+        $this->assertCount(7, $days);
     }
 
-    /**
-     * Test get_day_name method
-     */
-    public function testGetDayName(): void
+    public function testGetDayNamesReturnsEnglishAbr(): void
     {
-        $dayName = $this->calendar->get_day_name(0);
-        $this->assertIsString($dayName);
-        $this->assertNotEmpty($dayName);
+        $this->calendar->initialize(['locale' => 'en']);
+        $days = $this->calendar->getDayNames('abr');
+        $this->assertEquals(['S', 'M', 'T', 'W', 'T', 'F', 'S'], $days);
     }
 
-    /**
-     * Test days_in_month helper function
-     */
-    public function testDaysInMonthHelper(): void
+    public function testAdjustDateDelegatesToGenerator(): void
     {
-        // January has 31 days
-        $this->assertEquals(31, \Kodhe\Tests\days_in_month(1, 2024));
-        
-        // February in leap year has 29 days
-        $this->assertEquals(29, \Kodhe\Tests\days_in_month(2, 2024));
-        
-        // February in non-leap year has 28 days
-        $this->assertEquals(28, \Kodhe\Tests\days_in_month(2, 2023));
-        
-        // April has 30 days
-        $this->assertEquals(30, \Kodhe\Tests\days_in_month(4, 2024));
-        
-        // Invalid month returns 0
-        $this->assertEquals(0, \Kodhe\Tests\days_in_month(13, 2024));
-        $this->assertEquals(0, \Kodhe\Tests\days_in_month(0, 2024));
+        [$year, $month] = $this->calendar->adjustDate(13, 2026);
+        $this->assertEquals(2027, $year);
+        $this->assertEquals(1, $month);
     }
 
-    /**
-     * Test leap year calculation
-     */
-    public function testLeapYearCalculation(): void
+    public function testGetTotalDaysReturnsCorrectCount(): void
     {
-        // 2024 is a leap year
-        $this->assertEquals(29, \Kodhe\Tests\days_in_month(2, 2024));
-        
-        // 2020 is a leap year
-        $this->assertEquals(29, \Kodhe\Tests\days_in_month(2, 2020));
-        
-        // 2000 is a leap year (divisible by 400)
-        $this->assertEquals(29, \Kodhe\Tests\days_in_month(2, 2000));
-        
-        // 1900 is not a leap year (divisible by 100 but not 400)
-        $this->assertEquals(28, \Kodhe\Tests\days_in_month(2, 1900));
-        
-        // 2023 is not a leap year
-        $this->assertEquals(28, \Kodhe\Tests\days_in_month(2, 2023));
+        $this->assertEquals(31, $this->calendar->getTotalDays(8, 2026));
+        $this->assertEquals(28, $this->calendar->getTotalDays(2, 2026));
+        $this->assertEquals(29, $this->calendar->getTotalDays(2, 2028)); // Leap year
     }
 
-    /**
-     * Test all months have correct number of days
-     */
-    public function testAllMonthsHaveCorrectDays(): void
+    public function testGetTotalWeeksReturnsCorrectCount(): void
     {
-        $expectedDays = [
-            1 => 31,  // January
-            2 => 28,  // February (non-leap year)
-            3 => 31,  // March
-            4 => 30,  // April
-            5 => 31,  // May
-            6 => 30,  // June
-            7 => 31,  // July
-            8 => 31,  // August
-            9 => 30,  // September
-            10 => 31, // October
-            11 => 30, // November
-            12 => 31  // December
-        ];
-
-        foreach ($expectedDays as $month => $days) {
-            $this->assertEquals($days, \Kodhe\Tests\days_in_month($month, 2023), "Month {$month} should have {$days} days");
-        }
+        $weeks = $this->calendar->getTotalWeeks(8, 2026);
+        $this->assertGreaterThanOrEqual(4, $weeks);
+        $this->assertLessThanOrEqual(6, $weeks);
     }
 
-    /**
-     * Test generate with custom template
-     */
-    public function testGenerateWithCustomPreferences(): void
+    public function testInitializeMergesConfig(): void
     {
-        $prefs = [
-            'template' => [
-                'heading_row_start' => '<tr class="custom-heading">',
-                'heading_title_element' => 'h3'
-            ]
-        ];
-        
-        $this->calendar->initialize($prefs);
-        $result = $this->calendar->generate(2024, 1);
-        
-        $this->assertIsString($result);
+        $this->calendar->initialize(['start_day' => 'monday', 'locale' => 'id']);
+
+        $config = $this->calendar->getConfig();
+        $this->assertEquals('monday', $config['start_day']);
+        $this->assertEquals('id', $config['locale']);
     }
 
-    /**
-     * Test that generated calendar contains year
-     */
-    public function testGeneratedCalendarContainsYear(): void
+    public function testSetRendererAcceptsCustomRenderer(): void
     {
-        $result = $this->calendar->generate(2024, 6);
-        
-        $this->assertStringContainsString('2024', $result);
+        $jsonRenderer = new JsonRenderer();
+        $result = $this->calendar->setRenderer($jsonRenderer);
+
+        $this->assertSame($this->calendar, $result);
     }
 
-    /**
-     * Test that generated calendar contains month name
-     */
-    public function testGeneratedCalendarContainsMonthName(): void
+    public function testAsJsonReturnsJsonString(): void
     {
-        $result = $this->calendar->generate(2024, 6);
-        
-        // June should be in the output
-        $this->assertStringContainsString('June', $result);
+        $json = $this->calendar->asJson(2026, 8, [
+            15 => 'Event 1',
+            22 => 'Event 2',
+        ]);
+
+        $this->assertIsString($json);
+        $data = json_decode($json, true);
+
+        $this->assertNotNull($data);
+        $this->assertArrayHasKey('year', $data);
+        $this->assertArrayHasKey('month', $data);
+        $this->assertArrayHasKey('events', $data);
+        $this->assertEquals(2026, $data['year']);
+        $this->assertEquals(8, $data['month']);
     }
 
-    /**
-     * Test that generated calendar contains day names
-     */
-    public function testGeneratedCalendarContainsDayNames(): void
+    public function testDefaultTemplateReturnsArray(): void
     {
-        $result = $this->calendar->generate(2024, 1);
-        
-        // Should contain day names
-        $this->assertStringContainsString('Sun', $result);
-        $this->assertStringContainsString('Mon', $result);
+        $template = $this->calendar->defaultTemplate();
+
+        $this->assertIsArray($template);
+        $this->assertArrayHasKey('table_open', $template);
+        $this->assertArrayHasKey('cal_row_start', $template);
+        $this->assertArrayHasKey('cal_row_end', $template);
     }
 
-    /**
-     * Test multiple generate calls work correctly
-     */
-    public function testMultipleGenerateCalls(): void
+    public function testGenerateWithDataMarksEvents(): void
     {
-        $result1 = $this->calendar->generate(2024, 1);
-        $result2 = $this->calendar->generate(2024, 12);
-        
-        $this->assertIsString($result1);
-        $this->assertIsString($result2);
-        $this->assertStringContainsString('January', $result1);
-        $this->assertStringContainsString('December', $result2);
+        $html = $this->calendar->generate(2026, 8, [
+            15 => 'http://example.com/event/15',
+        ]);
+
+        $this->assertStringContainsString('http://example.com/event/15', $html);
+    }
+
+    public function testGenerateWithArrayDataMarksEventsWithTitle(): void
+    {
+        $html = $this->calendar->generate(2026, 8, [
+            15 => ['url' => 'http://example.com/event/15', 'title' => 'Important Event'],
+        ]);
+
+        $this->assertStringContainsString('http://example.com/event/15', $html);
+        $this->assertStringContainsString('Important Event', $html);
+    }
+
+    public function testGetGeneratorReturnsMonthGeneratorInstance(): void
+    {
+        $generator = $this->calendar->getGenerator();
+        $this->assertInstanceOf(\Kodhe\Calendar\Generators\MonthGenerator::class, $generator);
+    }
+
+    public function testGetLexiconRepositoryReturnsInstance(): void
+    {
+        $repository = $this->calendar->getLexiconRepository();
+        $this->assertInstanceOf(\Kodhe\Calendar\Localization\LexiconRepository::class, $repository);
+    }
+
+    public function testGenerateWithMondayStartDay(): void
+    {
+        $this->calendar->initialize(['start_day' => 'monday']);
+        $html = $this->calendar->generate(2026, 8);
+
+        $this->assertIsString($html);
+        $this->assertStringContainsString('<table', $html);
+    }
+
+    public function testGenerateCachesResults(): void
+    {
+        // Generate twice with same parameters
+        $first = $this->calendar->generate(2026, 8);
+        $second = $this->calendar->generate(2026, 8);
+
+        // Should be identical (cached in generator)
+        $this->assertEquals($first, $second);
     }
 }

@@ -103,3 +103,60 @@ composer require kodhe/email kodhe/upload kodhe/user-agent
 - `kodhe/framework` tidak memaksa dependency ke http/session/cache (hanya suggest)
 - File helper & Legacy tidak dipaksa `strict_types` (kompatibilitas)
 - Semua class file memakai `declare(strict_types=1);`
+
+---
+
+## Calendar Library (New!)
+
+Refactored modular PSR-4 compatible Calendar library with:
+
+- **Multiple Renderers**: HTML table, JSON for JavaScript
+- **Localization**: English, Indonesian, French, German, Spanish
+- **Strategy Pattern**: Easy to add custom renderers
+- **Value Objects**: `CalendarDate`, `CalendarEvent`
+- **Caching**: Built-in structure caching
+- **100% CI3 Backward Compatible**
+
+### Structure
+
+```
+src/
+├── Calendar.php                    # Main class
+├── Contracts/
+│   ├── CalendarInterface.php
+│   └── CalendarRendererInterface.php
+├── Generators/
+│   └── MonthGenerator.php
+├── Renderers/
+│   ├── HtmlTableRenderer.php
+│   └── JsonRenderer.php
+├── Localization/
+│   ├── LocalLexicon.php
+│   └── LexiconRepository.php
+├── ValueObjects/
+│   ├── CalendarDate.php
+│   └── CalendarEvent.php
+├── Traits/
+│   ├── ConfigurableTrait.php
+│   └── SingletonTrait.php
+└── tests/
+    ├── CalendarTest.php
+    └── Generators/
+        └── MonthGeneratorTest.php
+```
+
+### Quick Start
+
+```php
+use Kodhe\Calendar\Calendar;
+
+$calendar = new Calendar(['locale' => 'en']);
+echo $calendar->generate(2026, 8);
+
+// JSON output for FullCalendar.js
+$json = $calendar->asJson(2026, 8, [
+    15 => ['title' => 'Meeting', 'url' => '/meeting'],
+]);
+```
+
+See full documentation in the package README.
