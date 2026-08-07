@@ -41,23 +41,30 @@ class BootstrapRenderer extends DefaultRenderer
         $open = '';
         $close = '';
         
+        // Determine which tag configuration to use based on link type
         if ($link->isFirst()) {
-            $open = $this->config['first_tag_open'] . $this->buildAttributes($link) . '>';
-            $close = $this->config['first_tag_close'];
+            $open = $this->config['first_tag_open'] ?? '';
+            $close = $this->config['first_tag_close'] ?? '';
         } elseif ($link->isLast()) {
-            $open = $this->config['last_tag_open'] . $this->buildAttributes($link) . '>';
-            $close = $this->config['last_tag_close'];
+            $open = $this->config['last_tag_open'] ?? '';
+            $close = $this->config['last_tag_close'] ?? '';
         } elseif ($link->isPrevious()) {
-            $open = $this->config['prev_tag_open'] . $this->buildAttributes($link) . '>';
-            $close = $this->config['prev_tag_close'];
+            $open = $this->config['prev_tag_open'] ?? '';
+            $close = $this->config['prev_tag_close'] ?? '';
         } elseif ($link->isNext()) {
-            $open = $this->config['next_tag_open'] . $this->buildAttributes($link) . '>';
-            $close = $this->config['next_tag_close'];
+            $open = $this->config['next_tag_open'] ?? '';
+            $close = $this->config['next_tag_close'] ?? '';
         } else {
-            $open = $this->config['num_tag_open'] . $this->buildAttributes($link) . '>';
-            $close = $this->config['num_tag_close'];
+            $open = $this->config['num_tag_open'] ?? '';
+            $close = $this->config['num_tag_close'] ?? '';
         }
         
-        return $open . $link->getText() . $close;
+        // Build href attribute
+        $href = 'href="' . $link->getUrl() . '"';
+        
+        // Build class and other attributes from array
+        $attrs = $this->buildAttributes($link);
+        
+        return $open . '<a ' . $href . $attrs . '>' . $link->getText() . $close;
     }
 }

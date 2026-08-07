@@ -35,12 +35,18 @@ class TailwindRenderer extends DefaultRenderer
     {
         $baseClass = 'relative flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0';
         
-        if ($link->isPrevious() || $link->isNext()) {
-            return '<a href="' . $link->getUrl() . '" class="' . $baseClass . '">' 
-                . $link->getText() . '</a>';
+        // Build href attribute
+        $href = 'href="' . $link->getUrl() . '"';
+        
+        // Build class and other attributes from array
+        $attrs = $this->buildAttributes($link);
+        
+        // Merge base class with existing class attribute if present
+        if (isset($link->getAttributes()['class'])) {
+            $baseClass .= ' ' . $link->getAttributes()['class'];
         }
         
-        return '<a href="' . $link->getUrl() . '" class="' . $baseClass . '">' 
+        return '<a ' . $href . ' class="' . $baseClass . '">' 
             . $link->getText() . '</a>';
     }
     

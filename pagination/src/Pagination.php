@@ -256,20 +256,28 @@ class Pagination
         return $renderer->render($links);
     }
 
-    protected function buildAttributes(int $page): string
+    protected function buildAttributes(int $page): array
     {
-        $attrs = $this->_attributes;
-        $attrs .= ' ' . $this->data_page_attr . '="' . $page . '"';
-        return trim($attrs);
+        $attrs = [];
+        
+        // Parse existing string attributes to array
+        if (!empty($this->_attributes)) {
+            preg_match_all('/(\w+)="([^"]*)"/', $this->_attributes, $matches, PREG_SET_ORDER);
+            foreach ($matches as $match) {
+                $attrs[$match[1]] = $match[2];
+            }
+        }
+        
+        // Add data-page attribute
+        $attrs[$this->data_page_attr] = (string) $page;
+        
+        return $attrs;
     }
 
-    protected function parseRelAttr(string $type, string $attributes): array
+    protected function parseRelAttr(string $type, array $attributes): array
     {
-        $result = [];
-        preg_match_all('/(\w+)="([^"]*)"/', $attributes, $matches, PREG_SET_ORDER);
-        foreach ($matches as $match) {
-            $result[$match[1]] = $match[2];
-        }
+        $result = $attributes;
+        
         if (isset($this->_link_types[$type])) {
             unset($this->_link_types[$type]);
             $result['rel'] = $type;

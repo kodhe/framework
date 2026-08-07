@@ -53,9 +53,13 @@ class DefaultRenderer implements RendererInterface
         $open = $this->config['num_tag_open'] ?? '';
         $close = $this->config['num_tag_close'] ?? '';
         
-        $attributes = $this->buildAttributes($link);
+        // Build href attribute
+        $href = 'href="' . $link->getUrl() . '"';
         
-        return $open . '<a href="' . $link->getUrl() . '"' . $attributes . '>' 
+        // Build class and other attributes from array
+        $attrs = $this->buildAttributes($link);
+        
+        return $open . '<a ' . $href . $attrs . '>' 
             . $link->getText() . '</a>' . $close;
     }
     
