@@ -3,20 +3,24 @@
 vendor/
 composer.lock
 
+# PHP
+*.php~
+*.phtml~
+
 # Logs and temp files
 *.log
 *.tmp
+*.swp
 
 # Environment
 .env
 .env.local
-*.env.*
+.env.*
 
 # Tests
 .phpunit.result.cache
 
-# IDE
-.vscode/
-.idea/
-*.swp
+# OS generated files
+.DS_Store
+Thumbs.db
 ```
