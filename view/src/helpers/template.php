@@ -63,8 +63,8 @@ if (!function_exists('template')) {
         // Get CI super object for backward compatibility
         $CI =& get_instance();
         
-        // Create view context
-        $context = new ViewContext($data);
+        // Create view context with view name and data
+        $context = new ViewContext($view, $data);
         
         // Set theme if provided
         if ($theme !== null) {
