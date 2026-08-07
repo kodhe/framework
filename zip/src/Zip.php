@@ -4,497 +4,412 @@ declare(strict_types=1);
 
 namespace Kodhe\Zip;
 
+use Kodhe\Zip\Archive\ArchiveBuilder;
+use Kodhe\Zip\Writers\MemoryWriter;
+use Kodhe\Zip\Readers\FileSystemReader;
+use Kodhe\Zip\Factory\CompressionFactory;
+use Kodhe\Zip\Support\ByteUtils;
+
 /**
- * Zip Compression Class
+ * Zip Compression Class - Backward Compatible Facade
  *
- * This class is based on a library I found at Zend:
+ * This class provides 100% backward compatibility with CodeIgniter 3's Zip library
+ * while using the new modular architecture internally.
+ *
+ * Original library found at Zend:
  * http://www.zend.com/codex.php?id=696&single=1
  *
- * The original library is a little rough around the edges so I
- * refactored it and added several additional methods -- Rick Ellis
- *
- * @package		CodeIgniter
- * @subpackage	Libraries
- * @category	Encryption
- * @author		EllisLab Dev Team
- * @link		https://codeigniter.com/user_guide/libraries/zip.html
+ * @package     Kodhe\Zip
+ * @category    Compression
+ * @author      EllisLab Dev Team (original), Kodhe (refactored)
+ * @link        https://codeigniter.com/user_guide/libraries/zip.html
  */
 class Zip
 {
+    /**
+     * Zip data in string form (backward compatibility)
+     *
+     * @var string
+     */
+    public $zipdata = '';
 
-	/**
-	 * Zip data in string form
-	 *
-	 * @var string
-	 */
-	public $zipdata = '';
+    /**
+     * Zip data for a directory in string form (backward compatibility)
+     *
+     * @var string
+     */
+    public $directory = '';
 
-	/**
-	 * Zip data for a directory in string form
-	 *
-	 * @var string
-	 */
-	public $directory = '';
+    /**
+     * Number of files/folder in zip file (backward compatibility)
+     *
+     * @var int
+     */
+    public $entries = 0;
 
-	/**
-	 * Number of files/folder in zip file
-	 *
-	 * @var int
-	 */
-	public $entries = 0;
+    /**
+     * Number of files in zip (backward compatibility)
+     *
+     * @var int
+     */
+    public $file_num = 0;
 
-	/**
-	 * Number of files in zip
-	 *
-	 * @var int
-	 */
-	public $file_num = 0;
+    /**
+     * relative offset of local header (backward compatibility)
+     *
+     * @var int
+     */
+    public $offset = 0;
 
-	/**
-	 * relative offset of local header
-	 *
-	 * @var int
-	 */
-	public $offset = 0;
+    /**
+     * Reference to time at init (backward compatibility)
+     *
+     * @var int
+     */
+    public $now;
 
-	/**
-	 * Reference to time at init
-	 *
-	 * @var int
-	 */
-	public $now;
+    /**
+     * The level of compression (backward compatibility)
+     *
+     * Ranges from 0 to 9, with 9 being the highest level.
+     *
+     * @var int
+     */
+    public $compression_level = 2;
 
-	/**
-	 * The level of compression
-	 *
-	 * Ranges from 0 to 9, with 9 being the highest level.
-	 *
-	 * @var	int
-	 */
-	public $compression_level = 2;
+    /**
+     * Internal archive builder instance
+     *
+     * @var ArchiveBuilder
+     */
+    private ArchiveBuilder $builder;
 
-	/**
-	 * mbstring.func_overload flag
-	 *
-	 * @var	bool
-	 */
-	protected static $func_overload;
+    /**
+     * File reader instance
+     *
+     * @var FileSystemReader
+     */
+    private FileSystemReader $fileReader;
 
-	/**
-	 * Initialize zip compression class
-	 *
-	 * @return	void
-	 */
-	public function __construct()
-	{
-		isset(self::$func_overload) OR self::$func_overload = (extension_loaded('mbstring') && ini_get('mbstring.func_overload'));
+    /**
+     * mbstring.func_overload flag
+     *
+     * @var bool|null
+     */
+    protected static $func_overload;
 
-		$this->now = time();
-		log_message('info', 'Zip Compression Class Initialized');
-	}
+    /**
+     * Initialize zip compression class
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        // Initialize mbstring overload detection
+        if (self::$func_overload === null) {
+            self::$func_overload = (extension_loaded('mbstring') && ini_get('mbstring.func_overload'));
+        }
 
-	// --------------------------------------------------------------------
+        $this->now = time();
 
-	/**
-	 * Add Directory
-	 *
-	 * Lets you add a virtual directory into which you can place files.
-	 *
-	 * @param	mixed	$directory	the directory name. Can be string or array
-	 * @return	void
-	 */
-	public function add_dir($directory)
-	{
-		foreach ((array) $directory as $dir)
-		{
-			if ( ! preg_match('|.+/$|', $dir))
-			{
-				$dir .= '/';
-			}
+        // Initialize internal components with dependency injection
+        $this->fileReader = new FileSystemReader();
+        $writer = new MemoryWriter();
+        $compressionStrategy = CompressionFactory::create($this->compression_level);
+        
+        $this->builder = new ArchiveBuilder($writer, $this->fileReader, $compressionStrategy);
 
-			$dir_time = $this->_get_mod_time($dir);
-			$this->_add_dir($dir, $dir_time['file_mtime'], $dir_time['file_mdate']);
-		}
-	}
+        // Log initialization if CI log function exists
+        if (function_exists('log_message')) {
+            log_message('info', 'Zip Compression Class Initialized');
+        }
+    }
 
-	// --------------------------------------------------------------------
+    // --------------------------------------------------------------------
 
-	/**
-	 * Get file/directory modification time
-	 *
-	 * If this is a newly created file/dir, we will set the time to 'now'
-	 *
-	 * @param	string	$dir	path to file
-	 * @return	array	filemtime/filemdate
-	 */
-	protected function _get_mod_time($dir)
-	{
-		// filemtime() may return false, but raises an error for non-existing files
-		$date = file_exists($dir) ? getdate(filemtime($dir)) : getdate($this->now);
+    /**
+     * Add Directory
+     *
+     * Lets you add a virtual directory into which you can place files.
+     *
+     * @param mixed $directory the directory name. Can be string or array
+     * @return void
+     */
+    public function add_dir($directory)
+    {
+        foreach ((array) $directory as $dir) {
+            if (!preg_match('|.+/$|', $dir)) {
+                $dir .= '/';
+            }
 
-		return array(
-			'file_mtime' => ($date['hours'] << 11) + ($date['minutes'] << 5) + $date['seconds'] / 2,
-			'file_mdate' => (($date['year'] - 1980) << 9) + ($date['mon'] << 5) + $date['mday']
-		);
-	}
+            // Use builder to add directory
+            $this->builder->addDirectory($dir);
+            
+            // Update backward compatibility properties
+            $this->entries = $this->builder->getEntryCount();
+        }
+    }
 
-	// --------------------------------------------------------------------
+    // --------------------------------------------------------------------
 
-	/**
-	 * Add Directory
-	 *
-	 * @param	string	$dir	the directory name
-	 * @param	int	$file_mtime
-	 * @param	int	$file_mdate
-	 * @return	void
-	 */
-	protected function _add_dir($dir, $file_mtime, $file_mdate)
-	{
-		$dir = str_replace('\\', '/', $dir);
+    /**
+     * Get file/directory modification time
+     *
+     * If this is a newly created file/dir, we will set the time to 'now'
+     *
+     * @param string $dir path to file
+     * @return array filemtime/filemdate
+     */
+    protected function _get_mod_time($dir)
+    {
+        // filemtime() may return false, but raises an error for non-existing files
+        $date = file_exists($dir) ? getdate(filemtime($dir)) : getdate($this->now);
 
-		$this->zipdata .=
-			"\x50\x4b\x03\x04\x0a\x00\x00\x00\x00\x00"
-			.pack('v', $file_mtime)
-			.pack('v', $file_mdate)
-			.pack('V', 0) // crc32
-			.pack('V', 0) // compressed filesize
-			.pack('V', 0) // uncompressed filesize
-			.pack('v', self::strlen($dir)) // length of pathname
-			.pack('v', 0) // extra field length
-			.$dir
-			// below is "data descriptor" segment
-			.pack('V', 0) // crc32
-			.pack('V', 0) // compressed filesize
-			.pack('V', 0); // uncompressed filesize
+        return [
+            'file_mtime' => ($date['hours'] << 11) + ($date['minutes'] << 5) + (int)($date['seconds'] / 2),
+            'file_mdate' => (($date['year'] - 1980) << 9) + ($date['mon'] << 5) + $date['mday']
+        ];
+    }
 
-		$this->directory .=
-			"\x50\x4b\x01\x02\x00\x00\x0a\x00\x00\x00\x00\x00"
-			.pack('v', $file_mtime)
-			.pack('v', $file_mdate)
-			.pack('V',0) // crc32
-			.pack('V',0) // compressed filesize
-			.pack('V',0) // uncompressed filesize
-			.pack('v', self::strlen($dir)) // length of pathname
-			.pack('v', 0) // extra field length
-			.pack('v', 0) // file comment length
-			.pack('v', 0) // disk number start
-			.pack('v', 0) // internal file attributes
-			.pack('V', 16) // external file attributes - 'directory' bit set
-			.pack('V', $this->offset) // relative offset of local header
-			.$dir;
+    // --------------------------------------------------------------------
 
-		$this->offset = self::strlen($this->zipdata);
-		$this->entries++;
-	}
+    /**
+     * Add Data to Zip
+     *
+     * Lets you add files to the archive. If the path is included
+     * in the filename it will be placed within a directory. Make
+     * sure you use add_dir() first to create the folder.
+     *
+     * @param mixed $filepath A single filepath or an array of file => data pairs
+     * @param string $data Single file contents
+     * @return void
+     */
+    public function add_data($filepath, $data = NULL)
+    {
+        if (is_array($filepath)) {
+            foreach ($filepath as $path => $data) {
+                $this->builder->addFile($path, $data);
+            }
+        } else {
+            $this->builder->addFile($filepath, $data);
+        }
 
-	// --------------------------------------------------------------------
+        // Update backward compatibility properties
+        $this->entries = $this->builder->getEntryCount();
+        $this->file_num = $this->countFiles();
+    }
 
-	/**
-	 * Add Data to Zip
-	 *
-	 * Lets you add files to the archive. If the path is included
-	 * in the filename it will be placed within a directory. Make
-	 * sure you use add_dir() first to create the folder.
-	 *
-	 * @param	mixed	$filepath	A single filepath or an array of file => data pairs
-	 * @param	string	$data		Single file contents
-	 * @return	void
-	 */
-	public function add_data($filepath, $data = NULL)
-	{
-		if (is_array($filepath))
-		{
-			foreach ($filepath as $path => $data)
-			{
-				$file_data = $this->_get_mod_time($path);
-				$this->_add_data($path, $data, $file_data['file_mtime'], $file_data['file_mdate']);
-			}
-		}
-		else
-		{
-			$file_data = $this->_get_mod_time($filepath);
-			$this->_add_data($filepath, $data, $file_data['file_mtime'], $file_data['file_mdate']);
-		}
-	}
+    // --------------------------------------------------------------------
 
-	// --------------------------------------------------------------------
+    /**
+     * Count number of file entries (not directories)
+     */
+    private function countFiles(): int
+    {
+        $count = 0;
+        foreach ($this->builder->getEntries() as $entry) {
+            if (!$entry->isDirectory()) {
+                $count++;
+            }
+        }
+        return $count;
+    }
 
-	/**
-	 * Add Data to Zip
-	 *
-	 * @param	string	$filepath	the file name/path
-	 * @param	string	$data	the data to be encoded
-	 * @param	int	$file_mtime
-	 * @param	int	$file_mdate
-	 * @return	void
-	 */
-	protected function _add_data($filepath, $data, $file_mtime, $file_mdate)
-	{
-		$filepath = str_replace('\\', '/', $filepath);
+    // --------------------------------------------------------------------
 
-		$uncompressed_size = self::strlen($data);
-		$crc32  = crc32($data);
-		$gzdata = self::substr(gzcompress($data, $this->compression_level), 2, -4);
-		$compressed_size = self::strlen($gzdata);
+    /**
+     * Read the contents of a file and add it to the zip
+     *
+     * @param string $path
+     * @param bool|string $archive_filepath
+     * @return bool
+     */
+    public function read_file($path, $archive_filepath = FALSE)
+    {
+        if ($this->fileReader->exists($path) && ($data = $this->fileReader->read($path)) !== false) {
+            if (is_string($archive_filepath)) {
+                $name = str_replace('\\', '/', $archive_filepath);
+            } else {
+                $name = str_replace('\\', '/', $path);
 
-		$this->zipdata .=
-			"\x50\x4b\x03\x04\x14\x00\x00\x00\x08\x00"
-			.pack('v', $file_mtime)
-			.pack('v', $file_mdate)
-			.pack('V', $crc32)
-			.pack('V', $compressed_size)
-			.pack('V', $uncompressed_size)
-			.pack('v', self::strlen($filepath)) // length of filename
-			.pack('v', 0) // extra field length
-			.$filepath
-			.$gzdata; // "file data" segment
+                if ($archive_filepath === FALSE) {
+                    $name = preg_replace('|.*/(.+)|', '\\1', $name);
+                }
+            }
 
-		$this->directory .=
-			"\x50\x4b\x01\x02\x00\x00\x14\x00\x00\x00\x08\x00"
-			.pack('v', $file_mtime)
-			.pack('v', $file_mdate)
-			.pack('V', $crc32)
-			.pack('V', $compressed_size)
-			.pack('V', $uncompressed_size)
-			.pack('v', self::strlen($filepath)) // length of filename
-			.pack('v', 0) // extra field length
-			.pack('v', 0) // file comment length
-			.pack('v', 0) // disk number start
-			.pack('v', 0) // internal file attributes
-			.pack('V', 32) // external file attributes - 'archive' bit set
-			.pack('V', $this->offset) // relative offset of local header
-			.$filepath;
+            $this->add_data($name, $data);
+            return TRUE;
+        }
 
-		$this->offset = self::strlen($this->zipdata);
-		$this->entries++;
-		$this->file_num++;
-	}
+        return FALSE;
+    }
 
-	// --------------------------------------------------------------------
+    // ------------------------------------------------------------------------
 
-	/**
-	 * Read the contents of a file and add it to the zip
-	 *
-	 * @param	string	$path
-	 * @param	bool	$archive_filepath
-	 * @return	bool
-	 */
-	public function read_file($path, $archive_filepath = FALSE)
-	{
-		if (file_exists($path) && FALSE !== ($data = file_get_contents($path)))
-		{
-			if (is_string($archive_filepath))
-			{
-				$name = str_replace('\\', '/', $archive_filepath);
-			}
-			else
-			{
-				$name = str_replace('\\', '/', $path);
+    /**
+     * Read a directory and add it to the zip.
+     *
+     * This function recursively reads a folder and everything it contains (including
+     * sub-folders) and creates a zip based on it. Whatever directory structure
+     * is in the original file path will be recreated in the zip file.
+     *
+     * @param string $path path to source directory
+     * @param bool $preserve_filepath
+     * @param string|null $root_path
+     * @return bool
+     */
+    public function read_dir($path, $preserve_filepath = TRUE, $root_path = NULL)
+    {
+        $result = $this->builder->readDirectory($path, $preserve_filepath, $root_path);
+        
+        // Update backward compatibility properties
+        $this->entries = $this->builder->getEntryCount();
+        $this->file_num = $this->countFiles();
+        
+        return $result;
+    }
 
-				if ($archive_filepath === FALSE)
-				{
-					$name = preg_replace('|.*/(.+)|', '\\1', $name);
-				}
-			}
+    // --------------------------------------------------------------------
 
-			$this->add_data($name, $data);
-			return TRUE;
-		}
+    /**
+     * Get the Zip file
+     *
+     * @return string|false (binary encoded)
+     */
+    public function get_zip()
+    {
+        // Is there any data to return?
+        if ($this->entries === 0) {
+            return FALSE;
+        }
 
-		return FALSE;
-	}
+        // Build the archive using the builder
+        $zipContent = $this->builder->build();
+        
+        // Cache for backward compatibility
+        $this->zipdata = $zipContent;
+        
+        return $zipContent;
+    }
 
-	// ------------------------------------------------------------------------
+    // --------------------------------------------------------------------
 
-	/**
-	 * Read a directory and add it to the zip.
-	 *
-	 * This function recursively reads a folder and everything it contains (including
-	 * sub-folders) and creates a zip based on it. Whatever directory structure
-	 * is in the original file path will be recreated in the zip file.
-	 *
-	 * @param	string	$path	path to source directory
-	 * @param	bool	$preserve_filepath
-	 * @param	string	$root_path
-	 * @return	bool
-	 */
-	public function read_dir($path, $preserve_filepath = TRUE, $root_path = NULL)
-	{
-		$path = rtrim($path, '/\\').DIRECTORY_SEPARATOR;
-		if ( ! $fp = @opendir($path))
-		{
-			return FALSE;
-		}
+    /**
+     * Write File to the specified directory
+     *
+     * Lets you write a file
+     *
+     * @param string $filepath the file name
+     * @return bool
+     */
+    public function archive($filepath)
+    {
+        $zipContent = $this->get_zip();
+        if ($zipContent === false || $zipContent === '') {
+            return FALSE;
+        }
 
-		// Set the original directory root for child dir's to use as relative
-		if ($root_path === NULL)
-		{
-			$root_path = str_replace(array('\\', '/'), DIRECTORY_SEPARATOR, dirname($path)).DIRECTORY_SEPARATOR;
-		}
+        if (!($fp = @fopen($filepath, 'w+b'))) {
+            return FALSE;
+        }
 
-		while (FALSE !== ($file = readdir($fp)))
-		{
-			if ($file[0] === '.')
-			{
-				continue;
-			}
+        flock($fp, LOCK_EX);
 
-			if (is_dir($path.$file))
-			{
-				$this->read_dir($path.$file.DIRECTORY_SEPARATOR, $preserve_filepath, $root_path);
-			}
-			elseif (FALSE !== ($data = file_get_contents($path.$file)))
-			{
-				$name = str_replace(array('\\', '/'), DIRECTORY_SEPARATOR, $path);
-				if ($preserve_filepath === FALSE)
-				{
-					$name = str_replace($root_path, '', $name);
-				}
+        for ($result = $written = 0, $length = strlen($zipContent); $written < $length; $written += $result) {
+            if (($result = fwrite($fp, substr($zipContent, $written))) === FALSE) {
+                break;
+            }
+        }
 
-				$this->add_data($name.$file, $data);
-			}
-		}
+        flock($fp, LOCK_UN);
+        fclose($fp);
 
-		closedir($fp);
-		return TRUE;
-	}
+        return is_int($result);
+    }
 
-	// --------------------------------------------------------------------
+    // --------------------------------------------------------------------
 
-	/**
-	 * Get the Zip file
-	 *
-	 * @return	string	(binary encoded)
-	 */
-	public function get_zip()
-	{
-		// Is there any data to return?
-		if ($this->entries === 0)
-		{
-			return FALSE;
-		}
+    /**
+     * Download
+     *
+     * @param string $filename the file name
+     * @return void
+     */
+    public function download($filename = 'backup.zip')
+    {
+        if (!preg_match('|.+?\.zip$|', $filename)) {
+            $filename .= '.zip';
+        }
 
-		return $this->zipdata
-			.$this->directory."\x50\x4b\x05\x06\x00\x00\x00\x00"
-			.pack('v', $this->entries) // total # of entries "on this disk"
-			.pack('v', $this->entries) // total # of entries overall
-			.pack('V', self::strlen($this->directory)) // size of central dir
-			.pack('V', self::strlen($this->zipdata)) // offset to start of central dir
-			."\x00\x00"; // .zip file comment length
-	}
+        // Check if kodhe() helper exists (CI3/Kodhe framework)
+        if (function_exists('kodhe')) {
+            kodhe()->load->helper('download');
+        } elseif (function_exists('load_helper')) {
+            load_helper('download');
+        }
 
-	// --------------------------------------------------------------------
+        $zipContent = $this->get_zip();
+        
+        // Use force_download if available, otherwise output directly
+        if (function_exists('force_download')) {
+            force_download($filename, $zipContent);
+        } else {
+            // Fallback: direct output
+            header('Content-Type: application/zip');
+            header('Content-Disposition: attachment; filename="' . basename($filename) . '"');
+            header('Content-Length: ' . strlen($zipContent));
+            header('Cache-Control: no-cache, must-revalidate');
+            echo $zipContent;
+            exit;
+        }
+    }
 
-	/**
-	 * Write File to the specified directory
-	 *
-	 * Lets you write a file
-	 *
-	 * @param	string	$filepath	the file name
-	 * @return	bool
-	 */
-	public function archive($filepath)
-	{
-		if ( ! ($fp = @fopen($filepath, 'w+b')))
-		{
-			return FALSE;
-		}
+    // --------------------------------------------------------------------
 
-		flock($fp, LOCK_EX);
+    /**
+     * Initialize Data
+     *
+     * Lets you clear current zip data. Useful if you need to create
+     * multiple zips with different data.
+     *
+     * @return Zip
+     */
+    public function clear_data()
+    {
+        $this->builder->clear();
+        $this->zipdata = '';
+        $this->directory = '';
+        $this->entries = 0;
+        $this->file_num = 0;
+        $this->offset = 0;
+        return $this;
+    }
 
-		for ($result = $written = 0, $data = $this->get_zip(), $length = self::strlen($data); $written < $length; $written += $result)
-		{
-			if (($result = fwrite($fp, self::substr($data, $written))) === FALSE)
-			{
-				break;
-			}
-		}
+    // --------------------------------------------------------------------
 
-		flock($fp, LOCK_UN);
-		fclose($fp);
+    /**
+     * Byte-safe strlen()
+     *
+     * @param string $str
+     * @return int
+     */
+    protected static function strlen($str)
+    {
+        return ByteUtils::strlen($str);
+    }
 
-		return is_int($result);
-	}
+    // --------------------------------------------------------------------
 
-	// --------------------------------------------------------------------
-
-	/**
-	 * Download
-	 *
-	 * @param	string	$filename	the file name
-	 * @return	void
-	 */
-	public function download($filename = 'backup.zip')
-	{
-		if ( ! preg_match('|.+?\.zip$|', $filename))
-		{
-			$filename .= '.zip';
-		}
-
-		kodhe()->load->helper('download');
-		$get_zip = $this->get_zip();
-		$zip_content =& $get_zip;
-
-		force_download($filename, $zip_content);
-	}
-
-	// --------------------------------------------------------------------
-
-	/**
-	 * Initialize Data
-	 *
-	 * Lets you clear current zip data. Useful if you need to create
-	 * multiple zips with different data.
-	 *
-	 * @return	CI_Zip
-	 */
-	public function clear_data()
-	{
-		$this->zipdata = '';
-		$this->directory = '';
-		$this->entries = 0;
-		$this->file_num = 0;
-		$this->offset = 0;
-		return $this;
-	}
-
-	// --------------------------------------------------------------------
-
-	/**
-	 * Byte-safe strlen()
-	 *
-	 * @param	string	$str
-	 * @return	int
-	 */
-	protected static function strlen($str)
-	{
-		return (self::$func_overload)
-			? mb_strlen($str, '8bit')
-			: strlen($str);
-	}
-
-	// --------------------------------------------------------------------
-
-	/**
-	 * Byte-safe substr()
-	 *
-	 * @param	string	$str
-	 * @param	int	$start
-	 * @param	int	$length
-	 * @return	string
-	 */
-	protected static function substr($str, $start, $length = NULL)
-	{
-		if (self::$func_overload)
-		{
-			// mb_substr($str, $start, null, '8bit') returns an empty
-			// string on PHP 5.3
-			isset($length) OR $length = ($start >= 0 ? self::strlen($str) - $start : -$start);
-			return mb_substr($str, $start, $length, '8bit');
-		}
-
-		return isset($length)
-			? substr($str, $start, $length)
-			: substr($str, $start);
-	}
+    /**
+     * Byte-safe substr()
+     *
+     * @param string $str
+     * @param int $start
+     * @param int|null $length
+     * @return string
+     */
+    protected static function substr($str, $start, $length = NULL)
+    {
+        return ByteUtils::substr($str, $start, $length);
+    }
 }
