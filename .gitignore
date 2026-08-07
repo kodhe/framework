@@ -1,4 +1,16 @@
 ```
+# Compiled and build artifacts
+*.pyc
+__pycache__/
+*.o
+*.obj
+*.class
+*.exe
+*.dll
+*.so
+*.a
+*.out
+
 # Dependencies
 vendor/
 composer.lock
@@ -6,22 +18,31 @@ composer.lock
 # Logs and temp files
 *.log
 *.tmp
+*.swp
 
 # Environment
 .env
 .env.local
-*.env.*
+.env.*
 
-# Tests
-.phpunit.result.cache
-
-# IDE
+# Editors
 .vscode/
 .idea/
-*.swp
-*.swo
 
-# OS
-.DS_Store
-Thumbs.db
+# Coverage
+.coverage
+coverage/
+htmlcov/
+
+# Distribution / packaging
+dist/
+build/
+*.tar.gz
+*.whl
+*.egg
+*.egg-info/
+
+# PHP specific
+*.php~
+.htaccess
 ```
