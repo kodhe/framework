@@ -14,6 +14,11 @@ use Kodhe\Framework\View\Support\ViewConfig;
 class ViewFactory
 {
     /**
+     * @var ViewFactory|null
+     */
+    protected static $instance = null;
+
+    /**
      * @var EngineFactory
      */
     protected $engineFactory;
@@ -22,6 +27,19 @@ class ViewFactory
      * @var array
      */
     protected $sharedData = [];
+
+    /**
+     * Get singleton instance
+     *
+     * @return self
+     */
+    public static function getInstance(): self
+    {
+        if (self::$instance === null) {
+            self::$instance = new self();
+        }
+        return self::$instance;
+    }
 
     /**
      * Create a new ViewFactory instance
@@ -37,19 +55,42 @@ class ViewFactory
      * Create a view instance
      *
      * @param string $name
-     * @param array $data
+     * @param array|ViewContext $dataOrContext
      * @param string|null $engine
      * @return ViewInterface
      */
-    public function make(string $name, array $data = [], ?string $engine = null): ViewInterface
+    public function make(string $name, $dataOrContext = [], ?string $engine = null): ViewInterface
     {
-        $engineName = $engine ?? $this->detectEngine($name);
+        // Handle both array data and ViewContext
+        if ($dataOrContext instanceof ViewContext) {
+            $context = $dataOrContext;
+            $data = $context->getData();
+        } else {
+            $data = is_array($dataOrContext) ? $dataOrContext : [];
+            $context = new ViewContext($data);
+        }
+
+        $engineName = $engine ?? $context->getEngine() ?? $this->detectEngine($name);
         $viewEngine = $this->engineFactory->create($engineName);
         
         // Merge shared data
         $data = array_merge($this->sharedData, $data);
+        $context->setData($data);
 
-        return new View($name, $viewEngine, $data);
+        return new View($name, $viewEngine, $context);
+    }
+
+    /**
+     * Create a view instance (alias for make)
+     *
+     * @param string $name
+     * @param array|ViewContext $dataOrContext
+     * @param string|null $engine
+     * @return ViewInterface
+     */
+    public function create(string $name, $dataOrContext = [], ?string $engine = null): ViewInterface
+    {
+        return $this->make($name, $dataOrContext, $engine);
     }
 
     /**
