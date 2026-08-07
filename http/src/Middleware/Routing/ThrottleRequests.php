@@ -7,7 +7,7 @@ namespace Kodhe\Framework\Http\Middleware\Routing;
 use Kodhe\Framework\Exceptions\TooManyRequestsException;
 use Kodhe\Framework\Http\Request;
 use Kodhe\Framework\Http\Response;
-use Kodhe\Framework\Routing\RateLimiter;
+use Kodhe\Framework\Http\Routing\RateLimiter;
 
 class ThrottleRequests
 {
