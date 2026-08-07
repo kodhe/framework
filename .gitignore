@@ -3,29 +3,23 @@
 vendor/
 
 # Compiled and build artifacts
-*.phpc
 *.o
 *.obj
 *.so
+*.a
 *.dll
 *.exe
-*.class
+*.out
 
-# Build directories
-build/
-dist/
-*.phar
-
-# Cache and temporary files
-.cache/
-.tmp/
-*.tmp
+# Logs and temp files
 *.log
+*.tmp
+*.swp
 
 # Environment
 .env
 .env.local
-.env.*
+*.env.*
 
 # Editors
 .vscode/
@@ -33,36 +27,12 @@ dist/
 *.swp
 *.swo
 
-# Coverage and testing
+# Coverage
 .coverage
 coverage/
 htmlcov/
 
-# OS specific
-.DS_Store
-Thumbs.db
-
-# Compression archives
-*.zip
-*.gz
-*.tar
-*.tgz
-*.bz2
-*.xz
-*.7z
-*.rar
-*.zst
-*.lz4
-*.lzh
-*.cab
-*.arj
-*.rpm
-*.deb
-*.Z
-*.lz
-*.lzo
-*.tar.gz
-*.tar.bz2
-*.tar.xz
-*.tar.zst
+# PHP specific
+*.php~
+*.php.bak
 ```
