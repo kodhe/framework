@@ -1,99 +1,196 @@
+# CodeIgniter 3 Parser - Modular Refactoring
 
-## File Test `test_parser.php`
+Template Parser library untuk CodeIgniter 3 yang di-refactor menjadi modular dengan tetap mempertahankan API asli.
+
+## Struktur
+
+```
+Parser/
+├── Parser.php                    # Main class (API CI3 compatible)
+├── Contracts/
+│   ├── ParserInterface.php       # Interface utama parser
+│   ├── LexerInterface.php        # Interface tokenizer
+│   ├── CompilerInterface.php     # Interface compiler
+│   ├── CacheInterface.php        # Interface cache
+│   └── TokenInterface.php        # Interface token
+├── Lexer/
+│   └── TemplateLexer.php         # Tokenizer template
+├── Compiler/
+│   └── TemplateCompiler.php      # Interpreter pattern compiler
+├── Context/
+│   └── ParseContext.php          # Context management
+├── Factory/
+│   └── ParserFactory.php         # Factory + Builder pattern
+├── Cache/
+│   └── TemplateCache.php         # Lazy compilation cache
+├── Support/
+│   └── TemplateHelper.php        # Utility functions
+├── ValueObjects/
+│   └── Token.php                 # Immutable token VO
+├── tests/
+│   └── ParserTest.php            # PHPUnit test suite
+├── composer.json                 # PSR-4 autoloading
+└── phpunit.xml                   # PHPUnit configuration
+```
+
+## API (100% CI3 Compatible)
 
 ```php
-<?php
+// Basic usage
+$parser = new \CodeIgniter\Parser\Parser();
 
-require_once __DIR__ . '/vendor/autoload.php';
+// Parse template dengan variable
+$template = 'Hello, {name}!';
+$data = ['name' => 'World'];
+echo $parser->parse($template, $data);
 
-use Kodhe\Library\Parser\Parser;
+// Parse string (alias)
+echo $parser->parse_string($template, $data);
 
-echo "=== Kodhe Parser Tests ===\n\n";
+// Custom delimiters
+$parser->set_delimiters('[', ']');
+```
 
-$parser = new Parser();
+## Features
 
-// Test 1: Simple variable replacement
-echo "Test 1: Simple Variable Replacement\n";
-$template = "Hello, {name}! Welcome to {site}.";
-$data = ['name' => 'John', 'site' => 'MyApp'];
-$result = $parser->parse_string($template, $data, true);
-echo "Template: {$template}\n";
-echo "Result: {$result}\n\n";
-assert($result === 'Hello, John! Welcome to MyApp.', 'Test 1 failed');
-echo "✓ Passed\n\n";
+### Patterns
+- **Interpreter**: TemplateCompiler menginterpretasi tokens
+- **Strategy**: Lexer, Compiler, Cache dapat diganti
+- **Factory**: ParserFactory untuk membuat instance
+- **Builder**: Fluent interface di ParserFactory
+- **Dependency Injection**: Constructor injection di Parser
 
-// Test 2: Tag pair (loop)
-echo "Test 2: Tag Pair Loop\n";
-$template = "<ul>{items}<li>{item}</li>{/items}</ul>";
+### Performance
+- **Cache Template Compile**: Hasil compile di-cache
+- **Lazy Compile**: Cache dicek sebelum compile
+- **Token Reuse**: Token dapat dibuat ulang dengan efisien
+
+### Testing
+- Variable substitution
+- Loop constructs
+- Nested loops
+- Conditional blocks
+- Include directives
+- Cache behavior
+- Custom delimiters
+
+## Installation
+
+```bash
+composer install
+```
+
+## Running Tests
+
+```bash
+vendor/bin/phpunit
+```
+
+## Usage Examples
+
+### Variables
+```php
+$template = '{title} - {content}';
+$data = ['title' => 'Hello', 'content' => 'World'];
+$parser->parse($template, $data);
+// Output: Hello - World
+```
+
+### Loops
+```php
+$template = '{loop items}<li>{items}</li>{/loop}';
+$data = ['items' => ['A', 'B', 'C']];
+$parser->parse($template, $data);
+// Output: <li>A</li><li>B</li><li>C</li>
+```
+
+### Nested Loops
+```php
+$template = '{loop categories}{category}: {loop products}{products}, {/loop}{/loop}';
 $data = [
-    'items' => [
-        ['item' => 'First'],
-        ['item' => 'Second'],
-        ['item' => 'Third']
+    'categories' => [
+        ['category' => 'Fruits', 'products' => ['Apple', 'Banana']],
+        ['category' => 'Vegetables', 'products' => ['Carrot']]
     ]
 ];
-$result = $parser->parse_string($template, $data, true);
-echo "Template: {$template}\n";
-echo "Result: {$result}\n\n";
-assert($result === '<ul><li>First</li><li>Second</li><li>Third</li></ul>', 'Test 2 failed');
-echo "✓ Passed\n\n";
+```
 
-// Test 3: Nested tag pairs
-echo "Test 3: Nested Tag Pairs\n";
-$template = "{menu}{items}<li>{item}</li>{/items}{/menu}";
-$data = [
-    'menu' => [
-        [
-            'items' => [
-                ['item' => 'Home'],
-                ['item' => 'About']
-            ]
-        ],
-        [
-            'items' => [
-                ['item' => 'Contact'],
-                ['item' => 'Help']
-            ]
-        ]
-    ]
-];
-$result = $parser->parse_string($template, $data, true);
-echo "Template: {$template}\n";
-echo "Result: {$result}\n\n";
-assert(str_contains($result, '<li>Home</li>'), 'Test 3 failed');
-assert(str_contains($result, '<li>Contact</li>'), 'Test 3 failed');
-echo "✓ Passed\n\n";
+### Conditionals
+```php
+$template = '{if show}Visible{/if}';
+$data = ['show' => 'yes'];
+$parser->parse($template, $data);
 
-// Test 4: Custom delimiters
-echo "Test 4: Custom Delimiters\n";
+// Negation
+$template = '{if !hidden}Visible{/if}';
+$data = ['hidden' => ''];
+```
+
+### Includes
+```php
+$parser->setViewPaths(['/path/to/views']);
+$template = '{include "header.html"}Content{include "footer.html"}';
+```
+
+### Custom Delimiters
+```php
 $parser->set_delimiters('{{', '}}');
-$template = "Hello, {{name}}!";
-$result = $parser->parse_string($template, ['name' => 'World'], true);
-echo "Template: {$template}\n";
-echo "Result: {$result}\n\n";
-assert($result === 'Hello, World!', 'Test 4 failed');
-echo "✓ Passed\n\n";
+$template = '{{greeting}}, {{name}}!';
+```
 
-// Test 5: Empty template
-echo "Test 5: Empty Template\n";
-$result = $parser->parse_string('', [], true);
-echo "Result: " . var_export($result, true) . "\n\n";
-assert($result === false, 'Test 5 failed');
-echo "✓ Passed\n\n";
+### Factory Pattern
+```php
+use CodeIgniter\Parser\Factory\ParserFactory;
 
-// Test 6: Multiple variables
-echo "Test 6: Multiple Variables\n";
-$parser->set_delimiters('{', '}'); // Reset to default
-$template = "{greeting}, {name}! You have {count} new messages.";
-$data = [
-    'greeting' => 'Good morning',
-    'name' => 'Alice',
-    'count' => 5
-];
-$result = $parser->parse_string($template, $data, true);
-echo "Template: {$template}\n";
-echo "Result: {$result}\n\n";
-assert($result === 'Good morning, Alice! You have 5 new messages.', 'Test 6 failed');
-echo "✓ Passed\n\n";
+// Default
+$parser = ParserFactory::make();
 
-echo "=== All Tests Passed ===\n";
+// With config
+$parser = ParserFactory::makeWithConfig([
+    'left_delimiter' => '{{',
+    'right_delimiter' => '}}',
+    'cache_enabled' => false,
+    'view_paths' => ['/path/to/views']
+]);
+
+// With custom components
+$parser = ParserFactory::makeWithComponents(
+    new CustomLexer(),
+    new CustomCompiler(),
+    new CustomCache()
+);
+```
+
+### Cache Control
+```php
+$parser->setCacheEnabled(false);
+$parser->clearCache();
+```
+
+### Dot Notation
+```php
+$template = '{user.name} - {user.email}';
+$data = ['user' => ['name' => 'John', 'email' => 'john@example.com']];
+// Output: John - john@example.com
+```
+
+## PSR-4 Autoloading
+
+```json
+{
+    "autoload": {
+        "psr-4": {
+            "CodeIgniter\\Parser\\": ""
+        }
+    }
+}
+```
+
+## Requirements
+
+- PHP >= 7.2
+- PHPUnit >= 8.0 (untuk testing)
+
+## License
+
+MIT
