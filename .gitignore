@@ -1,6 +1,7 @@
 ```
 # Dependencies
 vendor/
+composer.lock
 
 # Logs and temp files
 *.log
@@ -11,11 +12,16 @@ vendor/
 .env.local
 *.env.*
 
-# Editors
+# Tests
+.phpunit.result.cache
+
+# IDE
 .vscode/
 .idea/
-
-# PHP specific
-*.php~
 *.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
 ```
