@@ -1,11 +1,27 @@
 {
-  "name": "kodhe/parser",
-  "description": "Kodhe parser library",
-  "type": "library",
-  "version": "1.1.0",
-  "license": "MIT",
-  "require": { "php": ">=8.1" },
-  "autoload": {
-    "psr-4": { "Kodhe\\Parser\\": "src/" }
-  }
+    "name": "codeigniter/parser",
+    "description": "Modular Template Parser for CodeIgniter 3",
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": ">=7.2"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^8.0|^9.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "CodeIgniter\\Parser\\": ""
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "CodeIgniter\\Parser\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit --colors=always",
+        "test:coverage": "phpunit --coverage-html coverage/"
+    },
+    "minimum-stability": "stable"
 }
