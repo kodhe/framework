@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Kodhe\Framework\Config\Loaders;
 
 use Kodhe\Framework\Container\Container;
-use Kodhe\Framework\Routing\ModernRouter;
-use Kodhe\Framework\Routing\Router;
+use Kodhe\Framework\Http\Routing\ModernRouter;
+use Kodhe\Framework\Http\Routing\Router;
 use Kodhe\Framework\Support\Modules;
 
 class FileLoader extends LegacyLoader 
