@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kodhe\Framework\Support;
 global $CFG;
 
-use Kodhe\Framework\Router\Router;
+use Kodhe\Framework\Http\Routing\Router;
 use Kodhe\Framework\Exceptions\Http\BadRequestException;
 
 class Modules

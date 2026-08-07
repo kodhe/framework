@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Routing;
+namespace Kodhe\Framework\Http\Routing;
 
 /**
  * Group Handler untuk manage nested route groups
