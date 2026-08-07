@@ -1,5 +1,33 @@
-```php
-<?php
-// .gitignore content would go here if needed
-?>
+```
+# Dependencies
+vendor/
+
+# Build artifacts
+composer.lock
+
+# Logs and temp files
+*.log
+*.tmp
+
+# Environment
+.env
+.env.local
+*.env.*
+
+# Editors
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Coverage reports
+coverage/
+htmlcov/
+.coverage
+
+# PHP specific
+*.php~
+*.swp
 ```
