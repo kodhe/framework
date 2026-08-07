@@ -8,366 +8,444 @@ use Kodhe\Pagination\Contracts\RendererInterface;
 use Kodhe\Pagination\Contracts\UrlBuilderInterface;
 use Kodhe\Pagination\Factory\RendererFactory;
 use Kodhe\Pagination\Support\LinkCache;
-use Kodhe\Pagination\Url\SegmentUrlBuilder;
-use Kodhe\Pagination\Url\QueryStringUrlBuilder;
+use Kodhe\Pagination\Support\AttributeHelper;
 use Kodhe\Pagination\ValueObjects\LinkData;
-use Kodhe\Pagination\Renderers\DefaultRenderer;
+use Kodhe\Pagination\ValueObjects\PaginationConfig;
 
-/**
- * Pagination Class - Refactored Version
- * 
- * Maintains backward compatible API with modular architecture
- * 
- * @package Kodhe\Pagination
- */
 class Pagination
 {
-    protected string $base_url = '';
-    protected string $prefix = '';
-    protected string $suffix = '';
-    protected int $total_rows = 0;
-    protected int $num_links = 2;
-    public int $per_page = 10;
-    public int $cur_page = 0;
-    protected bool $use_page_numbers = false;
-    protected $first_link = '&lsaquo; First';
-    protected $next_link = '&gt;';
-    protected $prev_link = '&lt;';
-    protected $last_link = 'Last &rsaquo;';
-    protected int $uri_segment = 0;
-    protected bool $page_query_string = false;
-    protected string $query_string_segment = 'per_page';
-    protected bool $reuse_query_string = false;
-    protected bool $display_pages = true;
-    protected string $first_url = '';
-    protected bool $use_global_url_suffix = false;
-    protected string $full_tag_open = '';
-    protected string $full_tag_close = '';
-    protected string $first_tag_open = '';
-    protected string $first_tag_close = '';
-    protected string $last_tag_open = '';
-    protected string $last_tag_close = '';
-    protected string $cur_tag_open = '<strong>';
-    protected string $cur_tag_close = '</strong>';
-    protected string $next_tag_open = '';
-    protected string $next_tag_close = '';
-    protected string $prev_tag_open = '';
-    protected string $prev_tag_close = '';
-    protected string $num_tag_open = '';
-    protected string $num_tag_close = '';
-    protected string $_attributes = '';
-    protected array $_link_types = [];
-    protected string $data_page_attr = 'data-ci-pagination-page';
-    protected ?RendererInterface $renderer = null;
-    protected ?UrlBuilderInterface $urlBuilder = null;
-    protected bool $enable_cache = true;
-    protected $CI;
+    // CI3 Config Properties
+    public $base_url = '';
+    public $prefix = '';
+    public $suffix = '';
+    public $total_rows = 0;
+    public $per_page = 10;
+    public $num_links = 2;
+    public $cur_page = 0;
+    public $use_page_numbers = false;
+    public $first_link = '&lsaquo; First';
+    public $next_link = '&gt;';
+    public $prev_link = '&lt;';
+    public $last_link = 'Last &rsaquo;';
+    public $uri_segment = 3;
+    public $full_tag_open = '';
+    public $full_tag_close = '';
+    public $first_tag_open = '';
+    public $first_tag_close = '';
+    public $last_tag_open = '';
+    public $last_tag_close = '';
+    public $first_url = '';
+    public $cur_tag_open = '<strong>';
+    public $cur_tag_close = '</strong>';
+    public $next_tag_open = '';
+    public $next_tag_close = '';
+    public $prev_tag_open = '';
+    public $prev_tag_close = '';
+    public $num_tag_open = '';
+    public $num_tag_close = '';
+    public $page_query_string = false;
+    public $query_string_segment = 'per_page';
+    public $display_pages = true;
+    public $anchor_class = '';
 
+    // Modular Properties
+    protected RendererInterface $renderer;
+    protected UrlBuilderInterface $urlBuilder;
+    protected LinkCache $cache;
+    protected bool $enable_cache = true;
+    protected ?PaginationConfig $configObject = null;
+    protected string $renderer_name = 'default';
+
+    /**
+     * Constructor.
+     *
+     * Compatible with:
+     * new Pagination($config)
+     */
     public function __construct($params = [])
     {
-        $this->CI = kodhe();
-        if (method_exists($this->CI->lang, 'line')) {
-            $this->CI->load->language('pagination');
-            foreach (['first_link', 'next_link', 'prev_link', 'last_link'] as $key) {
-                if (($val = $this->CI->lang->line('pagination_' . $key)) !== false) {
+        $this->cache = new LinkCache();
+
+        if (!empty($params)) {
+            $this->initialize($params);
+        }
+    }
+
+    /**
+     * Initialize preferences.
+     *
+     * Compatible with CI3:
+     * $this->pagination->initialize($config);
+     */
+    public function initialize($params = [])
+    {
+        if (is_array($params) && $params !== []) {
+            foreach ($params as $key => $val) {
+                if (property_exists($this, $key)) {
                     $this->$key = $val;
                 }
             }
         }
-        if (!isset($params['attributes'])) {
-            $params['attributes'] = [];
-        }
-        $this->initialize($params);
-        if (function_exists('log_message')) {
-            log_message('info', 'Pagination Class Initialized');
-        }
-    }
 
-    public function initialize(array $params = []): Pagination
-    {
-        if (isset($params['attributes']) && is_array($params['attributes'])) {
-            $this->_parse_attributes($params['attributes']);
-            unset($params['attributes']);
+        $this->normalizeAttributes();
+        $this->setupComponents();
+
+        if ($this->enable_cache) {
+            $this->cache->clear();
         }
-        if (isset($params['anchor_class'])) {
-            if (!empty($params['anchor_class'])) {
-                $params['attributes']['class'] = $params['anchor_class'];
-            }
-            unset($params['anchor_class']);
-        }
-        if (isset($params['renderer'])) {
-            $this->setRenderer($params['renderer']);
-            unset($params['renderer']);
-        }
-        if (isset($params['enable_cache'])) {
-            $this->enable_cache = (bool) $params['enable_cache'];
-            unset($params['enable_cache']);
-        }
-        foreach ($params as $key => $val) {
-            if (property_exists($this, $key)) {
-                $this->$key = $val;
-            }
-        }
-        if ($this->CI->config->item('enable_query_strings') === true) {
-            $this->page_query_string = true;
-        }
-        if ($this->use_global_url_suffix === true) {
-            $this->suffix = $this->CI->config->item('url_suffix');
-        }
+
         return $this;
     }
 
-    public function create_links(): string
+    /**
+     * Normalize renderer/tag attributes.
+     */
+    protected function normalizeAttributes(): void
     {
-        if ($this->total_rows == 0 || $this->per_page == 0) {
-            return '';
-        }
-        $num_pages = (int) ceil($this->total_rows / $this->per_page);
-        if ($num_pages === 1) {
-            return '';
-        }
-        $this->num_links = (int) $this->num_links;
-        if ($this->num_links < 0) {
-            show_error('Your number of links must be a non-negative number.');
-        }
-        if ($this->enable_cache) {
-            $cacheKey = $this->generateCacheKey();
-            $cached = LinkCache::get($cacheKey);
-            if ($cached !== null) {
-                return $cached;
-            }
-        }
-        $get = $this->reuse_query_string ? $this->CI->input->get() : [];
-        unset($get['c'], $get['m'], $get[$this->query_string_segment]);
-        $base_url = trim($this->base_url);
-        $first_url = $this->first_url;
-        $query_string_sep = (strpos($base_url, '?') === false) ? '?' : '&amp;';
-        $query_string = ''; // Initialize query_string to avoid undefined variable error
-        
-        if ($this->page_query_string === true) {
-            if ($first_url === '') {
-                $first_url = $base_url;
-                if (!empty($get)) {
-                    $first_url .= $query_string_sep . http_build_query($get);
-                }
-            }
-            $base_url .= $query_string_sep . http_build_query(array_merge($get, [$this->query_string_segment => '']));
-        } else {
-            if (!empty($get)) {
-                $query_string = $query_string_sep . http_build_query($get);
-                $this->suffix .= $query_string;
-            }
-            if ($this->reuse_query_string === true && ($base_query_pos = strpos($base_url, '?')) !== false) {
-                $base_url = substr($base_url, 0, $base_query_pos);
-            }
-            if ($first_url === '') {
-                $first_url = $base_url . $query_string;
-            }
-            $base_url = rtrim($base_url, '/') . '/';
-        }
-        $base_page = $this->use_page_numbers ? 1 : 0;
-        if ($this->page_query_string === true) {
-            $this->cur_page = (int) $this->CI->input->get($this->query_string_segment);
-        } elseif (empty($this->cur_page)) {
-            if ($this->uri_segment === 0) {
-                $this->uri_segment = count($this->CI->uri->segment_array());
-            }
-            $segment_value = $this->CI->uri->segment($this->uri_segment);
-            $this->cur_page = (int) ($segment_value ?: 0);
-            if ($this->prefix !== '' || $this->suffix !== '') {
-                $cleaned = str_replace([$this->prefix, $this->suffix], '', (string) $segment_value);
-                $this->cur_page = (int) ($cleaned ?: 0);
-            }
-        }
-        
-        // Ensure cur_page is always an integer
-        if (!ctype_digit((string) $this->cur_page) || ($this->use_page_numbers && (int) $this->cur_page === 0)) {
-            $this->cur_page = $base_page;
-        } else {
-            $this->cur_page = (int) $this->cur_page;
-        }
-        if ($this->use_page_numbers) {
-            if ($this->cur_page > $num_pages) {
-                $this->cur_page = $num_pages;
-            }
-        } elseif ($this->cur_page > $this->total_rows) {
-            $this->cur_page = ($num_pages - 1) * $this->per_page;
-        }
-        $uri_page_number = $this->cur_page;
-        if (!$this->use_page_numbers) {
-            $this->cur_page = (int) floor(($this->cur_page / $this->per_page) + 1);
-        }
-        $start = (($this->cur_page - $this->num_links) > 0) ? $this->cur_page - ($this->num_links - 1) : 1;
-        $end = (($this->cur_page + $this->num_links) < $num_pages) ? $this->cur_page + $this->num_links : $num_pages;
-        $links = $this->buildLinks($base_url, $first_url, $num_pages, $start, $end, $uri_page_number, $base_page);
-        $output = $this->renderLinks($links);
-        $output = $this->full_tag_open . $output . $this->full_tag_close;
-        $output = preg_replace('#([^:])//+#', '\1/', $output);
-        if ($this->enable_cache && isset($cacheKey)) {
-            LinkCache::set($cacheKey, $output);
-        }
-        return $output;
+        // Kept for CI3 compatibility.
+        // Attribute normalization is handled by AttributeHelper/Renderer.
     }
 
-    protected function buildLinks(string $base_url, string $first_url, int $num_pages, int $start, int $end, int $uri_page_number, int $base_page): array
+    /**
+     * Setup renderer and URL builder strategies.
+     */
+    protected function setupComponents(): void
     {
-        $links = [];
-        if ($this->first_link !== false && $this->cur_page > ($this->num_links + 1 + !$this->num_links)) {
-            $attributes = $this->buildAttributes(1);
-            $links[] = new LinkData((string) $this->first_link, $first_url, false, true, false, false, false, 1, $this->parseRelAttr('start', $attributes));
+        $rendererName = $this->renderer_name;
+
+        $this->renderer = RendererFactory::make(
+            is_string($rendererName) && $rendererName !== ''
+                ? $rendererName
+                : 'default',
+            $this
+        );
+
+        if ($this->page_query_string === true) {
+            $this->urlBuilder = new Url\QueryStringUrlBuilder($this);
+        } else {
+            $this->urlBuilder = new Url\SegmentUrlBuilder($this);
         }
-        if ($this->prev_link !== false && $this->cur_page !== 1) {
-            $i = $this->use_page_numbers ? $uri_page_number - 1 : $uri_page_number - $this->per_page;
-            $attributes = $this->buildAttributes($this->cur_page - 1);
-            $url = ($i === $base_page) ? $first_url : $base_url . $this->prefix . $i . $this->suffix;
-            $links[] = new LinkData((string) $this->prev_link, $url, false, false, false, true, false, $this->cur_page - 1, $this->parseRelAttr('prev', $attributes));
+    }
+
+    /**
+     * Build a URL through the configured URL builder.
+     *
+     * Keeping this in one place prevents the old one-argument
+     * build($page) API from leaking into Pagination again.
+     *
+     * @param int|string $page
+     * @param array<string,mixed> $queryParams
+     */
+    protected function buildUrl($page, array $queryParams = []): string
+    {
+        return $this->urlBuilder->build(
+            (string) $this->base_url,
+            $page,
+            $queryParams
+        );
+    }
+
+    /**
+     * Generate pagination links.
+     *
+     * Compatible with CI3:
+     * $this->pagination->create_links()
+     */
+    public function create_links()
+    {
+        if ((int) $this->total_rows <= 0) {
+            return '';
         }
-        if ($this->display_pages !== false) {
-            for ($loop = $start - 1; $loop <= $end; $loop++) {
-                $i = $this->use_page_numbers ? $loop : ($loop * $this->per_page) - $this->per_page;
-                $attributes = $this->buildAttributes($loop);
-                if ($i >= $base_page) {
-                    if ($this->cur_page === $loop) {
-                        $links[] = new LinkData((string) $loop, '', true, false, false, false, false, $loop);
-                    } elseif ($i === $base_page) {
-                        $links[] = new LinkData((string) $loop, $first_url, false, false, false, false, false, $loop, $this->parseRelAttr('start', $attributes));
-                    } else {
-                        $links[] = new LinkData((string) $loop, $base_url . $this->prefix . $i . $this->suffix, false, false, false, false, false, $loop, $attributes);
+
+        $perPage = max(1, (int) $this->per_page);
+        $totalPages = (int) ceil((int) $this->total_rows / $perPage);
+
+        if ($totalPages <= 1) {
+            $this->cur_page = 1;
+            return '';
+        }
+
+        $this->cur_page = $this->getCurrentPage($totalPages);
+
+        $cacheKey = $this->generateCacheKey();
+
+        if ($this->enable_cache && $this->cache->has($cacheKey)) {
+            return $this->cache->get($cacheKey);
+        }
+
+        $links = $this->buildLinks($totalPages);
+        $html = $this->renderer->render($links, $this);
+
+        if ($this->enable_cache) {
+            $this->cache->set($cacheKey, $html);
+        }
+
+        return $html;
+    }
+
+    /**
+     * Get current page number.
+     *
+     * In offset mode:
+     *   0  => page 1
+     *   5  => page 2
+     *   10 => page 3
+     *
+     * In page-number mode:
+     *   1 => page 1
+     *   2 => page 2
+     */
+    protected function getCurrentPage(int $totalPages): int
+    {
+        $page = 0;
+
+        if ($this->page_query_string === true) {
+            $value = $_GET[$this->query_string_segment] ?? null;
+
+            if ($value !== null && $value !== '') {
+                $page = (int) $value;
+            }
+        } else {
+            // Preserve CodeIgniter 3 compatibility.
+            if (function_exists('get_instance')) {
+                $ci = get_instance();
+
+                if (
+                    $ci !== null &&
+                    isset($ci->uri) &&
+                    method_exists($ci->uri, 'segment')
+                ) {
+                    $segment = $ci->uri->segment($this->uri_segment);
+
+                    if ($segment !== false && $segment !== '') {
+                        $page = (int) $segment;
                     }
                 }
             }
         }
-        if ($this->next_link !== false && $this->cur_page < $num_pages) {
-            $i = $this->use_page_numbers ? $this->cur_page + 1 : $this->cur_page * $this->per_page;
-            $attributes = $this->buildAttributes($this->cur_page + 1);
-            $links[] = new LinkData((string) $this->next_link, $base_url . $this->prefix . $i . $this->suffix, false, false, false, false, true, $this->cur_page + 1, $this->parseRelAttr('next', $attributes));
+
+        if ($this->use_page_numbers === true) {
+            return max(1, min($page, $totalPages));
         }
-        if ($this->last_link !== false && ($this->cur_page + $this->num_links + !$this->num_links) < $num_pages) {
-            $i = $this->use_page_numbers ? $num_pages : ($num_pages * $this->per_page) - $this->per_page;
-            $attributes = $this->buildAttributes($num_pages);
-            $links[] = new LinkData((string) $this->last_link, $base_url . $this->prefix . $i . $this->suffix, false, false, true, false, false, $num_pages, $attributes);
+
+        $perPage = max(1, (int) $this->per_page);
+
+        if ($page < 0) {
+            $page = 0;
         }
+
+        return max(
+            1,
+            min(
+                (int) floor($page / $perPage) + 1,
+                $totalPages
+            )
+        );
+    }
+
+    /**
+     * Build LinkData objects.
+     */
+    protected function buildLinks(int $totalPages): array
+    {
+        $links = [];
+        $currentPage = (int) $this->cur_page;
+        $perPage = max(1, (int) $this->per_page);
+
+        // Current offset used by offset-based pagination.
+        $currentOffset = ($currentPage - 1) * $perPage;
+
+        /*
+         * Previous
+         */
+        if ($currentPage > 1) {
+            $prevValue = $this->use_page_numbers === true
+                ? $currentPage - 1
+                : $currentOffset - $perPage;
+
+            $url = $this->buildUrl($prevValue);
+
+            $links[] = new LinkData(
+                (string) $this->prev_link,
+                $url,
+                false,
+                false,
+                false,
+                'prev',
+                0,
+                [],
+                AttributeHelper::normalize($this->prev_tag_open)
+            );
+        }
+
+        /*
+         * First
+         */
+        if (
+            $this->display_pages &&
+            $currentPage > ($this->num_links + 1)
+        ) {
+            $firstValue = $this->use_page_numbers === true ? 1 : 0;
+
+            /*
+             * CI3 supports an explicit first_url.
+             * Respect it before asking the URL strategy to build the URL.
+             */
+            $url = !empty($this->first_url)
+                ? (string) $this->first_url
+                : $this->buildUrl($firstValue);
+
+            $links[] = new LinkData(
+                (string) $this->first_link,
+                $url,
+                false,
+                false,
+                false,
+                'first',
+                1,
+                [],
+                AttributeHelper::normalize($this->first_tag_open)
+            );
+        }
+
+        /*
+         * Numbered pages
+         */
+        $start = max(1, $currentPage - (int) $this->num_links);
+        $end = min($totalPages, $currentPage + (int) $this->num_links);
+
+        if ($start > 1) {
+            $links[] = new LinkData(
+                '&hellip;',
+                null,
+                false,
+                true,
+                true,
+                'break'
+            );
+        }
+
+        for ($i = $start; $i <= $end; $i++) {
+            $isCurrent = ($i === $currentPage);
+
+            $pageValue = $this->use_page_numbers === true
+                ? $i
+                : (($i - 1) * $perPage);
+
+            $url = $isCurrent
+                ? null
+                : $this->buildUrl($pageValue);
+
+            $tagOpen = $isCurrent
+                ? $this->cur_tag_open
+                : $this->num_tag_open;
+
+            $tagClose = $isCurrent
+                ? $this->cur_tag_close
+                : $this->num_tag_close;
+
+            $links[] = new LinkData(
+                (string) $i,
+                $url,
+                $isCurrent,
+                $isCurrent,
+                false,
+                'page',
+                $i,
+                [],
+                AttributeHelper::normalize($tagOpen)
+            );
+        }
+
+        if ($end < $totalPages) {
+            $links[] = new LinkData(
+                '&hellip;',
+                null,
+                false,
+                true,
+                true,
+                'break'
+            );
+        }
+
+        /*
+         * Last
+         */
+        if (
+            $this->display_pages &&
+            $currentPage < ($totalPages - (int) $this->num_links)
+        ) {
+            $lastValue = $this->use_page_numbers === true
+                ? $totalPages
+                : (($totalPages - 1) * $perPage);
+
+            $url = $this->buildUrl($lastValue);
+
+            $links[] = new LinkData(
+                (string) $this->last_link,
+                $url,
+                false,
+                false,
+                false,
+                'last',
+                $totalPages,
+                [],
+                AttributeHelper::normalize($this->last_tag_open)
+            );
+        }
+
+        /*
+         * Next
+         */
+        if ($currentPage < $totalPages) {
+            $nextValue = $this->use_page_numbers === true
+                ? $currentPage + 1
+                : $currentOffset + $perPage;
+
+            $url = $this->buildUrl($nextValue);
+
+            $links[] = new LinkData(
+                (string) $this->next_link,
+                $url,
+                false,
+                false,
+                false,
+                'next',
+                0,
+                [],
+                AttributeHelper::normalize($this->next_tag_open)
+            );
+        }
+
         return $links;
     }
 
-    protected function renderLinks(array $links): string
-    {
-        $renderer = $this->getRenderer();
-        return $renderer->render($links);
-    }
-
-    protected function buildAttributes(int $page): string
-    {
-        $attrs = $this->_attributes;
-        $attrs .= ' ' . $this->data_page_attr . '="' . $page . '"';
-        return trim($attrs);
-    }
-
-    protected function parseRelAttr(string $type, string $attributes): array
-    {
-        $result = [];
-        preg_match_all('/(\w+)="([^"]*)"/', $attributes, $matches, PREG_SET_ORDER);
-        foreach ($matches as $match) {
-            $result[$match[1]] = $match[2];
-        }
-        if (isset($this->_link_types[$type])) {
-            unset($this->_link_types[$type]);
-            $result['rel'] = $type;
-        }
-        return $result;
-    }
-
-    protected function _parse_attributes($attributes): void
-    {
-        isset($attributes['rel']) OR $attributes['rel'] = true;
-        $this->_link_types = $attributes['rel'] ? ['start' => 'start', 'prev' => 'prev', 'next' => 'next'] : [];
-        unset($attributes['rel']);
-        $this->_attributes = '';
-        foreach ($attributes as $key => $value) {
-            $this->_attributes .= ' ' . $key . '="' . $value . '"';
-        }
-    }
-
-    protected function _attr_rel(string $type): string
-    {
-        if (isset($this->_link_types[$type])) {
-            unset($this->_link_types[$type]);
-            return ' rel="' . $type . '"';
-        }
-        return '';
-    }
-
-    public function setRenderer($renderer): void
-    {
-        if ($renderer instanceof RendererInterface) {
-            $this->renderer = $renderer;
-        } elseif (is_string($renderer) || is_array($renderer)) {
-            $this->renderer = RendererFactory::make($renderer);
-        }
-        if ($this->renderer instanceof DefaultRenderer) {
-            $this->renderer->setConfig([
-                'cur_tag_open' => $this->cur_tag_open,
-                'cur_tag_close' => $this->cur_tag_close,
-                'num_tag_open' => $this->num_tag_open,
-                'num_tag_close' => $this->num_tag_close,
-                'first_tag_open' => $this->first_tag_open,
-                'first_tag_close' => $this->first_tag_close,
-                'last_tag_open' => $this->last_tag_open,
-                'last_tag_close' => $this->last_tag_close,
-                'next_tag_open' => $this->next_tag_open,
-                'next_tag_close' => $this->next_tag_close,
-                'prev_tag_open' => $this->prev_tag_open,
-                'prev_tag_close' => $this->prev_tag_close,
-            ]);
-        }
-    }
-
-    public function getRenderer(): RendererInterface
-    {
-        if ($this->renderer === null) {
-            $this->renderer = new DefaultRenderer();
-            $this->renderer->setConfig([
-                'cur_tag_open' => $this->cur_tag_open,
-                'cur_tag_close' => $this->cur_tag_close,
-                'num_tag_open' => $this->num_tag_open,
-                'num_tag_close' => $this->num_tag_close,
-            ]);
-        }
-        return $this->renderer;
-    }
-
-    public function setUrlBuilder(UrlBuilderInterface $builder): void
-    {
-        $this->urlBuilder = $builder;
-    }
-
-    public function getUrlBuilder(): UrlBuilderInterface
-    {
-        if ($this->urlBuilder === null) {
-            $this->urlBuilder = $this->page_query_string ? new QueryStringUrlBuilder() : new SegmentUrlBuilder();
-        }
-        return $this->urlBuilder;
-    }
-
-    public function enableCache(bool $enable = true): void
-    {
-        $this->enable_cache = $enable;
-    }
-
-    public function clearCache(): void
-    {
-        LinkCache::clear();
-    }
-
+    /**
+     * Generate unique cache key.
+     */
     protected function generateCacheKey(): string
     {
-        return LinkCache::generateKey([
-            'base_url' => $this->base_url,
-            'total_rows' => $this->total_rows,
-            'per_page' => $this->per_page,
-            'cur_page' => $this->cur_page,
-            'num_links' => $this->num_links,
-            'tags' => ['cur_tag_open' => $this->cur_tag_open, 'cur_tag_close' => $this->cur_tag_close]
-        ]);
+        $uri = $_SERVER['REQUEST_URI'] ?? '';
+
+        return md5(
+            $uri .
+            '_' . $this->base_url .
+            '_' . $this->total_rows .
+            '_' . $this->per_page .
+            '_' . $this->num_links .
+            '_' . $this->cur_page .
+            '_' . (int) $this->use_page_numbers .
+            '_' . (int) $this->page_query_string
+        );
+    }
+
+    /**
+     * Legacy compatibility placeholder.
+     *
+     * Parser functionality does not belong to Pagination.
+     */
+    public function parse_string($template, $data, $return = false)
+    {
+        return '';
     }
 }

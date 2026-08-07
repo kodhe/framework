@@ -6,35 +6,39 @@ namespace Kodhe\Pagination\Contracts;
 
 /**
  * URL Builder Interface
- * 
- * Strategy pattern interface for different URL building strategies
+ *
+ * Strategy contract for generating pagination URLs.
  */
 interface UrlBuilderInterface
 {
     /**
-     * Build a pagination URL
-     * 
-     * @param string $baseUrl Base URL
-     * @param int|string $page Page number or offset
-     * @param array $queryParams Query parameters
-     * @return string Built URL
+     * Build a pagination URL.
+     *
+     * @param string $baseUrl
+     * @param int|string $page
+     * @param array<string, mixed> $queryParams
      */
-    public function build(string $baseUrl, $page, array $queryParams = []): string;
-    
+    public function build(
+        string $baseUrl,
+        $page,
+        array $queryParams = []
+    ): string;
+
     /**
-     * Get current page from request
-     * 
-     * @param string $segment URI segment or query parameter name
-     * @param bool $usePageNumbers Whether using page numbers or offset
-     * @return int Current page number
+     * Get current page from the request/context.
+     *
+     * @param string $segment
+     * @param bool $usePageNumbers
      */
-    public function getCurrentPage(string $segment, bool $usePageNumbers): int;
-    
+    public function getCurrentPage(
+        string $segment,
+        bool $usePageNumbers
+    ): int;
+
     /**
-     * Set configuration
-     * 
-     * @param array $config Configuration options
-     * @return void
+     * Configure the URL builder.
+     *
+     * @param array<string, mixed> $config
      */
     public function setConfig(array $config): void;
 }

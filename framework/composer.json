@@ -9,8 +9,7 @@
     "php": ">=8.1",
     "paragonie/random_compat": "^9.99",
     "kodhe/http": "^1.0",
-    "kodhe/routing": "^1.0",
-    "kodhe/legacy-loader": "^1.0"
+    "kodhe/routing": "^1.0"
   },
   "suggest": {
     "kodhe/session": "Session handling",
