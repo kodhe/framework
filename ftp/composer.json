@@ -1,11 +1,33 @@
 {
-  "name": "kodhe/ftp",
-  "description": "Kodhe ftp library",
-  "type": "library",
-  "version": "1.1.0",
-  "license": "MIT",
-  "require": { "php": ">=8.1" },
-  "autoload": {
-    "psr-4": { "Kodhe\\Ftp\\": "src/" }
-  }
+    "name": "kodhe/ftp",
+    "description": "Refactored FTP Library for CodeIgniter 3 with PSR-4 autoloading",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Your Name",
+            "email": "your.email@example.com"
+        }
+    ],
+    "require": {
+        "php": "^8.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Kodhe\\Ftp\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Kodhe\\Ftp\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit"
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
 }
