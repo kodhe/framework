@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Http\Routing\Exceptions;
+namespace Kodhe\Framework\Exceptions\Routing;
 
 use Exception;
 
