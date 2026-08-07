@@ -1,33 +1,5 @@
 ```
-# Dependencies
-vendor/
+/vendor/
 composer.lock
-
-# Logs and temp files
-*.log
-*.tmp
-
-# Environment
-.env
-.env.local
-.env.*
-
-# Editor/IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Build artifacts
-build/
-dist/
-target/
-
-# PHP specific
-*.php~
-*.php.bak
+.phpunit.result.cache
 ```
