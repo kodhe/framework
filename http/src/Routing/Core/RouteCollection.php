@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Routing\Core;
+namespace Kodhe\Framework\Http\Routing\Core;
 
 use Kodhe\Framework\Http\Request;
-use Kodhe\Framework\Routing\Contracts\{
+use Kodhe\Framework\Http\Routing\Contracts\{
     RouteCollectionInterface,
     RouteInterface
 };
