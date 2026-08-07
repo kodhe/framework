@@ -1,13 +1,12 @@
 {
-    "name": "codeigniter3/http",
-    "description": "Modular HTTP component for CodeIgniter 3 with PSR-4/PSR-12 compliance",
+    "name": "kodhe/http",
+    "description": "Modular HTTP component for Kodhe Framework with PSR-4/PSR-12 compliance",
     "type": "library",
     "license": "MIT",
-    "keywords": ["codeigniter", "http", "psr-7", "middleware", "ci3"],
+    "keywords": ["kodhe", "http", "psr-7", "middleware", "codeigniter3"],
     "authors": [
         {
-            "name": "CodeIgniter Community",
-            "email": "community@codeigniter.com"
+            "name": "Kodhe Framework Community"
         }
     ],
     "require": {
@@ -25,7 +24,7 @@
     },
     "autoload": {
         "psr-4": {
-            "CodeIgniter\\Http\\": "src/"
+            "Kodhe\\Framework\\Http\\": "src/"
         },
         "files": [
             "src/helpers/url.php"
@@ -33,7 +32,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "CodeIgniter\\Http\\Tests\\": "tests/"
+            "Kodhe\\Framework\\Http\\Tests\\": "tests/"
         }
     },
     "scripts": {
