@@ -1,39 +1,35 @@
 ```
-# Compiled and build artifacts
-*.o
-*.obj
-*.exe
-*.dll
-*.so
-*.a
-*.pyc
-__pycache__/
-
-# Dependencies
 vendor/
-node_modules/
 composer.lock
-
-# Logs and temp files
+.env
+.env.local
 *.log
 *.tmp
 *.swp
-
-# Environment
-.env
-.env.local
-*.env.*
-
-# Editors
-.vscode/
-.idea/
-
-# OS specific
 .DS_Store
 Thumbs.db
-
-# Build and distribution
-dist/
-build/
-target/
+.vscode/
+.idea/
+*.zip
+*.gz
+*.tar
+*.tgz
+*.bz2
+*.xz
+*.7z
+*.rar
+*.zst
+*.lz4
+*.lzh
+*.cab
+*.arj
+*.rpm
+*.deb
+*.Z
+*.lz
+*.lzo
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.tar.zst
 ```
