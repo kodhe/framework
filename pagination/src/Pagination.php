@@ -214,13 +214,13 @@ class Pagination
         $links = [];
         if ($this->first_link !== false && $this->cur_page > ($this->num_links + 1 + !$this->num_links)) {
             $attributes = $this->buildAttributes(1);
-            $links[] = new LinkData($this->first_link, $first_url, false, true, false, false, false, 1, $this->parseRelAttr('start', $attributes));
+            $links[] = new LinkData((string) $this->first_link, $first_url, false, true, false, false, false, 1, $this->parseRelAttr('start', $attributes));
         }
         if ($this->prev_link !== false && $this->cur_page !== 1) {
             $i = $this->use_page_numbers ? $uri_page_number - 1 : $uri_page_number - $this->per_page;
             $attributes = $this->buildAttributes($this->cur_page - 1);
             $url = ($i === $base_page) ? $first_url : $base_url . $this->prefix . $i . $this->suffix;
-            $links[] = new LinkData($this->prev_link, $url, false, false, false, true, false, $this->cur_page - 1, $this->parseRelAttr('prev', $attributes));
+            $links[] = new LinkData((string) $this->prev_link, $url, false, false, false, true, false, $this->cur_page - 1, $this->parseRelAttr('prev', $attributes));
         }
         if ($this->display_pages !== false) {
             for ($loop = $start - 1; $loop <= $end; $loop++) {
@@ -228,11 +228,11 @@ class Pagination
                 $attributes = $this->buildAttributes($loop);
                 if ($i >= $base_page) {
                     if ($this->cur_page === $loop) {
-                        $links[] = new LinkData($loop, '', true, false, false, false, false, $loop);
+                        $links[] = new LinkData((string) $loop, '', true, false, false, false, false, $loop);
                     } elseif ($i === $base_page) {
-                        $links[] = new LinkData($loop, $first_url, false, false, false, false, false, $loop, $this->parseRelAttr('start', $attributes));
+                        $links[] = new LinkData((string) $loop, $first_url, false, false, false, false, false, $loop, $this->parseRelAttr('start', $attributes));
                     } else {
-                        $links[] = new LinkData($loop, $base_url . $this->prefix . $i . $this->suffix, false, false, false, false, false, $loop, $attributes);
+                        $links[] = new LinkData((string) $loop, $base_url . $this->prefix . $i . $this->suffix, false, false, false, false, false, $loop, $attributes);
                     }
                 }
             }
@@ -240,12 +240,12 @@ class Pagination
         if ($this->next_link !== false && $this->cur_page < $num_pages) {
             $i = $this->use_page_numbers ? $this->cur_page + 1 : $this->cur_page * $this->per_page;
             $attributes = $this->buildAttributes($this->cur_page + 1);
-            $links[] = new LinkData($this->next_link, $base_url . $this->prefix . $i . $this->suffix, false, false, false, false, true, $this->cur_page + 1, $this->parseRelAttr('next', $attributes));
+            $links[] = new LinkData((string) $this->next_link, $base_url . $this->prefix . $i . $this->suffix, false, false, false, false, true, $this->cur_page + 1, $this->parseRelAttr('next', $attributes));
         }
         if ($this->last_link !== false && ($this->cur_page + $this->num_links + !$this->num_links) < $num_pages) {
             $i = $this->use_page_numbers ? $num_pages : ($num_pages * $this->per_page) - $this->per_page;
             $attributes = $this->buildAttributes($num_pages);
-            $links[] = new LinkData($this->last_link, $base_url . $this->prefix . $i . $this->suffix, false, false, true, false, false, $num_pages, $attributes);
+            $links[] = new LinkData((string) $this->last_link, $base_url . $this->prefix . $i . $this->suffix, false, false, true, false, false, $num_pages, $attributes);
         }
         return $links;
     }
