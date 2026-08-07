@@ -12,7 +12,8 @@
       "Kodhe\\Framework\\Http\\": "src/"
     },
     "files": [
-      "src/helpers/url.php"
+      "src/helpers/url.php",
+      "src/helpers/routing.php"
     ]
   },
   "suggest": {
