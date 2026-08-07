@@ -172,9 +172,11 @@ class Pagination
             if ($this->uri_segment === 0) {
                 $this->uri_segment = count($this->CI->uri->segment_array());
             }
-            $this->cur_page = $this->CI->uri->segment($this->uri_segment);
+            $segment_value = $this->CI->uri->segment($this->uri_segment);
+            $this->cur_page = (int) ($segment_value ?: 0);
             if ($this->prefix !== '' || $this->suffix !== '') {
-                $this->cur_page = str_replace([$this->prefix, $this->suffix], '', $this->cur_page);
+                $cleaned = str_replace([$this->prefix, $this->suffix], '', (string) $segment_value);
+                $this->cur_page = (int) ($cleaned ?: 0);
             }
         }
         
