@@ -510,15 +510,34 @@ $throwOnDuplicate = $container->getThrowOnDuplicate();
 ## 🧪 Testing
 
 ```bash
+# Install dependencies
+composer install
+
 # Run all tests
 vendor/bin/phpunit
 
 # Run specific test file
 vendor/bin/phpunit tests/ContainerTest.php
+vendor/bin/phpunit tests/ApplicationTest.php
+vendor/bin/phpunit tests/ConfigTest.php
+vendor/bin/phpunit tests/AutoloaderTest.php
 
 # Run with coverage
 vendor/bin/phpunit --coverage-html coverage/
+
+# Run with verbose output
+vendor/bin/phpunit -v
 ```
+
+### Test Coverage
+
+Package ini mencakup unit tests untuk:
+
+- **ContainerTest** - Dependency Injection Container (register, make, singleton, bindings)
+- **ApplicationTest** - Application bootstrap dan lifecycle
+- **ConfigTest** - Configuration loading dan manipulation
+- **AutoloaderTest** - PSR-4 autoloading functionality
+
 
 ## 🔄 Migrasi dari Versi Sebelumnya
 
