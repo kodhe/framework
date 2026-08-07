@@ -1,11 +1,31 @@
 {
   "name": "kodhe/cart",
-  "description": "Kodhe cart library",
+  "description": "Kodhe cart library - Modular, PSR-4/PSR-12 compliant shopping cart",
   "type": "library",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "license": "MIT",
-  "require": { "php": ">=8.1" },
+  "require": { 
+    "php": ">=8.1" 
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.0"
+  },
   "autoload": {
-    "psr-4": { "Kodhe\\Cart\\": "src/" }
+    "psr-4": { 
+      "Kodhe\\Cart\\": "src/",
+      "Kodhe\\Cart\\Contracts\\": "src/Contracts/",
+      "Kodhe\\Cart\\Storage\\": "src/Storage/",
+      "Kodhe\\Cart\\Models\\": "src/Models/",
+      "Kodhe\\Cart\\Calculator\\": "src/Calculator/",
+      "Kodhe\\Cart\\Factory\\": "src/Factory/",
+      "Kodhe\\Cart\\Support\\": "src/Support/",
+      "Kodhe\\Cart\\ValueObjects\\": "src/ValueObjects/",
+      "Kodhe\\Cart\\Exceptions\\": "src/Exceptions/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Kodhe\\Cart\\Tests\\": "tests/"
+    }
   }
 }
