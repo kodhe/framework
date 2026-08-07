@@ -16,7 +16,7 @@ class SessionStorage implements StorageInterface
     /**
      * @var array Reference to $_SESSION
      */
-    protected array &$session;
+    protected $session;
 
     /**
      * Constructor
