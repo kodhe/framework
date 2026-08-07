@@ -1,18 +1,12 @@
 {
   "name": "kodhe/view",
-  "description": "Kodhe View & Template Engine (includes BladeOne) - Modular, PSR-4/PSR-12 compliant, PHPUnit ready, High Performance, 100% Backward Compatible with CodeIgniter 3",
+  "description": "Kodhe View & Template Engine (includes BladeOne)",
   "type": "library",
-  "version": "2.0.0",
+  "version": "1.1.0",
   "license": "MIT",
-  "keywords": ["view", "template", "blade", "codeigniter", "ci3", "rendering", "theme"],
   "require": {
     "php": ">=8.1",
     "eftec/bladeone": "^4.19"
-  },
-  "require-dev": {
-    "phpunit/phpunit": "^10.0",
-    "phpstan/phpstan": "^1.10",
-    "squizlabs/php_codesniffer": "^3.7"
   },
   "autoload": {
     "psr-4": {
@@ -22,19 +16,5 @@
       "src/helpers/template.php",
       "src/helpers/template_asset.php"
     ]
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "Kodhe\\Framework\\View\\Tests\\": "tests/"
-    }
-  },
-  "scripts": {
-    "test": "phpunit",
-    "phpstan": "phpstan analyse src --level max",
-    "phpcs": "phpcs --standard=PSR12 src/",
-    "phpcbf": "phpcbf --standard=PSR12 src/",
-    "check": ["phpcs", "phpstan"]
-  },
-  "minimum-stability": "stable",
-  "prefer-stable": true
+  }
 }
