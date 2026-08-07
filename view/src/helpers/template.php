@@ -24,6 +24,26 @@ use Kodhe\Framework\View\Asset\AssetManager;
 use Kodhe\Framework\View\Support\ViewConfig;
 
 // ============================================================================
+// CORE VIEW FUNCTIONS
+// ============================================================================
+
+if (!function_exists('view')) {
+    /**
+     * Render a view and return/output the content.
+     * Simple alias for template() function.
+     *
+     * @param string $view   View name to render
+     * @param array  $data   Data to pass to the view
+     * @param bool   $return Whether to return the rendered output instead of displaying
+     * @return string|void
+     */
+    function view($view, $data = [], $return = false)
+    {
+        return template($view, $data, $return);
+    }
+}
+
+// ============================================================================
 // TEMPLATE RENDERING FUNCTIONS
 // ============================================================================
 
