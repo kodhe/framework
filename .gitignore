@@ -1,60 +1,123 @@
 ```php
 # Compiled and build artifacts
 *.pyc
-*.class
+__pycache__/
 *.o
 *.obj
-*.out
+*.class
+*.exe
 *.dll
 *.so
 *.a
-*.exe
+*.out
 
 # Dependencies
 node_modules/
 venv/
 .venv/
-__pycache__/
-.mypy_cache/
-.pytest_cache/
+.env
+.env.local
+*.env.*
+
+# Build directories
 dist/
 build/
 target/
 .gradle/
 
-# Logs and temp files
-*.log
-*.tmp
-*.swp
-*.swo
-
-# Environment
+# Python specific
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
 .env
 .env.local
-*.env.*
+.env.*
+.env~*
+.venv.bak/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+*.pot
+*.pyc
+*.pyo
+*.mo
+*.pot
+*.po
+*.mo
+.MF
+tags
+TAGS
+.idlerc/
+.python-version
+ipynb_checkpoints/
+*.sqlite
+*.sqlite3
+.sqlite_history
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.hypothesis/
 
-# Editors
+# IDE and editor files
 .vscode/
 .idea/
+*.swp
+*.swo
+*.tmp
+*.log
+*.bak
+*.save
+*~
+.project
+.classpath
+.settings/
+*.tmproj
+nbproject/
+*.sublime-project
+*.sublime-workspace
+!.sublime-project
+!.sublime-workspace
 
-# System files
+# OS generated files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
+desktop.ini
+Icon?
+VolumeIcon.icns
 
-# Coverage
-coverage/
-htmlcov/
-.coverage
-
-# Compressed files
+# Archives
 *.zip
+*.tar.gz
+*.tar.bz2
+*.tar.xz
 *.gz
+*.rar
+*.7z
 *.tar
-*.tgz
 *.bz2
 *.xz
-*.7z
-*.rar
+*.Z
+*.lz
+*.lzo
 *.zst
 *.lz4
 *.lzh
@@ -62,11 +125,150 @@ htmlcov/
 *.arj
 *.rpm
 *.deb
-*.Z
-*.lz
-*.lzo
-*.tar.gz
-*.tar.bz2
-*.tar.xz
-*.tar.zst
+
+# Testing
+coverage/
+htmlcov/
+.nyc_output
+coverage-final.json
+.jest/
+mochawesome-report/
+
+# Node.js
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+node_modules/
+dist/
+build/
+*.min.js
+*.min.css
+.npm
+.nyc_output/
+coverage/
+
+# Java
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+hs_err_pid*
+replay_pid*
+
+# C/C++
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.a
+*.dylib
+*.plist
+*.dSYM
+*.dSYM.zip
+
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.prof
+vendor/
+
+# Ruby
+*.gem
+*.rbc
+*.sass-cache
+capybara-*.html
+.rspec
+vendor/bundle/
+vendor/cache/
+vendor/gems/
+vendor/ruby/
+.bundle/
+.rbenv-vars
+.rbenv-gemsets
+.rbenv-version
+Gemfile.lock
+
+# PHP
+*.phar
+vendor/
+composer.phar
+composer.lock
+.php_cs.cache
+.phpunit.result.cache
+.scrutinizer.yml
+.codeclimate.yml
+.php_cs.dist
+.php_cs
+.php-cs-fixer.dist.php
+.php-cs-fixer.php
+
+# Rust
+target/
+Cargo.lock
+*.rs.bk
+**/*.so
+**/*.dylib
+
+# Julia
+.julia/
+.Julia_history
+*.ji
+*.jl.cov
+*.jl.orig
+deps/build.jl
+test/_temp/
+.JuliaFormatter.toml
+JuliaFormatter.toml
+
+# .NET
+bin/
+obj/
+*.sln.cache
+*.user
+*.userosscache
+*.suo
+*.userprefs
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+build/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Tt]emp/
+[Tt]emporaryGeneratedFile_*.cs
+[Tt]emporaryGeneratedFile_*.vb
+*.cache
+*.ilk
+*.meta
+*.pdb
+*.pgc
+*.pgd
+*.bin
+*.hex
+*.exp
+*.lib
+*.map
+*.tlog
+*.vspscc
+*.vssscc
+.builds
+*.pidb
+*.svclog
+*.sbr
+*.rsp
+*.dotsettings.user
+*.VC.db
+*.VC.VC.opendb
+[Dd]eployment/[Ll]ocation/[Bb]uild/
 ```
