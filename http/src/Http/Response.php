@@ -2,126 +2,206 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Http\Http;
+namespace CodeIgniter\Http\Http;
 
-use Kodhe\Framework\Http\Contracts\ResponseInterface;
-use GuzzleHttp\Psr7\Response as Psr7Response;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\StreamInterface;
+use CodeIgniter\Http\Contracts\ResponseInterface as CiResponseInterface;
 
 /**
- * Class Response
- * 
- * PSR-7 compatible Response implementation with CodeIgniter 3 compatibility
+ * HTTP Response Class
  */
-class Response extends Psr7Response implements ResponseInterface
+class Response implements ResponseInterface, CiResponseInterface
 {
+    protected int $statusCode = 200;
+    protected string $reasonPhrase = 'OK';
+    protected string $protocolVersion = '1.1';
+    protected array $headers = [];
+    protected StreamInterface $body;
+    protected bool $sent = false;
     protected array $cookies = [];
-    protected ?string $redirectUri = null;
-    protected bool $isRedirect = false;
-    protected $bodyContent = '';
-    
-    public function __construct(
-        int $status = 200,
-        array $headers = [],
-        $body = '',
-        string $version = '1.1',
-        ?string $reason = null
-    ) {
-        parent::__construct($status, $headers, $body, $version, $reason);
-        $this->bodyContent = (string) $body;
+
+    protected static array $statusPhrases = [
+        200 => 'OK',
+        201 => 'Created',
+        204 => 'No Content',
+        301 => 'Moved Permanently',
+        302 => 'Found',
+        303 => 'See Other',
+        304 => 'Not Modified',
+        307 => 'Temporary Redirect',
+        308 => 'Permanent Redirect',
+        400 => 'Bad Request',
+        401 => 'Unauthorized',
+        403 => 'Forbidden',
+        404 => 'Not Found',
+        405 => 'Method Not Allowed',
+        422 => 'Unprocessable Entity',
+        429 => 'Too Many Requests',
+        500 => 'Internal Server Error',
+        502 => 'Bad Gateway',
+        503 => 'Service Unavailable',
+        504 => 'Gateway Timeout',
+    ];
+
+    public function __construct($body = null)
+    {
+        if ($body === null) {
+            $body = fopen('php://temp', 'r+');
+        }
+        
+        if (is_string($body)) {
+            $stream = fopen('php://temp', 'r+');
+            fwrite($stream, $body);
+            rewind($stream);
+            $this->body = new \GuzzleHttp\Psr7\Stream($stream);
+        } else {
+            $this->body = $body;
+        }
     }
-    
+
+    public function getStatusCode(): int
+    {
+        return $this->statusCode;
+    }
+
+    public function withStatus(int $code, string $reasonPhrase = ''): self
+    {
+        $new = clone $this;
+        $new->statusCode = $code;
+        $new->reasonPhrase = $reasonPhrase !== '' ? $reasonPhrase : (self::$statusPhrases[$code] ?? '');
+        return $new;
+    }
+
+    public function setStatusCode(int $code, string $reasonPhrase = ''): self
+    {
+        return $this->withStatus($code, $reasonPhrase);
+    }
+
+    public function getReasonPhrase(): string
+    {
+        return $this->reasonPhrase;
+    }
+
+    public function getProtocolVersion(): string
+    {
+        return $this->protocolVersion;
+    }
+
+    public function withProtocolVersion(string $version): self
+    {
+        $new = clone $this;
+        $new->protocolVersion = $version;
+        return $new;
+    }
+
     public function getHeaders(): array
     {
-        $headers = [];
-        foreach ($this->getHeaderLines() as $name => $value) {
-            $headers[$name] = [$value];
-        }
-        return $headers;
+        return $this->headers;
     }
-    
+
     public function hasHeader(string $name): bool
     {
-        return $this->hasHeader($name);
+        return isset($this->headers[strtolower($name)]);
     }
-    
+
     public function getHeader(string $name): array
     {
-        return $this->getHeader($name);
+        $lowerName = strtolower($name);
+        return $this->headers[$lowerName] ?? [];
     }
-    
+
     public function getHeaderLine(string $name): string
     {
-        return $this->getHeaderLine($name);
+        return implode(', ', $this->getHeader($name));
     }
-    
-    public function setCookie(
-        string $name,
-        string $value = '',
-        int $expire = 0,
-        string $path = '',
-        string $domain = '',
-        bool $secure = false,
-        bool $httponly = true,
-        string $sameSite = ''
-    ): self {
-        $this->cookies[$name] = compact('name', 'value', 'expire', 'path', 'domain', 'secure', 'httponly', 'sameSite');
-        return $this;
-    }
-    
-    public function getCookie(?string $name = null)
+
+    public function withHeader(string $name, $value): self
     {
-        if ($name === null) {
-            return $this->cookies;
-        }
-        return $this->cookies[$name] ?? null;
+        $new = clone $this;
+        $lowerName = strtolower($name);
+        $new->headers[$lowerName] = is_array($value) ? $value : [$value];
+        return $new;
     }
-    
-    public function deleteCookie(
-        string $name,
-        string $path = '',
-        string $domain = ''
-    ): self {
-        $this->setCookie($name, '', time() - 3600, $path, $domain);
-        unset($this->cookies[$name]);
-        return $this;
-    }
-    
-    public function hasCookie(string $name): bool
-    {
-        return isset($this->cookies[$name]);
-    }
-    
+
     public function setHeader(string $name, $value): self
     {
         return $this->withHeader($name, $value);
     }
-    
+
+    public function withAddedHeader(string $name, $value): self
+    {
+        $new = clone $this;
+        $lowerName = strtolower($name);
+        
+        if (!isset($new->headers[$lowerName])) {
+            $new->headers[$lowerName] = [];
+        }
+        
+        $values = is_array($value) ? $value : [$value];
+        $new->headers[$lowerName] = array_merge($new->headers[$lowerName], $values);
+        
+        return $new;
+    }
+
+    public function appendHeader(string $name, $value): self
+    {
+        return $this->withAddedHeader($name, $value);
+    }
+
+    public function withoutHeader(string $name): self
+    {
+        $new = clone $this;
+        unset($new->headers[strtolower($name)]);
+        return $new;
+    }
+
     public function removeHeader(string $name): self
     {
         return $this->withoutHeader($name);
     }
-    
-    public function appendHeader(string $name, $value): self
+
+    public function getBody(): StreamInterface
     {
-        $existing = $this->getHeader($name);
-        $existing[] = $value;
-        return $this->withHeader($name, $existing);
+        return $this->body;
     }
-    
-    public function prependHeader(string $name, $value): self
+
+    public function getBodyContent(): string
     {
-        $existing = $this->getHeader($name);
-        array_unshift($existing, $value);
-        return $this->withHeader($name, $existing);
+        $this->body->rewind();
+        return $this->body->getContents();
     }
-    
-    public function setContentType(string $type, ?string $charset = null): self
+
+    public function withBody(StreamInterface $body): self
     {
-        $contentType = $charset ? "{$type}; charset={$charset}" : $type;
-        return $this->withHeader('Content-Type', $contentType);
+        $new = clone $this;
+        $new->body = $body;
+        return $new;
     }
-    
-    public function setCache(array $options = []): self
+
+    public function setBody($body): self
+    {
+        if (is_string($body)) {
+            $stream = fopen('php://temp', 'r+');
+            fwrite($stream, $body);
+            rewind($stream);
+            return $this->withBody(new \GuzzleHttp\Psr7\Stream($stream));
+        }
+        
+        return $this->withBody($body);
+    }
+
+    public function setContentType(string $type, string $charset = 'UTF-8'): self
+    {
+        return $this->setHeader('Content-Type', $type . '; charset=' . $charset);
+    }
+
+    public function getContentType(): ?string
+    {
+        return $this->getHeaderLine('Content-Type') ?: null;
+    }
+
+    public function setCache(array $options): self
     {
         $cacheControl = [];
         
@@ -131,7 +211,9 @@ class Response extends Psr7Response implements ResponseInterface
         
         if (isset($options['public'])) {
             $cacheControl[] = 'public';
-        } elseif (isset($options['private'])) {
+        }
+        
+        if (isset($options['private'])) {
             $cacheControl[] = 'private';
         }
         
@@ -144,57 +226,84 @@ class Response extends Psr7Response implements ResponseInterface
         }
         
         if (!empty($cacheControl)) {
-            return $this->withHeader('Cache-Control', implode(', ', $cacheControl));
+            $this->setHeader('Cache-Control', implode(', ', $cacheControl));
+        }
+        
+        if (isset($options['expires'])) {
+            $this->setHeader('Expires', $options['expires']);
+        }
+        
+        if (isset($options['etag'])) {
+            $this->setHeader('ETag', $options['etag']);
+        }
+        
+        if (isset($options['last-modified'])) {
+            $this->setHeader('Last-Modified', $options['last-modified']);
         }
         
         return $this;
     }
-    
+
     public function noCache(): self
     {
         return $this->setCache([
             'no-cache' => true,
             'no-store' => true,
-            'max-age' => 0
+            'max-age' => 0,
         ]);
     }
-    
-    public function download(
-        string $filename,
-        ?string $data = null,
-        bool $setMime = true
-    ): self {
-        if ($data !== null) {
-            $this->bodyContent = $data;
-        }
-        
-        return $this
-            ->withHeader('Content-Disposition', 'attachment; filename="' . $filename . '"')
-            ->withHeader('Content-Type', $setMime ? mime_content_type($filename) : 'application/octet-stream')
-            ->withHeader('Content-Length', (string) strlen($this->bodyContent));
-    }
-    
-    public function send(int $statusCode = 200): void
+
+    public function setCookie(string $name, string $value = '', int $expire = 0, string $path = '/', string $domain = '', bool $secure = false, bool $httpOnly = true, string $sameSite = 'Lax'): self
     {
+        $this->cookies[$name] = compact('name', 'value', 'expire', 'path', 'domain', 'secure', 'httpOnly', 'sameSite');
+        return $this;
+    }
+
+    public function getCookies(): array
+    {
+        return $this->cookies;
+    }
+
+    public function deleteCookie(string $name, string $path = '/', string $domain = ''): self
+    {
+        return $this->setCookie($name, '', time() - 3600, $path, $domain);
+    }
+
+    public function isSent(): bool
+    {
+        return $this->sent;
+    }
+
+    public function markAsSent(): void
+    {
+        $this->sent = true;
+    }
+
+    public function send(): void
+    {
+        if ($this->sent) {
+            return;
+        }
+
         $this->sendHeaders();
         $this->sendBody();
+        $this->markAsSent();
     }
-    
+
     public function sendHeaders(): void
     {
         if (headers_sent()) {
             return;
         }
-        
-        http_response_code($this->getStatusCode());
-        
-        foreach ($this->getHeaders() as $name => $values) {
+
+        http_response_code($this->statusCode);
+
+        foreach ($this->headers as $name => $values) {
             foreach ($values as $value) {
-                header("{$name}: {$value}", false);
+                header($name . ': ' . $value, false);
             }
         }
-        
-        // Send cookies
+
         foreach ($this->cookies as $cookie) {
             setcookie(
                 $cookie['name'],
@@ -203,117 +312,33 @@ class Response extends Psr7Response implements ResponseInterface
                 $cookie['path'],
                 $cookie['domain'],
                 $cookie['secure'],
-                $cookie['httponly']
+                $cookie['httpOnly']
             );
         }
     }
-    
+
     public function sendBody(): void
     {
-        echo $this->getBodyAsString();
+        echo $this->getBodyContent();
     }
-    
-    public function redirect(
-        ?string $uri = null,
-        string $method = 'auto',
-        ?int $code = null
-    ): self {
-        if ($uri !== null) {
-            $this->redirectUri = $uri;
+
+    public function __toString(): string
+    {
+        $output = "HTTP/{$this->protocolVersion} {$this->statusCode} {$this->reasonPhrase}\r\n";
+        
+        foreach ($this->headers as $name => $values) {
+            foreach ($values as $value) {
+                $output .= ucfirst($name) . ': ' . $value . "\r\n";
+            }
         }
         
-        $this->isRedirect = true;
+        $output .= "\r\n" . $this->getBodyContent();
         
-        if ($code === null) {
-            $code = $method === 'permanent' ? 301 : 302;
-        }
-        
-        if ($this->redirectUri) {
-            return $this->withStatus($code)->withHeader('Location', $this->redirectUri);
-        }
-        
-        return $this->withStatus($code);
+        return $output;
     }
-    
-    public function getRedirectUri(): ?string
+
+    public function __clone()
     {
-        return $this->redirectUri;
-    }
-    
-    public function isRedirect(): bool
-    {
-        return $this->isRedirect || in_array($this->getStatusCode(), [301, 302, 303, 307, 308]);
-    }
-    
-    public function setJSON($body, int $status = 200): self
-    {
-        $json = json_encode($body, JSON_UNESCAPED_UNICODE);
-        $this->bodyContent = $json;
-        
-        return $this
-            ->withStatus($status)
-            ->withHeader('Content-Type', 'application/json')
-            ->withBody(\GuzzleHttp\Psr7\Utils::streamFor($json));
-    }
-    
-    public function getJSON(bool $assoc = false, int $depth = 512, int $options = 0)
-    {
-        return json_decode($this->getBodyAsString(), $assoc, $depth, $options);
-    }
-    
-    public function setXML($body, int $status = 200): self
-    {
-        $xml = is_string($body) ? $body : xml_encode($body);
-        $this->bodyContent = $xml;
-        
-        return $this
-            ->withStatus($status)
-            ->withHeader('Content-Type', 'application/xml')
-            ->withBody(\GuzzleHttp\Psr7\Utils::streamFor($xml));
-    }
-    
-    public function getXML()
-    {
-        return simplexml_load_string($this->getBodyAsString());
-    }
-    
-    public function setStatus(int $code, string $reason = ''): self
-    {
-        return $this->withStatus($code, $reason);
-    }
-    
-    public function isOK(): bool
-    {
-        return $this->getStatusCode() === 200;
-    }
-    
-    public function isClientError(): bool
-    {
-        return $this->getStatusCode() >= 400 && $this->getStatusCode() < 500;
-    }
-    
-    public function isServerError(): bool
-    {
-        return $this->getStatusCode() >= 500 && $this->getStatusCode() < 600;
-    }
-    
-    public function isSuccessful(): bool
-    {
-        return $this->getStatusCode() >= 200 && $this->getStatusCode() < 300;
-    }
-    
-    public function isInformational(): bool
-    {
-        return $this->getStatusCode() >= 100 && $this->getStatusCode() < 200;
-    }
-    
-    public function isRedirected(): bool
-    {
-        return $this->getStatusCode() >= 300 && $this->getStatusCode() < 400;
-    }
-    
-    public function getBodyAsString(): string
-    {
-        return $this->bodyContent ?: (string) $this->getBody();
+        // Body is not cloned to maintain stream reference
     }
 }

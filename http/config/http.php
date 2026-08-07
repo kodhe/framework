@@ -1,81 +1,17 @@
 <?php
 
-/**
- * HTTP Component Configuration
- */
-
 return [
-    /*
-    |--------------------------------------------------------------------------
-    | Default Response Settings
-    |--------------------------------------------------------------------------
-    */
-    'response' => [
-        'charset' => 'UTF-8',
-        'content_type' => 'text/html',
+    "default_protocol" => "HTTP/1.1",
+    "charset" => "UTF-8",
+    "status_codes" => [
+        200 => "OK", 201 => "Created", 204 => "No Content",
+        301 => "Moved Permanently", 302 => "Found", 303 => "See Other",
+        304 => "Not Modified", 307 => "Temporary Redirect", 308 => "Permanent Redirect",
+        400 => "Bad Request", 401 => "Unauthorized", 403 => "Forbidden",
+        404 => "Not Found", 405 => "Method Not Allowed", 422 => "Unprocessable Entity",
+        429 => "Too Many Requests", 500 => "Internal Server Error",
+        502 => "Bad Gateway", 503 => "Service Unavailable", 504 => "Gateway Timeout",
     ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Global Middleware
-    |--------------------------------------------------------------------------
-    | These middleware will be run for every request
-    */
-    'global_middleware' => [
-        // \Kodhe\Framework\Http\Middleware\Http\ThrottleRequests::class,
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Middleware Groups
-    |--------------------------------------------------------------------------
-    */
-    'middleware_groups' => [
-        'web' => [
-            // Session middleware, CSRF protection, etc.
-        ],
-        
-        'api' => [
-            // API throttling, CORS, etc.
-        ],
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Route Middleware
-    |--------------------------------------------------------------------------
-    | Individual middleware that can be assigned to routes
-    */
-    'route_middleware' => [
-        'auth' => \Kodhe\Framework\Http\Middleware\Http\AuthMiddleware::class,
-        'guest' => \Kodhe\Framework\Http\Middleware\Http\GuestMiddleware::class,
-        'throttle' => \Kodhe\Framework\Http\Middleware\Http\ThrottleRequests::class,
-        'api.version' => \Kodhe\Framework\Http\Middleware\Http\ApiVersionMiddleware::class,
-        'subdomain' => \Kodhe\Framework\Http\Middleware\Http\SubdomainMiddleware::class,
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Rate Limiting
-    |--------------------------------------------------------------------------
-    */
-    'rate_limiting' => [
-        'enabled' => true,
-        'default' => [
-            'max_attempts' => 60,
-            'decay_minutes' => 1,
-        ],
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Security Headers
-    |--------------------------------------------------------------------------
-    */
-    'security_headers' => [
-        'x_frame_options' => 'SAMEORIGIN',
-        'x_content_type_options' => 'nosniff',
-        'x_xss_protection' => '1; mode=block',
-        'referrer_policy' => 'strict-origin-when-cross-origin',
-    ],
+    "middleware_groups" => ["web" => [], "api" => [], "auth" => []],
+    "global_middleware" => [],
 ];

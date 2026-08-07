@@ -2,64 +2,141 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Http\Http;
+namespace CodeIgniter\Http\Http;
 
-use Kodhe\Framework\Http\Contracts\RequestInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UriInterface;
-use GuzzleHttp\Psr7\Request as Psr7Request;
-use GuzzleHttp\Psr7\Uri;
+use Psr\Http\Message\StreamInterface;
+use CodeIgniter\Http\Contracts\RequestInterface;
+use Psr\Http\Message\UploadedFileInterface;
+use CodeIgniter\Http\Support\HeaderBag;
+use CodeIgniter\Http\Support\ParameterBag;
+use CodeIgniter\Http\Support\CookieBag;
+use CodeIgniter\Http\Support\ServerBag;
 
 /**
- * Class Request
+ * HTTP Request Class
  * 
- * PSR-7 compatible Request implementation with CodeIgniter 3 compatibility
+ * Represents an HTTP server request.
  */
-class Request extends Psr7Request implements RequestInterface
+class Request implements RequestInterface, ServerRequestInterface
 {
-    protected array $globals = [];
-    protected ?string $ipAddress = null;
-    protected bool $isAjax = false;
-    protected array $segments = [];
-    
+    protected string $method = 'GET';
+    protected UriInterface $uri;
+    protected HeaderBag $headers;
+    protected ParameterBag $queryParams;
+    protected ParameterBag $parsedBody;
+    protected CookieBag $cookies;
+    protected ServerBag $serverParams;
+    protected array $uploadedFiles = [];
+    protected StreamInterface $body;
+    protected string $protocolVersion = '1.1';
+    protected bool $ajax = false;
+    protected bool $secure = false;
+    protected ?string $clientIp = null;
+    protected ?string $userAgent = null;
+    protected array $attributes = [];
+    protected array $validationErrors = [];
+    protected bool $validated = false;
+
     public function __construct(
-        string $method,
-        $uri,
-        array $headers = [],
-        $body = null,
-        string $version = '1.1',
-        array $globals = []
+        array $get = [],
+        array $post = [],
+        array $cookies = [],
+        array $files = [],
+        array $server = [],
+        $body = null
     ) {
-        parent::__construct($method, $uri, $headers, $body, $version);
-        $this->globals = $globals;
-        $this->parseGlobals();
-    }
-    
-    /**
-     * Parse global arrays (_GET, _POST, _COOKIE, _SERVER)
-     */
-    protected function parseGlobals(): void
-    {
-        // Extract IP address
-        $this->ipAddress = $this->extractIpAddress();
+        $this->queryParams = new ParameterBag($get);
+        $this->parsedBody = new ParameterBag($post);
+        $this->cookies = new CookieBag($cookies);
+        $this->serverParams = new ServerBag($server);
+        $this->headers = new HeaderBag($this->extractHeaders($server));
         
-        // Check if AJAX request
-        $this->isAjax = isset($this->globals['HTTP_X_REQUESTED_WITH']) 
-            && strtolower($this->globals['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
-        
-        // Extract URI segments
-        if (isset($this->globals['REQUEST_URI'])) {
-            $this->segments = explode('/', trim(parse_url($this->globals['REQUEST_URI'], PHP_URL_PATH), '/'));
-            $this->segments = array_filter($this->segments, fn($s) => $s !== '');
-            $this->segments = array_values($this->segments);
+        if ($body === null) {
+            $body = fopen('php://temp', 'r+');
         }
+        
+        if (is_string($body)) {
+            $stream = fopen('php://temp', 'r+');
+            fwrite($stream, $body);
+            rewind($stream);
+            $this->body = new \GuzzleHttp\Psr7\Stream($stream);
+        } else {
+            $this->body = $body;
+        }
+
+        $this->uri = $this->createUriFromServer($server);
+        $this->method = $this->extractMethod($server, $post);
+        $this->ajax = $this->extractAjax($server);
+        $this->secure = $this->extractSecure($server);
+        $this->clientIp = $this->extractClientIp($server);
+        $this->userAgent = $server['HTTP_USER_AGENT'] ?? null;
     }
-    
-    /**
-     * Extract IP address from server variables
-     */
-    protected function extractIpAddress(): ?string
+
+    protected function extractHeaders(array $server): array
     {
-        $ipKeys = [
+        $headers = [];
+        foreach ($server as $key => $value) {
+            if (strpos($key, 'HTTP_') === 0) {
+                $headerName = str_replace('_', '-', substr($key, 5));
+                $headers[$headerName] = $value;
+            } elseif ($key === 'CONTENT_TYPE' || $key === 'CONTENT_LENGTH') {
+                $headerName = str_replace('_', '-', $key);
+                $headers[$headerName] = $value;
+            }
+        }
+        return $headers;
+    }
+
+    protected function createUriFromServer(array $server): UriInterface
+    {
+        $scheme = isset($server['HTTPS']) && $server['HTTPS'] !== 'off' ? 'https' : 'http';
+        $host = $server['HTTP_HOST'] ?? 'localhost';
+        $port = null;
+        
+        if (strpos($host, ':') !== false) {
+            [$host, $port] = explode(':', $host);
+            $port = (int) $port;
+        }
+        
+        $path = $server['REQUEST_URI'] ?? '/';
+        $query = $server['QUERY_STRING'] ?? '';
+        
+        return new Uri($scheme, $host, $port, $path, $query);
+    }
+
+    protected function extractMethod(array $server, array $post): string
+    {
+        $method = $server['REQUEST_METHOD'] ?? 'GET';
+        
+        if ($method === 'POST' && isset($post['_method'])) {
+            $method = strtoupper($post['_method']);
+        }
+        
+        if (isset($server['HTTP_X_HTTP_METHOD_OVERRIDE'])) {
+            $method = strtoupper($server['HTTP_X_HTTP_METHOD_OVERRIDE']);
+        }
+        
+        return $method;
+    }
+
+    protected function extractAjax(array $server): bool
+    {
+        return isset($server['HTTP_X_REQUESTED_WITH']) && 
+               $server['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
+    }
+
+    protected function extractSecure(array $server): bool
+    {
+        return (isset($server['HTTPS']) && $server['HTTPS'] !== 'off') ||
+               (isset($server['HTTP_X_FORWARDED_PROTO']) && $server['HTTP_X_FORWARDED_PROTO'] === 'https') ||
+               (isset($server['REQUEST_SCHEME']) && $server['REQUEST_SCHEME'] === 'https');
+    }
+
+    protected function extractClientIp(array $server): ?string
+    {
+        $keys = [
             'HTTP_CLIENT_IP',
             'HTTP_X_FORWARDED_FOR',
             'HTTP_X_FORWARDED',
@@ -68,218 +145,353 @@ class Request extends Psr7Request implements RequestInterface
             'HTTP_FORWARDED',
             'REMOTE_ADDR'
         ];
-        
-        foreach ($ipKeys as $key) {
-            if (isset($this->globals[$key]) && !empty($this->globals[$key])) {
-                $ips = explode(',', $this->globals[$key]);
+
+        foreach ($keys as $key) {
+            if (!empty($server[$key])) {
+                $ips = explode(',', $server[$key]);
                 $ip = trim($ips[0]);
-                
                 if (filter_var($ip, FILTER_VALIDATE_IP)) {
                     return $ip;
                 }
             }
         }
-        
-        return null;
+
+        return $server['REMOTE_ADDR'] ?? null;
     }
-    
-    public function ipAddress(): ?string
+
+    public function getMethod(): string
     {
-        return $this->ipAddress;
+        return $this->method;
     }
-    
-    public function isAjax(): bool
+
+    public function setMethod(string $method): self
     {
-        return $this->isAjax;
-    }
-    
-    public function isSecure(): bool
-    {
-        return (isset($this->globals['HTTPS']) && $this->globals['HTTPS'] === 'on')
-            || (isset($this->globals['HTTP_X_FORWARDED_PROTO']) && $this->globals['HTTP_X_FORWARDED_PROTO'] === 'https')
-            || (isset($this->globals['REQUEST_SCHEME']) && $this->globals['REQUEST_SCHEME'] === 'https');
-    }
-    
-    public function userAgent(): ?string
-    {
-        return $this->globals['HTTP_USER_AGENT'] ?? null;
-    }
-    
-    public function getValidIp(): ?string
-    {
-        return $this->ipAddress;
-    }
-    
-    public function setIpAddress(?string $ip): self
-    {
-        $this->ipAddress = $ip;
+        $this->method = strtoupper($method);
         return $this;
     }
-    
-    public function getData(?string $key = null, $default = null)
+
+    public function getUri(): UriInterface
     {
-        $data = array_merge(
-            $this->globals['_GET'] ?? [],
-            $this->globals['_POST'] ?? [],
-            $this->globals['_REQUEST'] ?? []
-        );
+        return $this->uri;
+    }
+
+    public function withUri(UriInterface $uri, bool $preserveHost = false): self
+    {
+        $new = clone $this;
+        $new->uri = $uri;
         
-        if ($key === null) {
-            return $data;
-        }
-        
-        return $data[$key] ?? $default;
-    }
-    
-    public function getGet(?string $key = null, $default = null)
-    {
-        if ($key === null) {
-            return $this->globals['_GET'] ?? [];
-        }
-        
-        return ($this->globals['_GET'][$key] ?? $default);
-    }
-    
-    public function getPost(?string $key = null, $default = null)
-    {
-        if ($key === null) {
-            return $this->globals['_POST'] ?? [];
-        }
-        
-        return ($this->globals['_POST'][$key] ?? $default);
-    }
-    
-    public function getCookie(?string $key = null, $default = null)
-    {
-        if ($key === null) {
-            return $this->globals['_COOKIE'] ?? [];
-        }
-        
-        return ($this->globals['_COOKIE'][$key] ?? $default);
-    }
-    
-    public function getServer(?string $key = null, $default = null)
-    {
-        if ($key === null) {
-            return $this->globals;
-        }
-        
-        return ($this->globals[$key] ?? $default);
-    }
-    
-    public function isPost(): bool
-    {
-        return strtoupper($this->getMethod()) === 'POST';
-    }
-    
-    public function isGet(): bool
-    {
-        return strtoupper($this->getMethod()) === 'GET';
-    }
-    
-    public function isPut(): bool
-    {
-        return strtoupper($this->getMethod()) === 'PUT';
-    }
-    
-    public function isDelete(): bool
-    {
-        return strtoupper($this->getMethod()) === 'DELETE';
-    }
-    
-    public function isPatch(): bool
-    {
-        return strtoupper($this->getMethod()) === 'PATCH';
-    }
-    
-    public function isHead(): bool
-    {
-        return strtoupper($this->getMethod()) === 'HEAD';
-    }
-    
-    public function isOptions(): bool
-    {
-        return strtoupper($this->getMethod()) === 'OPTIONS';
-    }
-    
-    public function wantsJson(): bool
-    {
-        $accept = $this->getHeaderLine('Accept');
-        return strpos($accept, 'application/json') !== false;
-    }
-    
-    public function acceptsJson(): bool
-    {
-        return $this->wantsJson();
-    }
-    
-    public function getSegment(int $index, $default = '')
-    {
-        $index = $index - 1; // CI uses 1-based index
-        return $this->segments[$index] ?? $default;
-    }
-    
-    public function getSegments(): array
-    {
-        return $this->segments;
-    }
-    
-    public function getTotalSegments(): int
-    {
-        return count($this->segments);
-    }
-    
-    public function getReferrer(): ?string
-    {
-        return $this->globals['HTTP_REFERER'] ?? null;
-    }
-    
-    public function getClientIp(): ?string
-    {
-        return $this->ipAddress;
-    }
-    
-    public static function createFromGlobals(array $server = [], array $get = [], array $post = [], array $cookie = []): self
-    {
-        $method = $server['REQUEST_METHOD'] ?? 'GET';
-        $uri = new Uri(self::getUriFromGlobals($server));
-        
-        $headers = self::extractHeaders($server);
-        
-        $globals = array_merge($server, [
-            '_GET' => $get,
-            '_POST' => $post,
-            '_COOKIE' => $cookie,
-            '_REQUEST' => array_merge($get, $post)
-        ]);
-        
-        return new self($method, $uri, $headers, null, '1.1', $globals);
-    }
-    
-    protected static function getUriFromGlobals(array $server): string
-    {
-        $scheme = isset($server['HTTPS']) && $server['HTTPS'] === 'on' ? 'https' : 'http';
-        $host = $server['HTTP_HOST'] ?? 'localhost';
-        $path = $server['REQUEST_URI'] ?? '/';
-        $query = isset($server['QUERY_STRING']) && $server['QUERY_STRING'] !== '' ? '?' . $server['QUERY_STRING'] : '';
-        
-        return "{$scheme}://{$host}{$path}{$query}";
-    }
-    
-    protected static function extractHeaders(array $server): array
-    {
-        $headers = [];
-        
-        foreach ($server as $key => $value) {
-            if (strpos($key, 'HTTP_') === 0) {
-                $headerName = str_replace('_', '-', substr($key, 5));
-                $headers[$headerName] = [$value];
-            } elseif (in_array($key, ['CONTENT_TYPE', 'CONTENT_LENGTH'])) {
-                $headerName = str_replace('_', '-', $key);
-                $headers[$headerName] = [$value];
+        if (!$preserveHost || !$this->hasHeader('Host')) {
+            $host = $uri->getHost();
+            if ($host !== '') {
+                $port = $uri->getPort();
+                if ($port !== null) {
+                    $host .= ':' . $port;
+                }
+                $new->headers->set('Host', $host);
             }
         }
         
-        return $headers;
+        return $new;
+    }
+
+    public function getRequestTarget(): string
+    {
+        $target = $this->uri->getPath();
+        if ($target === '') {
+            $target = '/';
+        }
+        
+        $query = $this->uri->getQuery();
+        if ($query !== '') {
+            $target .= '?' . $query;
+        }
+        
+        return $target;
+    }
+
+    public function withRequestTarget(string $requestTarget): self
+    {
+        $new = clone $this;
+        // Parse and update URI based on request target
+        return $new;
+    }
+
+    public function getProtocolVersion(): string
+    {
+        return $this->protocolVersion;
+    }
+
+    public function withProtocolVersion(string $version): self
+    {
+        $new = clone $this;
+        $new->protocolVersion = $version;
+        return $new;
+    }
+
+    public function getHeaders(): array
+    {
+        return $this->headers->all();
+    }
+
+    public function hasHeader(string $name): bool
+    {
+        return $this->headers->has($name);
+    }
+
+    public function getHeader(string $name): array
+    {
+        return $this->headers->get($name);
+    }
+
+    public function getHeaderLine(string $name): string
+    {
+        return implode(', ', $this->getHeader($name));
+    }
+
+    public function withHeader(string $name, $value): self
+    {
+        $new = clone $this;
+        $new->headers->set($name, $value);
+        return $new;
+    }
+
+    public function withAddedHeader(string $name, $value): self
+    {
+        $new = clone $this;
+        $new->headers->add($name, $value);
+        return $new;
+    }
+
+    public function withoutHeader(string $name): self
+    {
+        $new = clone $this;
+        $new->headers->remove($name);
+        return $new;
+    }
+
+    public function getBody(): StreamInterface
+    {
+        return $this->body;
+    }
+
+    public function withBody(StreamInterface $body): self
+    {
+        $new = clone $this;
+        $new->body = $body;
+        return $new;
+    }
+
+    public function getQueryParams(): array
+    {
+        return $this->queryParams->all();
+    }
+
+    public function withQueryParams(array $query): self
+    {
+        $new = clone $this;
+        $new->queryParams = new ParameterBag($query);
+        return $new;
+    }
+
+    public function getQueryParam(string $key, $default = null)
+    {
+        return $this->queryParams->get($key, $default);
+    }
+
+    public function getParsedBody(): array
+    {
+        return $this->parsedBody->all();
+    }
+
+    public function withParsedBody($data): self
+    {
+        $new = clone $this;
+        $new->parsedBody = is_array($data) ? new ParameterBag($data) : new ParameterBag([]);
+        return $new;
+    }
+
+    public function getPostField(string $key, $default = null)
+    {
+        return $this->parsedBody->get($key, $default);
+    }
+
+    public function getCookieParams(): array
+    {
+        return $this->cookies->all();
+    }
+
+    public function withCookieParams(array $cookies): self
+    {
+        $new = clone $this;
+        $new->cookies = new CookieBag($cookies);
+        return $new;
+    }
+
+    public function getCookie(string $key, $default = null)
+    {
+        return $this->cookies->get($key, $default);
+    }
+
+    public function getUploadedFiles(): array
+    {
+        return $this->uploadedFiles;
+    }
+
+    public function withUploadedFiles(array $uploadedFiles): self
+    {
+        $new = clone $this;
+        $new->uploadedFiles = $uploadedFiles;
+        return $new;
+    }
+
+    public function getFile(string $key): ?UploadedFileInterface
+    {
+        return $this->uploadedFiles[$key] ?? null;
+    }
+
+    public function getAttributes(): array
+    {
+        return $this->attributes;
+    }
+
+    public function getAttribute(string $name, $default = null)
+    {
+        return $this->attributes[$name] ?? $default;
+    }
+
+    public function withAttribute(string $name, $value): self
+    {
+        $new = clone $this;
+        $new->attributes[$name] = $value;
+        return $new;
+    }
+
+    public function withoutAttribute(string $name): self
+    {
+        $new = clone $this;
+        unset($new->attributes[$name]);
+        return $new;
+    }
+
+    public function isAjax(): bool
+    {
+        return $this->ajax;
+    }
+
+    public function isSecure(): bool
+    {
+        return $this->secure;
+    }
+
+    public function getClientIp(): ?string
+    {
+        return $this->clientIp;
+    }
+
+    public function getUserAgent(): ?string
+    {
+        return $this->userAgent;
+    }
+
+    public function getContentType(): ?string
+    {
+        return $this->getHeaderLine('Content-Type') ?: null;
+    }
+
+    public function wantsJson(): bool
+    {
+        $accept = $this->getHeaderLine('Accept');
+        return strpos($accept, 'application/json') !== false ||
+               strpos($accept, '*/*') !== false;
+    }
+
+    public function getSessionData(string $key, $default = null)
+    {
+        if (isset($_SESSION[$key])) {
+            return $_SESSION[$key];
+        }
+        return $default;
+    }
+
+    public function getOldInput(string $key = null, $default = null)
+    {
+        $oldInput = $_SESSION['_old_input'] ?? [];
+        
+        if ($key === null) {
+            return $oldInput;
+        }
+        
+        return $oldInput[$key] ?? $default;
+    }
+
+    public function getAllInput(): array
+    {
+        return array_merge($this->queryParams->all(), $this->parsedBody->all());
+    }
+
+    public function only(array $keys): array
+    {
+        $input = $this->getAllInput();
+        return array_intersect_key($input, array_flip($keys));
+    }
+
+    public function except(array $keys): array
+    {
+        $input = $this->getAllInput();
+        return array_diff_key($input, array_flip($keys));
+    }
+
+    public function hasInput(string $key): bool
+    {
+        return $this->queryParams->has($key) || $this->parsedBody->has($key);
+    }
+
+    public function validate(array $rules): bool
+    {
+        // Simple validation implementation
+        // In production, integrate with CI3 validation library
+        $this->validated = true;
+        $this->validationErrors = [];
+        
+        foreach ($rules as $field => $ruleSet) {
+            $value = $this->getPostField($field) ?? $this->getQueryParam($field);
+            
+            if (is_string($ruleSet)) {
+                $ruleSet = explode('|', $ruleSet);
+            }
+            
+            foreach ($ruleSet as $rule) {
+                if (!$this->applyRule($field, $value, $rule)) {
+                    $this->validationErrors[$field][] = "Validation failed for {$field}";
+                }
+            }
+        }
+        
+        return empty($this->validationErrors);
+    }
+
+    protected function applyRule(string $field, $value, string $rule): bool
+    {
+        // Simplified rule application
+        switch ($rule) {
+            case 'required':
+                return !empty($value);
+            default:
+                return true;
+        }
+    }
+
+    public function validationErrors(): array
+    {
+        return $this->validationErrors;
+    }
+
+    public function __clone()
+    {
+        $this->headers = clone $this->headers;
+        $this->queryParams = clone $this->queryParams;
+        $this->parsedBody = clone $this->parsedBody;
+        $this->cookies = clone $this->cookies;
+        $this->serverParams = clone $this->serverParams;
     }
 }
