@@ -1,20 +1,11 @@
 ```
 # Dependencies
 vendor/
-
-# Compiled and build artifacts
-*.o
-*.obj
-*.so
-*.a
-*.dll
-*.exe
-*.out
+composer.lock
 
 # Logs and temp files
 *.log
 *.tmp
-*.swp
 
 # Environment
 .env
@@ -24,15 +15,8 @@ vendor/
 # Editors
 .vscode/
 .idea/
-*.swp
-*.swo
-
-# Coverage
-.coverage
-coverage/
-htmlcov/
 
 # PHP specific
 *.php~
-*.php.bak
+*.swp
 ```
