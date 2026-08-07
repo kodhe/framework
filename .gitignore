@@ -1,18 +1,22 @@
 ```
+# Dependencies
 vendor/
 composer.lock
-.php_cs.cache
-coverage/
-phpunit.xml.dist
+
+# Logs and temp files
 *.log
 *.tmp
-.DS_Store
-Thumbs.db
+
+# Environment
 .env
 .env.local
-.env.*
+*.env.*
+
+# Editors
 .vscode/
 .idea/
-*.swp
-*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
 ```
