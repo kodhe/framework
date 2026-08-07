@@ -16,12 +16,12 @@ class FlashDataManager
     /**
      * @var array Reference to $_SESSION['__ci_vars']
      */
-    private array &$flashVars;
+    private $flashVars;
 
     /**
      * @var array Reference to $_SESSION
      */
-    private array &$session;
+    private $session;
 
     /**
      * Constructor
