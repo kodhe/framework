@@ -19,5 +19,8 @@
   "suggest": {
     "kodhe/view": "ViewFactory used by BaseController theme binding",
     "kodhe/user-agent": "Loaded optionally by BaseController"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^10.0"
   }
 }
