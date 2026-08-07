@@ -2,65 +2,225 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Http\Http;
+namespace CodeIgniter\Http\Http;
 
-use GuzzleHttp\Psr7\Uri as Psr7Uri;
+use Psr\Http\Message\UriInterface;
 
 /**
- * Class Uri
+ * URI Class
  * 
- * PSR-7 URI implementation with CodeIgniter 3 extensions
+ * Represents a URI (Uniform Resource Identifier).
  */
-class Uri extends Psr7Uri
+class Uri implements UriInterface
 {
-    protected array $segments = [];
-    
-    public function __construct(string $uri = '')
-    {
-        parent::__construct($uri);
-        $this->segments = $this->parseSegments();
+    protected string $scheme = '';
+    protected string $userInfo = '';
+    protected string $host = '';
+    protected ?int $port = null;
+    protected string $path = '';
+    protected string $query = '';
+    protected string $fragment = '';
+
+    public function __construct(
+        string $scheme = '',
+        string $host = '',
+        ?int $port = null,
+        string $path = '/',
+        string $query = ''
+    ) {
+        $this->scheme = $scheme;
+        $this->host = $host;
+        $this->port = $port;
+        $this->path = $path;
+        $this->query = $query;
     }
-    
-    protected function parseSegments(): array
+
+    public function getScheme(): string
     {
-        $path = $this->getPath();
-        $segments = explode('/', trim($path, '/'));
-        return array_values(array_filter($segments, fn($s) => $s !== ''));
+        return $this->scheme;
     }
-    
-    public function getSegment(int $index, string $default = ''): string
+
+    public function withScheme(string $scheme): self
     {
-        $index = $index - 1; // CI uses 1-based index
-        return $this->segments[$index] ?? $default;
+        $new = clone $this;
+        $new->scheme = $scheme;
+        return $new;
     }
-    
-    public function getSegments(): array
+
+    public function getUserInfo(): string
     {
-        return $this->segments;
+        return $this->userInfo;
     }
-    
-    public function getTotalSegments(): int
+
+    public function withUserInfo(string $user, ?string $password = null): self
     {
-        return count($this->segments);
+        $new = clone $this;
+        $new->userInfo = $user . ($password !== null ? ':' . $password : '');
+        return $new;
     }
-    
-    public function getBaseUri(): string
+
+    public function getHost(): string
     {
-        $scheme = $this->getScheme();
-        $host = $this->getHost();
-        $port = $this->getPort();
+        return $this->host;
+    }
+
+    public function withHost(string $host): self
+    {
+        $new = clone $this;
+        $new->host = $host;
+        return $new;
+    }
+
+    public function getPort(): ?int
+    {
+        return $this->port;
+    }
+
+    public function withPort(?int $port): self
+    {
+        $new = clone $this;
+        $new->port = $port;
+        return $new;
+    }
+
+    public function getPath(): string
+    {
+        return $this->path;
+    }
+
+    public function withPath(string $path): self
+    {
+        $new = clone $this;
+        $new->path = $path;
+        return $new;
+    }
+
+    public function getQuery(): string
+    {
+        return $this->query;
+    }
+
+    public function withQuery(string $query): self
+    {
+        $new = clone $this;
+        $new->query = $query;
+        return $new;
+    }
+
+    public function getFragment(): string
+    {
+        return $this->fragment;
+    }
+
+    public function withFragment(string $fragment): self
+    {
+        $new = clone $this;
+        $new->fragment = $fragment;
+        return $new;
+    }
+
+    public function __toString(): string
+    {
+        $uri = '';
+
+        if ($this->scheme !== '') {
+            $uri .= $this->scheme . ':';
+        }
+
+        if ($this->host !== '') {
+            $uri .= '//';
+
+            if ($this->userInfo !== '') {
+                $uri .= $this->userInfo . '@';
+            }
+
+            $uri .= $this->host;
+
+            if ($this->port !== null) {
+                $uri .= ':' . $this->port;
+            }
+        }
+
+        if ($this->path !== '') {
+            if ($this->host !== '' && strpos($this->path, '/') !== 0) {
+                $uri .= '/';
+            }
+            $uri .= $this->path;
+        }
+
+        if ($this->query !== '') {
+            $uri .= '?' . $this->query;
+        }
+
+        if ($this->fragment !== '') {
+            $uri .= '#' . $this->fragment;
+        }
+
+        return $uri;
+    }
+
+    /**
+     * Get the base URL
+     */
+    public function getBaseUrl(): string
+    {
+        $baseUrl = $this->scheme . '://' . $this->host;
         
-        $base = "{$scheme}://{$host}";
-        
-        if ($port && !in_array($port, ['80', '443'])) {
-            $base .= ":{$port}";
+        if ($this->port !== null && 
+            !(($this->scheme === 'http' && $this->port === 80) || 
+              ($this->scheme === 'https' && $this->port === 443))) {
+            $baseUrl .= ':' . $this->port;
         }
         
-        return $base;
+        return $baseUrl;
     }
-    
-    public function getRelativeUri(): string
+
+    /**
+     * Get the full URL
+     */
+    public function getFullUrl(): string
     {
-        return $this->getPath() . ($this->getQuery() ? '?' . $this->getQuery() : '');
+        return (string) $this;
+    }
+
+    /**
+     * Check if URI is absolute
+     */
+    public function isAbsolute(): bool
+    {
+        return $this->scheme !== '' && $this->host !== '';
+    }
+
+    /**
+     * Check if URI is relative
+     */
+    public function isRelative(): bool
+    {
+        return !$this->isAbsolute();
+    }
+
+    /**
+     * Get URI segments as array
+     */
+    public function getSegments(): array
+    {
+        return array_values(array_filter(explode('/', $this->path)));
+    }
+
+    /**
+     * Get total segment count
+     */
+    public function getTotalSegments(): int
+    {
+        return count($this->getSegments());
+    }
+
+    /**
+     * Get a specific segment
+     */
+    public function getSegment(int $index, string $default = ''): string
+    {
+        $segments = $this->getSegments();
+        return $segments[$index - 1] ?? $default;
     }
 }

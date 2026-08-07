@@ -2,170 +2,128 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Http\Contracts;
+namespace CodeIgniter\Http\Contracts;
 
-use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
 /**
- * Interface ControllerInterface
- * 
- * Base controller interface for CodeIgniter 3 compatibility
+ * Controller Interface
  */
 interface ControllerInterface
 {
     /**
-     * Execute a controller action
+     * Execute the controller action
      */
-    public function execute(string $method, array $params = []): ResponseInterface;
+    public function execute(ServerRequestInterface $request): ResponseInterface;
 
     /**
-     * Set the request
+     * Get the controller name
      */
-    public function setRequest(RequestInterface $request): self;
+    public function getName(): string;
 
     /**
-     * Get the request
+     * Get the current action
      */
-    public function getRequest(): RequestInterface;
+    public function getAction(): ?string;
 
     /**
-     * Set the response
+     * Set the current action
+     */
+    public function setAction(string $action): self;
+
+    /**
+     * Call a controller method
+     */
+    public function callMethod(string $method, array $parameters = []): mixed;
+
+    /**
+     * Check if controller has a method
+     */
+    public function hasMethod(string $method): bool;
+
+    /**
+     * Get controller constructor parameters
+     */
+    public function getConstructorParameters(): array;
+
+    /**
+     * Initialize the controller
+     */
+    public function initialize(ServerRequestInterface $request, ResponseInterface $response): void;
+
+    /**
+     * Get request instance
+     */
+    public function getRequest(): ?ServerRequestInterface;
+
+    /**
+     * Get response instance
+     */
+    public function getResponse(): ?ResponseInterface;
+
+    /**
+     * Set request instance
+     */
+    public function setRequest(ServerRequestInterface $request): self;
+
+    /**
+     * Set response instance
      */
     public function setResponse(ResponseInterface $response): self;
 
     /**
-     * Get the response
-     */
-    public function getResponse(): ResponseInterface;
-
-    /**
      * Load a model
      */
-    public function loadModel(string $model, string $alias = '', bool $autoConnect = true);
-
-    /**
-     * Load a library
-     */
-    public function loadLibrary(string $library, array $params = [], ?string $objectName = null);
+    public function loadModel(string $model, ?string $alias = null): object;
 
     /**
      * Load a helper
      */
-    public function loadHelper(array|string $helper): void;
+    public function loadHelper(string $helper): self;
 
     /**
-     * Load a view
+     * Load a library
      */
-    public function loadView(string $view, array $data = [], bool $return = false);
+    public function loadLibrary(string $library, ?array $params = null, ?string $alias = null): object;
+
+    /**
+     * Render a view
+     */
+    public function renderView(string $view, array $data = [], bool $return = false): string;
 
     /**
      * Get validation instance
      */
-    public function getValidation();
+    public function getValidation(): object;
 
     /**
-     * Set validation instance
+     * Validate request data
      */
-    public function setValidation($validation): self;
+    public function validate(array $rules): bool;
 
     /**
-     * Get session instance
+     * Get validation errors
      */
-    public function getSession();
+    public function getValidationErrors(): array;
 
     /**
-     * Set session instance
+     * Redirect to a URL
      */
-    public function setSession($session): self;
+    public function redirect(string $uri, int $status = 302): ResponseInterface;
 
     /**
-     * Get database instance
+     * Return JSON response
      */
-    public function getDB();
+    public function json(array $data, int $status = 200): ResponseInterface;
 
     /**
-     * Set database instance
+     * Return XML response
      */
-    public function setDB($db): self;
+    public function xml($data, int $status = 200): ResponseInterface;
 
     /**
-     * Get loader instance
+     * Download a file
      */
-    public function getLoader();
-
-    /**
-     * Set loader instance
-     */
-    public function setLoader($loader): self;
-
-    /**
-     * Get config instance
-     */
-    public function getConfig();
-
-    /**
-     * Set config instance
-     */
-    public function setConfig($config): self;
-
-    /**
-     * Get input instance
-     */
-    public function getInput();
-
-    /**
-     * Set input instance
-     */
-    public function setInput($input): self;
-
-    /**
-     * Get output instance
-     */
-    public function getOutput();
-
-    /**
-     * Set output instance
-     */
-    public function setOutput($output): self;
-
-    /**
-     * Get URI instance
-     */
-    public function getURI();
-
-    /**
-     * Set URI instance
-     */
-    public function setURI($uri): self;
-
-    /**
-     * Get language instance
-     */
-    public function getLang();
-
-    /**
-     * Set language instance
-     */
-    public function setLang($lang): self;
-
-    /**
-     * Initialize controller
-     */
-    public function initialize(): void;
-
-    /**
-     * Get controller name
-     */
-    public function getControllerName(): string;
-
-    /**
-     * Get method name
-     */
-    public function getMethodName(): string;
-
-    /**
-     * Check if method exists
-     */
-    public function hasMethod(string $method): bool;
+    public function download(string $filename, string $content, ?string $mimeType = null): ResponseInterface;
 }

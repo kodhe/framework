@@ -2,21 +2,46 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Http\Contracts;
+namespace CodeIgniter\Http\Contracts;
 
-use Psr\Http\Message\ResponseInterface as PsrResponseInterface;
+use Psr\Http\Message\ResponseInterface;
 
 /**
- * Interface ResponseInterface
+ * Response Interface
  * 
- * Extended PSR-7 ResponseInterface with CodeIgniter 3 compatibility
+ * Represents an HTTP response, compatible with PSR-7
  */
-interface ResponseInterface extends PsrResponseInterface
+interface ResponseInterface extends ResponseInterface
 {
+    /**
+     * Get the status code
+     */
+    public function getStatusCode(): int;
+
+    /**
+     * Set the status code
+     */
+    public function setStatusCode(int $code, string $reasonPhrase = ''): self;
+
+    /**
+     * Get the reason phrase
+     */
+    public function getReasonPhrase(): string;
+
     /**
      * Get all headers
      */
     public function getHeaders(): array;
+
+    /**
+     * Get a specific header value
+     */
+    public function getHeader(string $name): array;
+
+    /**
+     * Get a single header value as string
+     */
+    public function getHeaderLine(string $name): string;
 
     /**
      * Check if header exists
@@ -24,203 +49,92 @@ interface ResponseInterface extends PsrResponseInterface
     public function hasHeader(string $name): bool;
 
     /**
-     * Get a specific header
-     */
-    public function getHeader(string $name): array;
-
-    /**
-     * Get header line
-     */
-    public function getHeaderLine(string $name): string;
-
-    /**
-     * Get status code
-     */
-    public function getStatusCode(): int;
-
-    /**
-     * Get reason phrase
-     */
-    public function getReasonPhrase(): string;
-
-    /**
-     * Get response body
-     */
-    public function getBody();
-
-    /**
-     * Get protocol version
-     */
-    public function getProtocolVersion(): string;
-
-    /**
-     * Set cookie
-     */
-    public function setCookie(
-        string $name,
-        string $value = '',
-        int $expire = 0,
-        string $path = '',
-        string $domain = '',
-        bool $secure = false,
-        bool $httponly = true,
-        string $sameSite = ''
-    ): self;
-
-    /**
-     * Get cookie
-     */
-    public function getCookie(?string $name = null);
-
-    /**
-     * Delete cookie
-     */
-    public function deleteCookie(
-        string $name,
-        string $path = '',
-        string $domain = ''
-    ): self;
-
-    /**
-     * Has cookie
-     */
-    public function hasCookie(string $name): bool;
-
-    /**
-     * Set header
+     * Set a header
      */
     public function setHeader(string $name, $value): self;
 
     /**
-     * Remove header
-     */
-    public function removeHeader(string $name): self;
-
-    /**
-     * Append header
+     * Add a header value
      */
     public function appendHeader(string $name, $value): self;
 
     /**
-     * Prepend header
+     * Remove a header
      */
-    public function prependHeader(string $name, $value): self;
+    public function removeHeader(string $name): self;
 
     /**
-     * Set content type
+     * Get the response body content
      */
-    public function setContentType(string $type, ?string $charset = null): self;
+    public function getBodyContent(): string;
 
     /**
-     * Set cache control
+     * Set the response body
      */
-    public function setCache(array $options = []): self;
+    public function setBody($body): self;
 
     /**
-     * No cache
+     * Set content type header
+     */
+    public function setContentType(string $type, string $charset = 'UTF-8'): self;
+
+    /**
+     * Get content type
+     */
+    public function getContentType(): ?string;
+
+    /**
+     * Set cache control headers
+     */
+    public function setCache(array $options): self;
+
+    /**
+     * Disable caching
      */
     public function noCache(): self;
 
     /**
-     * Download file
+     * Set a cookie
      */
-    public function download(
-        string $filename,
-        ?string $data = null,
-        bool $setMime = true
-    ): self;
+    public function setCookie(string $name, string $value = '', int $expire = 0, string $path = '/', string $domain = '', bool $secure = false, bool $httpOnly = true, string $sameSite = 'Lax'): self;
 
     /**
-     * Send response
+     * Get all cookies
      */
-    public function send(int $statusCode = 200): void;
+    public function getCookies(): array;
 
     /**
-     * Send headers
+     * Delete a cookie
+     */
+    public function deleteCookie(string $name, string $path = '/', string $domain = ''): self;
+
+    /**
+     * Check if response has been sent
+     */
+    public function isSent(): bool;
+
+    /**
+     * Mark response as sent
+     */
+    public function markAsSent(): void;
+
+    /**
+     * Send the response to the client
+     */
+    public function send(): void;
+
+    /**
+     * Send headers only
      */
     public function sendHeaders(): void;
 
     /**
-     * Send body
+     * Send body only
      */
     public function sendBody(): void;
 
     /**
-     * Redirect to URL
+     * Get response as string (headers + body)
      */
-    public function redirect(
-        ?string $uri = null,
-        string $method = 'auto',
-        ?int $code = null
-    ): self;
-
-    /**
-     * Get redirect URI
-     */
-    public function getRedirectUri(): ?string;
-
-    /**
-     * Is redirect
-     */
-    public function isRedirect(): bool;
-
-    /**
-     * Set JSON response
-     */
-    public function setJSON($body, int $status = 200): self;
-
-    /**
-     * Get JSON response
-     */
-    public function getJSON(bool $assoc = false, int $depth = 512, int $options = 0);
-
-    /**
-     * Set XML response
-     */
-    public function setXML($body, int $status = 200): self;
-
-    /**
-     * Get XML response
-     */
-    public function getXML();
-
-    /**
-     * Set status
-     */
-    public function setStatus(int $code, string $reason = ''): self;
-
-    /**
-     * Is OK (200)
-     */
-    public function isOK(): bool;
-
-    /**
-     * Is client error (4xx)
-     */
-    public function isClientError(): bool;
-
-    /**
-     * Is server error (5xx)
-     */
-    public function isServerError(): bool;
-
-    /**
-     * Is successful (2xx)
-     */
-    public function isSuccessful(): bool;
-
-    /**
-     * Is informational (1xx)
-     */
-    public function isInformational(): bool;
-
-    /**
-     * Is redirect (3xx)
-     */
-    public function isRedirected(): bool;
-
-    /**
-     * Get body content as string
-     */
-    public function getBodyAsString(): string;
+    public function __toString(): string;
 }

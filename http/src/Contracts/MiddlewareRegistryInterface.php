@@ -2,12 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Http\Contracts;
+namespace CodeIgniter\Http\Contracts;
 
 /**
- * Interface MiddlewareRegistryInterface
- * 
- * Registry for managing middleware
+ * Middleware Registry Interface
  */
 interface MiddlewareRegistryInterface
 {
@@ -17,9 +15,14 @@ interface MiddlewareRegistryInterface
     public function register(string $alias, string $middleware): self;
 
     /**
-     * Register multiple middleware
+     * Register multiple middlewares
      */
-    public function registerMany(array $middleware): self;
+    public function registerMany(array $middlewares): self;
+
+    /**
+     * Check if middleware is registered
+     */
+    public function has(string $alias): bool;
 
     /**
      * Get a middleware by alias
@@ -27,27 +30,37 @@ interface MiddlewareRegistryInterface
     public function get(string $alias): ?string;
 
     /**
-     * Check if middleware exists
-     */
-    public function has(string $alias): bool;
-
-    /**
-     * Remove a middleware
+     * Remove a middleware registration
      */
     public function remove(string $alias): self;
 
     /**
-     * Get all registered middleware
+     * Get all registered middlewares
      */
     public function all(): array;
 
     /**
-     * Resolve middleware alias to class name
+     * Resolve a middleware alias to class name
      */
     public function resolve(string $alias): string;
 
     /**
-     * Clear all registered middleware
+     * Register a middleware group
      */
-    public function clear(): self;
+    public function registerGroup(string $name, array $middlewares): self;
+
+    /**
+     * Get a middleware group
+     */
+    public function getGroup(string $name): array;
+
+    /**
+     * Check if middleware group exists
+     */
+    public function hasGroup(string $name): bool;
+
+    /**
+     * Get all middleware groups
+     */
+    public function allGroups(): array;
 }

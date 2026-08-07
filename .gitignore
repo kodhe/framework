@@ -1,26 +1,18 @@
 ```
-# Dependencies
 vendor/
 composer.lock
-
-# PHP
-*.php~
-*.phtml~
-
-# Logs and temp files
+.php_cs.cache
+coverage/
+phpunit.xml.dist
 *.log
 *.tmp
-*.swp
-
-# Environment
+.DS_Store
+Thumbs.db
 .env
 .env.local
 .env.*
-
-# Tests
-.phpunit.result.cache
-
-# OS generated files
-.DS_Store
-Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
 ```
