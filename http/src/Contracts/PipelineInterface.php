@@ -2,71 +2,103 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Http\Contracts;
+namespace CodeIgniter\Http\Contracts;
 
-use Closure;
-use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
 /**
- * Interface PipelineInterface
- * 
- * Pipeline for processing requests through middleware
+ * Pipeline Interface
  */
 interface PipelineInterface
 {
     /**
-     * Set the pipeline slices (middleware)
+     * Set the request to be processed
      */
-    public function send(RequestInterface $request): self;
-
-    /**
-     * Set the destination handler
-     */
-    public function to(callable $destination): self;
-
-    /**
-     * Set the pipeline slices (middleware)
-     */
-    public function through(array $slices): self;
-
-    /**
-     * Add a slice to the pipeline
-     */
-    public function addSlice($slice): self;
-
-    /**
-     * Execute the pipeline
-     */
-    public function then(?Closure $callback = null): ResponseInterface;
-
-    /**
-     * Set the method to carry
-     */
-    public function via(string $method): self;
+    public function setRequest(ServerRequestInterface $request): self;
 
     /**
      * Get the current request
      */
-    public function getRequest(): RequestInterface;
+    public function getRequest(): ?ServerRequestInterface;
 
     /**
-     * Set the request
+     * Add middleware to the pipeline
      */
-    public function setRequest(RequestInterface $request): self;
+    public function addMiddleware($middleware): self;
 
     /**
-     * Clear the pipeline
+     * Add multiple middlewares to the pipeline
      */
-    public function clear(): self;
+    public function addMiddlewares(array $middlewares): self;
 
     /**
-     * Check if pipeline has slices
+     * Add middleware by alias
      */
-    public function hasSlices(): bool;
+    public function addMiddlewareByAlias(string $alias): self;
 
     /**
-     * Get all slices
+     * Add middleware group by name
      */
-    public function getSlices(): array;
+    public function addMiddlewareGroup(string $groupName): self;
+
+    /**
+     * Insert middleware at specific position
+     */
+    public function insertMiddlewareAt(int $position, $middleware): self;
+
+    /**
+     * Remove middleware from pipeline
+     */
+    public function removeMiddleware($middleware): self;
+
+    /**
+     * Clear all middlewares
+     */
+    public function clearMiddlewares(): self;
+
+    /**
+     * Set the final handler (destination)
+     */
+    public function setHandler(callable $handler): self;
+
+    /**
+     * Get the final handler
+     */
+    public function getHandler(): ?callable;
+
+    /**
+     * Process the pipeline
+     */
+    public function process(): ResponseInterface;
+
+    /**
+     * Send the request through the pipeline and return response
+     */
+    public function send(ServerRequestInterface $request, callable $handler): ResponseInterface;
+
+    /**
+     * Get all middlewares in the pipeline
+     */
+    public function getMiddlewares(): array;
+
+    /**
+     * Check if pipeline has middlewares
+     */
+    public function hasMiddlewares(): bool;
+
+    /**
+     * Get middleware count
+     */
+    public function getMiddlewareCount(): int;
+
+    /**
+     * Set pipeline priority
+     */
+    public function setPriority(int $priority): self;
+
+    /**
+     * Get pipeline priority
+     */
+    public function getPriority(): int;
 }

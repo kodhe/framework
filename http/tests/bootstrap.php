@@ -1,57 +1,45 @@
 <?php
 
+declare(strict_types=1);
+
 /**
- * PHPUnit Bootstrap File
- * 
- * This file is responsible for setting up the testing environment
+ * PHPUnit Bootstrap for CodeIgniter 3 HTTP Component
  */
 
 // Error reporting
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
+ini_set('display_startup_errors', '1');
 
-// Define constants
-defined('DS') or define('DS', DIRECTORY_SEPARATOR);
-defined('ROOT_PATH') or define('ROOT_PATH', dirname(__DIR__) . DS);
-defined('SRC_PATH') or define('SRC_PATH', ROOT_PATH . 'src' . DS);
-defined('TESTS_PATH') or define('TESTS_PATH', ROOT_PATH . 'tests' . DS);
-
-// Load Composer autoloader
-if (file_exists(ROOT_PATH . 'vendor/autoload.php')) {
-    require_once ROOT_PATH . 'vendor/autoload.php';
-} else {
-    throw new RuntimeException('Composer autoload not found. Run "composer install" first.');
+// Autoload
+if (!file_exists(__DIR__ . '/../vendor/autoload.php')) {
+    throw new RuntimeException('Please run "composer install" to install dependencies.');
 }
 
-// Register test namespaces
-spl_autoload_register(function ($class) {
-    $prefix = 'Kodhe\\Framework\\Http\\Tests\\';
-    $base_dir = TESTS_PATH;
-    
-    $len = strlen($prefix);
-    if (strncmp($prefix, $class, $len) !== 0) {
-        return;
-    }
-    
-    $relative_class = substr($class, $len);
-    $file = $base_dir . str_replace('\\', '/', $relative_class) . '.php';
-    
-    if (file_exists($file)) {
-        require $file;
-    }
-});
+require_once __DIR__ . '/../vendor/autoload.php';
 
-// Create necessary directories
-$dirs = [
-    TESTS_PATH . 'Fixtures/Controllers',
-    TESTS_PATH . 'Fixtures/Routes',
-    ROOT_PATH . 'build/coverage'
-];
-
-foreach ($dirs as $dir) {
-    if (!is_dir($dir)) {
-        mkdir($dir, 0755, true);
-    }
+// Define constants for testing
+if (!defined('BASEPATH')) {
+    define('BASEPATH', __DIR__ . '/Fixtures/');
 }
 
-echo "PHPUnit bootstrap loaded successfully.\n";
+if (!defined('ENVIRONMENT')) {
+    define('ENVIRONMENT', 'testing');
+}
+
+// Load helper functions
+require_once __DIR__ . '/../src/helpers/url.php';
+
+// Create a simple test case base class
+class CI_TestCase extends PHPUnit\Framework\TestCase
+{
+    protected function setUp(): void
+    {
+        parent::setUp();
+    }
+
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+    }
+}

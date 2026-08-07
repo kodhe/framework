@@ -2,40 +2,28 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Http\Contracts;
+namespace CodeIgniter\Http\Contracts;
 
-use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Server\MiddlewareInterface as PsrMiddlewareInterface;
 
 /**
- * Interface MiddlewareInterface
- * 
- * PSR-15 Middleware Interface with CodeIgniter 3 compatibility
+ * Middleware Interface
  */
-interface MiddlewareInterface extends PsrMiddlewareInterface
+interface MiddlewareInterface
 {
     /**
-     * Process an incoming server request.
-     *
-     * Processes an incoming server request in order to produce a response.
-     * If unable to produce the response itself, it may delegate to the provided
-     * request handler to do so.
+     * Process an incoming server request and produce a response.
      */
-    public function process(RequestInterface $request, callable $handler): ResponseInterface;
+    public function process(ServerRequestInterface $request, callable $handler): ResponseInterface;
+
+    /**
+     * Get middleware priority (lower number = higher priority)
+     */
+    public function getPriority(): int;
 
     /**
      * Get middleware name
      */
     public function getName(): string;
-
-    /**
-     * Set middleware priority
-     */
-    public function setPriority(int $priority): self;
-
-    /**
-     * Get middleware priority
-     */
-    public function getPriority(): int;
 }
