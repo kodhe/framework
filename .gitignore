@@ -4,18 +4,27 @@
 __pycache__/
 *.o
 *.obj
+*.exe
+*.dll
+*.so
+*.a
+*.out
 
 # Dependencies
-vendor/
-composer.lock
-
-# Tests
-.phpunit.result.cache
+.venv/
+venv/
+node_modules/
+.mypy_cache/
+.pytest_cache/
+.coverage
+coverage/
+htmlcov/
 
 # Logs and temp files
 *.log
 *.tmp
 *.swp
+*.swo
 
 # Environment
 .env
@@ -26,13 +35,13 @@ composer.lock
 .vscode/
 .idea/
 
-# Coverage
-.coverage
-coverage/
-htmlcov/
+# System files
+.DS_Store
+Thumbs.db
 
-# Backup files
-*~
-*.bak
-*.swp
+# Build and distribution
+dist/
+build/
+target/
+.gradle/
 ```
