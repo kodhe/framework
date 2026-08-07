@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Routing\Core;
+namespace Kodhe\Framework\Http\Routing\Core;
 
-use Kodhe\Framework\Routing\Contracts\RouteInterface;
+use Kodhe\Framework\Http\Routing\Contracts\RouteInterface;
 
 /**
  * RouteItem - Individual route item implementation
