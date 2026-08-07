@@ -424,9 +424,11 @@ class RoutingManager
     protected function resolveFromLegacy(Request $request): array
     {
         try {
-            // Call matchRequest to perform legacy routing
-            $this->router->matchRequest($request);
-            $legacyRouting = $this->router->getRouting();
+            // Buat instance LegacyRouter terpisah untuk tidak mengganggu router modern
+            $legacyRouter = new LegacyRouter();
+
+            // Match request menggunakan legacy router
+            $legacyRouting = $legacyRouter->matchRequest($request);
 
             if ($legacyRouting && !empty($legacyRouting['class'])) {
                 return [
@@ -440,11 +442,10 @@ class RoutingManager
                 ];
             }
         } catch (\Exception $e) {
+            log_message('error', 'Legacy routing error: ' . $e->getMessage());
             // Continue to other methods
         }
-    
-        return [];
-    }
+     }
 
     /**
      * Analyze URI for routing
