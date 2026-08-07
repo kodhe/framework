@@ -142,6 +142,8 @@ class Pagination
         $base_url = trim($this->base_url);
         $first_url = $this->first_url;
         $query_string_sep = (strpos($base_url, '?') === false) ? '?' : '&amp;';
+        $query_string = ''; // Initialize query_string to avoid undefined variable error
+        
         if ($this->page_query_string === true) {
             if ($first_url === '') {
                 $first_url = $base_url;
@@ -165,7 +167,7 @@ class Pagination
         }
         $base_page = $this->use_page_numbers ? 1 : 0;
         if ($this->page_query_string === true) {
-            $this->cur_page = $this->CI->input->get($this->query_string_segment);
+            $this->cur_page = (int) $this->CI->input->get($this->query_string_segment);
         } elseif (empty($this->cur_page)) {
             if ($this->uri_segment === 0) {
                 $this->uri_segment = count($this->CI->uri->segment_array());
@@ -174,9 +176,9 @@ class Pagination
             if ($this->prefix !== '' || $this->suffix !== '') {
                 $this->cur_page = str_replace([$this->prefix, $this->suffix], '', $this->cur_page);
             }
-        } else {
-            $this->cur_page = (string) $this->cur_page;
         }
+        
+        // Ensure cur_page is always an integer
         if (!ctype_digit((string) $this->cur_page) || ($this->use_page_numbers && (int) $this->cur_page === 0)) {
             $this->cur_page = $base_page;
         } else {
