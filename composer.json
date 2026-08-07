@@ -65,7 +65,8 @@
       "Kodhe\\Framework\\Xmlrpc\\": "xmlrpc/src/",
       "Kodhe\\Framework\\Xmlrpcs\\": "xmlrpcs/src/",
       "Kodhe\\Framework\\Zip\\": "zip/src/",
-      "Kodhe\\Framework\\Driver\\": "driver/src/"
+      "Kodhe\\Framework\\Driver\\": "driver/src/",
+      "Kodhe\\Calendar\\": "src/"
     },
     "files": [
       "framework/src/Support/Legacy/common.php",
