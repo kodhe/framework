@@ -1,103 +1,210 @@
+# Kodhe FTP Library
 
-## File Test `test_pagination.php`
+FTP Library yang telah direfactor untuk CodeIgniter 3 dengan arsitektur modular PSR-4.
+
+## Fitur
+
+- ✅ **PSR-4 Autoloading** - Namespace `Kodhe\Ftp\`
+- ✅ **PSR-12 Coding Standards** - Clean code style
+- ✅ **Design Patterns**:
+  - Facade Pattern (class Ftp utama)
+  - Adapter Pattern (ConnectionInterface)
+  - Strategy Pattern (mode transfer ascii/binary)
+- ✅ **Multiple Connections** - Support FTP dan FTPS (SSL)
+- ✅ **Testable** - Connection bisa di-mock untuk unit testing
+- ✅ **100% Backward Compatible** - API CI3 tetap berfungsi
+
+## Struktur Folder
+
+```
+ftp/
+├── src/
+│   ├── Ftp.php                       # Main class (Facade)
+│   ├── Contracts/
+│   │   ├── FtpInterface.php          # Interface utama
+│   │   └── ConnectionInterface.php   # Interface koneksi
+│   ├── Connection/
+│   │   ├── FtpConnection.php         # FTP biasa
+│   │   └── FtpSslConnection.php      # FTP over SSL
+│   ├── Operations/
+│   │   ├── FileOperations.php        # Upload, download, delete, rename, chmod
+│   │   └── DirectoryOperations.php   # Mkdir, list_files, delete_dir, changedir
+│   └── Validation/
+│       └── ModeResolver.php          # Auto-detect mode ascii/binary
+├── tests/
+├── composer.json
+└── README.md
+```
+
+## Instalasi
+
+### Via Composer
+
+```bash
+composer require kodhe/ftp
+```
+
+### Manual
+
+Copy folder `src/` ke project Anda dan setup autoloading:
 
 ```php
-<?php
+// Di application/config/config.php atau bootstrap
+spl_autoload_register(function ($class) {
+    $prefix = 'Kodhe\\Ftp\\';
+    $base_dir = APPPATH . 'libraries/Ftp/src/';
+    
+    if (strpos($class, $prefix) === 0) {
+        $relative_class = substr($class, strlen($prefix));
+        $file = $base_dir . str_replace('\\', '/', $relative_class) . '.php';
+        if (file_exists($file)) {
+            require $file;
+        }
+    }
+});
+```
 
-require_once __DIR__ . '/vendor/autoload.php';
+## Penggunaan
 
-use Kodhe\Library\Pagination\Pagination;
+### CodeIgniter 3 Style (Backward Compatible)
 
-echo "=== Kodhe Pagination Tests ===\n\n";
+```php
+class BackupController extends CI_Controller {
+    
+    public function upload_backup() {
+        $this->load->library('ftp');
+        
+        $config = [
+            'hostname' => 'ftp.example.com',
+            'username' => 'user',
+            'password' => 'pass',
+            'port'     => 21,
+            'passive'  => true,
+            'debug'    => true,
+        ];
+        
+        if ($this->ftp->connect($config)) {
+            // Upload file
+            $this->ftp->upload('/local/path/backup.zip', '/remote/backup.zip', 'binary');
+            
+            // List files
+            $files = $this->ftp->list_files('/remote/');
+            
+            // Delete file
+            $this->ftp->delete_file('/remote/old_backup.zip');
+            
+            $this->ftp->close();
+        }
+    }
+}
+```
 
-// Test 1: Basic pagination
-echo "Test 1: Basic Pagination\n";
-$pagination = new Pagination();
-$pagination->initialize([
-    'base_url' => 'http://example.com/products/page/',
-    'total_rows' => 200,
-    'per_page' => 20,
-    'cur_page' => 3
+### Modern PSR-4 Style
+
+```php
+use Kodhe\Ftp\Ftp;
+use Kodhe\Ftp\Connection\FtpConnection;
+
+// Dengan constructor
+$ftp = new Ftp([
+    'hostname' => 'ftp.example.com',
+    'username' => 'user',
+    'password' => 'pass',
+    'ssl'      => false,
+    'passive'  => true,
 ]);
-$links = $pagination->create_links();
-echo $links . "\n";
-assert(strpos($links, '<a') !== false, 'Test 1 failed');
-echo "✓ Passed\n\n";
 
-// Test 2: Single page (no pagination needed)
-echo "Test 2: Single Page (should return empty)\n";
-$pagination2 = new Pagination([
-    'base_url' => 'http://example.com/',
-    'total_rows' => 5,
-    'per_page' => 10
+// Atau manual connect
+$ftp = new Ftp();
+$ftp->connect([
+    'hostname' => 'ftp.example.com',
+    'username' => 'user', 
+    'password' => 'pass',
 ]);
-$links2 = $pagination2->create_links();
-echo "Result: '" . $links2 . "'\n";
-assert($links2 === '', 'Test 2 failed');
-echo "✓ Passed\n\n";
 
-// Test 3: Custom HTML wrappers
-echo "Test 3: Custom HTML Wrappers\n";
-$pagination3 = new Pagination([
-    'base_url' => 'http://example.com/items/',
-    'total_rows' => 100,
-    'per_page' => 10,
-    'full_tag_open' => '<div class="pagination">',
-    'full_tag_close' => '</div>',
-    'cur_tag_open' => '<span class="active">',
-    'cur_tag_close' => '</span>',
-    'num_tag_open' => '<span>',
-    'num_tag_close' => '</span>'
+// Upload dengan auto-detect mode
+$ftp->upload('/local/file.txt', '/remote/file.txt'); // ASCII
+$ftp->upload('/local/image.jpg', '/remote/image.jpg'); // Binary
+
+// Download
+$ftp->download('/remote/file.txt', '/local/file.txt');
+
+// Rename/Move
+$ftp->rename('/remote/old.txt', '/remote/new.txt');
+$ftp->move('/remote/file.txt', '/remote/folder/file.txt');
+
+// Create directory
+$ftp->mkdir('/remote/new_folder', 0755);
+
+// Change directory
+$ftp->changedir('/remote/folder');
+
+// List files
+$files = $ftp->list_files('/remote');
+
+// Delete
+$ftp->delete_file('/remote/file.txt');
+$ftp->delete_dir('/remote/folder');
+
+// Chmod
+$ftp->chmod('/remote/file.txt', 0644);
+
+// Close connection
+$ftp->close();
+```
+
+### FTP over SSL (FTPS)
+
+```php
+use Kodhe\Ftp\Ftp;
+
+$ftp = new Ftp([
+    'hostname' => 'secure.example.com',
+    'username' => 'user',
+    'password' => 'pass',
+    'ssl'      => true,  // Enable SSL
+    'port'     => 990,   // Port FTPS
+    'passive'  => true,
 ]);
-$links3 = $pagination3->create_links();
-echo $links3 . "\n";
-assert(strpos($links3, '<div class="pagination">') !== false, 'Test 3 failed');
-echo "✓ Passed\n\n";
+```
 
-// Test 4: Use page numbers
-echo "Test 4: Use Page Numbers\n";
-$pagination4 = new Pagination([
-    'base_url' => 'http://example.com/news/',
-    'total_rows' => 50,
-    'per_page' => 10,
-    'use_page_numbers' => true,
-    'cur_page' => 2
-]);
-$links4 = $pagination4->create_links();
-echo $links4 . "\n";
-assert(strpos($links4, '<strong>2</strong>') !== false, 'Test 4 failed');
-echo "✓ Passed\n\n";
+## Methods
 
-// Test 5: With attributes
-echo "Test 5: With HTML Attributes\n";
-$pagination5 = new Pagination([
-    'base_url' => 'http://example.com/blog/',
-    'total_rows' => 150,
-    'per_page' => 25,
-    'attributes' => [
-        'class' => 'page-link',
-        'rel' => true
-    ]
-]);
-$links5 = $pagination5->create_links();
-echo $links5 . "\n";
-assert(strpos($links5, 'page-link') !== false, 'Test 5 failed');
-assert(strpos($links5, 'rel=') !== false, 'Test 5 failed');
-echo "✓ Passed\n\n";
+| Method | Deskripsi |
+|--------|-----------|
+| `connect($config)` | Connect ke server FTP |
+| `upload($local, $remote, $mode, $perm)` | Upload file |
+| `download($remote, $local, $mode)` | Download file |
+| `rename($old, $new, $move)` | Rename file |
+| `move($old, $new)` | Move file (alias rename) |
+| `delete_file($path)` | Delete file |
+| `delete_dir($path)` | Delete direktori (rekursif) |
+| `mkdir($path, $perm)` | Buat direktori |
+| `list_files($path)` | List file dalam direktori |
+| `changedir($path, $suppress)` | Change directory |
+| `chmod($path, $perm)` | Change permissions |
+| `close()` | Tutup koneksi |
 
-// Test 6: First/Last links disabled
-echo "Test 6: First/Last Links Disabled\n";
-$pagination6 = new Pagination([
-    'base_url' => 'http://example.com/',
-    'total_rows' => 100,
-    'per_page' => 10,
-    'first_link' => false,
-    'last_link' => false
-]);
-$links6 = $pagination6->create_links();
-echo $links6 . "\n";
-assert(strpos($links6, 'First') === false, 'Test 6 failed');
-assert(strpos($links6, 'Last') === false, 'Test 6 failed');
-echo "✓ Passed\n\n";
+## Mode Transfer
 
-echo "=== All Tests Passed ===\n";
+Library otomatis mendeteksi mode transfer berdasarkan ekstensi file:
+
+**ASCII Mode** (otomatis untuk):
+- `.txt`, `.text`, `.php`, `.html`, `.htm`, `.css`, `.js`, `.json`
+- `.xml`, `.csv`, `.log`, `.sql`, `.md`, `.yaml`, `.yml`
+
+**Binary Mode** (default untuk lainnya):
+- `.jpg`, `.png`, `.gif`, `.zip`, `.tar`, `.gz`
+- Dan semua ekstensi lainnya
+
+## Testing
+
+```bash
+cd ftp
+composer install
+composer test
+```
+
+## License
+
+MIT License
