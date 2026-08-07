@@ -12,7 +12,7 @@ use RedisException;
 /**
  * CodeIgniter Session Redis Driver
  */
-class RedisDriver extends Driver implements HandlerInterface
+class RedisDriver extends Driver implements SessionHandlerInterface
 {
     /**
      * Redis instance
