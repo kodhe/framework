@@ -18,13 +18,27 @@ class QueryStringUrlBuilder implements UrlBuilderInterface
     private bool $reuseQueryString = false;
     private array $queryParams = [];
     
+    /**
+     * Build a pagination URL
+     */
     public function build(string $baseUrl, $page, array $queryParams = []): string
     {
+        // Start with base URL
+        $url = $baseUrl;
+        
+        // Determine query string separator
         $separator = (strpos($baseUrl, '?') === false) ? '?' : '&';
         
-        $params = array_merge($queryParams, [$this->queryStringSegment => $page]);
+        // Merge with existing query params
+        $params = array_merge($this->queryParams, $queryParams);
         
-        return $baseUrl . $separator . http_build_query($params);
+        // Add page parameter
+        $params[$this->queryStringSegment] = $page;
+        
+        // Build query string
+        $url .= $separator . http_build_query($params);
+        
+        return $url;
     }
     
     public function getCurrentPage(string $segment, bool $usePageNumbers): int

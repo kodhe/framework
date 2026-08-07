@@ -19,16 +19,31 @@ class SegmentUrlBuilder implements UrlBuilderInterface
     private bool $reuseQueryString = false;
     private array $queryParams = [];
     
+    /**
+     * Build a pagination URL
+     */
     public function build(string $baseUrl, $page, array $queryParams = []): string
     {
         $url = rtrim($baseUrl, '/');
         
-        if (!empty($queryParams)) {
-            $separator = (strpos($baseUrl, '?') === false) ? '?' : '&';
-            $url .= $separator . http_build_query($queryParams);
+        // Add prefix if exists
+        if (!empty($this->prefix)) {
+            $url .= '/' . $this->prefix;
         }
         
-        $url .= '/' . $this->prefix . $page . $this->suffix;
+        // Add page number
+        $url .= '/' . $page;
+        
+        // Add suffix if exists
+        if (!empty($this->suffix)) {
+            $url .= $this->suffix;
+        }
+        
+        // Add query parameters
+        if (!empty($queryParams)) {
+            $separator = (strpos($url, '?') === false) ? '?' : '&';
+            $url .= $separator . http_build_query($queryParams);
+        }
         
         return $url;
     }

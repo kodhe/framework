@@ -1,1 +1,15 @@
-(empty)
+```php
+/vendor/
+composer.lock
+.env
+.env.local
+*.log
+coverage/
+.phpunit.result.cache
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+```
