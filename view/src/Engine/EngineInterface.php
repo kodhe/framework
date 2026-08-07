@@ -1,12 +1,14 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Kodhe\Framework\View\Engine;
 
-interface EngineInterface
+use Kodhe\Framework\View\Contracts\ViewEngineInterface;
+
+/**
+ * Interface EngineInterface
+ *
+ * @package Kodhe\Framework\View\Engine
+ */
+interface EngineInterface extends ViewEngineInterface
 {
-    public function render($view, $data = []);
-    public function exists($view);
-    public function getExtension();
 }
