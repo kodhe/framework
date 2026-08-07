@@ -1,1 +1,53 @@
-Nothing should be ignored based on the provided file changes. The only modified file is a PHP source file (`session/src/Flash/FlashDataManager.php`), which is source code and should not be ignored. There are no build artifacts, dependencies, or temporary files in the change list.
+```
+# Dependencies
+vendor/
+
+# Compiled files
+*.phpc
+*.o
+*.obj
+*.out
+
+# Build artifacts
+build/
+dist/
+target/
+
+# Cache directories
+.cache/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# Environment
+.env
+.env.local
+.env.*
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Coverage
+.coverage
+coverage/
+htmlcov/
+
+# PHP specific
+*.phar
+```
