@@ -12,7 +12,7 @@ use Kodhe\Framework\Session\HandlerInterface;
 /**
  * CodeIgniter Session Database Driver
  */
-class Database extends Driver implements HandlerInterface
+class DatabaseDriver extends Driver implements SessionHandlerInterface
 {
     /**
      * DB object

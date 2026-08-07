@@ -11,7 +11,7 @@ use Memcached;
 /**
  * CodeIgniter Session Memcached Driver
  */
-class MemcachedDriver extends Driver implements HandlerInterface
+class MemcachedDriver extends Driver implements SessionHandlerInterface
 {
     /**
      * Memcached instance
