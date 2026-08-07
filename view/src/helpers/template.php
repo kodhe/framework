@@ -18,6 +18,7 @@ use Kodhe\Framework\View\View\View;
 use Kodhe\Framework\View\View\ViewFactory;
 use Kodhe\Framework\View\View\ViewLoader;
 use Kodhe\Framework\View\View\ViewContext;
+use Kodhe\Framework\View\Engine\EngineFactory;
 use Kodhe\Framework\View\Theme\ThemeManager;
 use Kodhe\Framework\View\Variant\VariantManager;
 use Kodhe\Framework\View\Asset\AssetManager;
@@ -70,8 +71,9 @@ if (!function_exists('template')) {
             $context->setTheme($theme);
         }
         
-        // Get or create view instance
-        $viewFactory = ViewFactory::getInstance();
+        // Get or create view instance with EngineFactory
+        $engineFactory = new EngineFactory();
+        $viewFactory = new ViewFactory($engineFactory);
         $viewInstance = $viewFactory->create($view, $context);
         
         // Render the view
@@ -117,7 +119,8 @@ if (!function_exists('template_render')) {
         $context = new ViewContext($data);
         $context->setEngine($engine);
         
-        $viewFactory = ViewFactory::getInstance();
+        $engineFactory = new EngineFactory();
+        $viewFactory = new ViewFactory($engineFactory);
         $viewInstance = $viewFactory->create($view, $context);
         
         $output = $viewInstance->render();
