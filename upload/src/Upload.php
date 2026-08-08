@@ -293,6 +293,38 @@ class Upload implements UploadInterface
         return $this;
     }
 
+    /**
+     * Alias for do_upload() - PSR compliant method name
+     * @param string $field
+     * @return bool
+     */
+    public function doUpload(string $field = 'userfile'): bool
+    {
+        return $this->do_upload($field);
+    }
+
+    /**
+     * Alias for display_errors() - PSR compliant method name
+     * @param string $open
+     * @param string $close
+     * @return string
+     */
+    public function displayErrors(string $open = '<p>', string $close = '</p>'): string
+    {
+        return $this->display_errors($open, $close);
+    }
+
+    /**
+     * Alias for set_filename() - PSR compliant method name
+     * @param string $path
+     * @param string $filename
+     * @return string|false
+     */
+    public function setFilename(string $path, string $filename)
+    {
+        return $this->set_filename($path, $filename);
+    }
+
     public function set_upload_path($path): self { $this->upload_path = rtrim($path, '/') . '/'; return $this; }
     public function set_max_filesize($n): self { $this->max_size = ($n < 0) ? 0 : (int) $n; return $this; }
     public function set_max_filename($n): self { $this->max_filename = ($n < 0) ? 0 : (int) $n; return $this; }
