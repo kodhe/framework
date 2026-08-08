@@ -1,5 +1,28 @@
 <?php
 
+namespace Kodhe\Framework\Config;
+
+use Kodhe\Framework\Container\ServiceHelper;
+use Kodhe\Http\Routing\Route;
+use Kodhe\Http\Request;
+use Kodhe\Http\Response;
+use Kodhe\Database\Connection\ConnectionManager;
+use Kodhe\Database\Model;
+use Kodhe\Framework\Support\Language;
+use Kodhe\Http\Routing\Router;
+use Kodhe\Framework\Config\Config;
+use Kodhe\Framework\Config\Loaders\FileLoader;
+use Kodhe\Http\Controllers\BaseController;
+use Kodhe\Framework\Support\Legacy\Hooks;
+use Kodhe\Framework\Support\Legacy\Input;
+use Kodhe\Framework\Support\Legacy\URI;
+use Kodhe\Framework\Support\Legacy\Output;
+use Kodhe\Framework\Support\Legacy\Utf8;
+use Kodhe\Framework\Support\Legacy\Security;
+use Kodhe\Framework\Support\Legacy\Benchmark;
+use Kodhe\Framework\Database\ORM\CI_Model;
+use Kodhe\Framework\View\ViewFactory;
+
 return [
     'author' => 'Your Name',
     'author_url' => 'https://example.com',
@@ -8,33 +31,33 @@ return [
     'version' => '1.0.0',
     'namespace' => 'Kodhe',
     'aliases' => [
-        'Service' => Kodhe\Framework\Container\ServiceHelper::class,
-        'Route' => Kodhe\Http\Routing\Route::class,
-        'Request' => Kodhe\Http\Request::class,
-        'Response' => Kodhe\Http\Response::class,
-        'DB' => Kodhe\Database\Connection\ConnectionManager::class,
-        'Model' => Kodhe\Database\Model::class,
-        'Language' => Kodhe\Framework\Support\Language::class,
-        'Router' => Kodhe\Http\Routing\Router::class,
-        'Config' => Kodhe\Framework\Config\Config::class,
-        'Loader' => Kodhe\Framework\Config\Loaders\FileLoader::class,
-        'Controller' => Kodhe\Http\Controllers\BaseController::class,
-        'Hooks' => Kodhe\Framework\Support\Legacy\Hooks::class,
-        'Input' => Kodhe\Framework\Support\Legacy\Input::class,
-        'URI' => Kodhe\Framework\Support\Legacy\URI::class,
-        'Output' => Kodhe\Framework\Support\Legacy\Output::class,
-        'Utf8' => Kodhe\Framework\Support\Legacy\Utf8::class,
-        'Security' => Kodhe\Framework\Support\Legacy\Security::class,
-        'Benchmark' => Kodhe\Framework\Support\Legacy\Benchmark::class,
+        'Service' => ServiceHelper::class,
+        'Route' => Route::class,
+        'Request' => Request::class,
+        'Response' => Response::class,
+        'DB' => ConnectionManager::class,
+        'Model' => Model::class,
+        'Language' => Language::class,
+        'Router' => Router::class,
+        'Config' => Config::class,
+        'Loader' => FileLoader::class,
+        'Controller' => BaseController::class,
+        'Hooks' => Hooks::class,
+        'Input' => Input::class,
+        'URI' => URI::class,
+        'Output' => Output::class,
+        'Utf8' => Utf8::class,
+        'Security' => Security::class,
+        'Benchmark' => Benchmark::class,
 
         // Codeigniter 3 Alias
-        'CI_Model' => Kodhe\Framework\Database\ORM\CI_Model::class,
-        'CI_model' => Kodhe\Framework\Database\ORM\CI_Model::class,
+        'CI_Model' => CI_Model::class,
+        'CI_model' => CI_Model::class,
         'CI_Lang' => Language::class,
         'CI_Router' => Router::class,
         'CI_Config' => Config::class,
-        'CI_Loader' => Loader::class,
-        'CI_Controller' => Controller::class,
+        'CI_Loader' => FileLoader::class,
+        'CI_Controller' => BaseController::class,
         'CI_Hooks' => Hooks::class,
         'CI_Input' => Input::class,
         'CI_URI' => URI::class,
@@ -157,8 +180,7 @@ return [
             return new Security();
         },
         'view' => function ($provider) {
-            $class = \Kodhe\Framework\View\ViewFactory::class;
-            if (!class_exists($class)) {
+            if (!class_exists(ViewFactory::class)) {
                 // Package kodhe/view not installed — return null so boot can continue.
                 // Controllers that need views should install: composer require kodhe/view
                 if (function_exists('log_message')) {
@@ -166,10 +188,10 @@ return [
                 }
                 return null;
             }
-            return new $class();
+            return new ViewFactory();
         },   
         'load' => function ($provider) {
-            return new Loader();
+            return new FileLoader();
         },   
 
     ],
