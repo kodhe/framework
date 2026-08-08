@@ -5,75 +5,75 @@
   "homepage": "https://github.com/karyakode/kodhe",
   "license": "MIT",
   "support": {
-      "forum": "https://github.com/karyakode/kodhe/issues",
-      "wiki": "https://github.com/karyakode/kodhe/wiki",
-      "slack": "https://kodhechat.slack.com",
-      "source": "https://github.com/karyakode/kodhe"
+    "forum": "https://github.com/karyakode/kodhe/issues",
+    "wiki": "https://github.com/karyakode/kodhe/wiki",
+    "slack": "https://kodhechat.slack.com",
+    "source": "https://github.com/karyakode/kodhe"
   },
   "require": {
-      "php": ">=8.1",
-      "paragonie/random_compat": "^9.99",
-      "eftec/bladeone": "^4.19"
+    "php": ">=8.1",
+    "paragonie/random_compat": "^9.99",
+    "eftec/bladeone": "^4.19"
   },
   "suggest": {
-      "paragonie/random_compat": "Provides better randomness in PHP 5.x",
-      "ext-apc": "APC cache driver",
-      "ext-memcached": "Memcached cache/session driver",
-      "ext-redis": "Redis cache/session driver",
-      "ext-openssl": "Required for encryption libraries",
-      "ext-hash": "Required for encryption libraries"
+    "paragonie/random_compat": "Provides better randomness in PHP 5.x",
+    "ext-apc": "APC cache driver",
+    "ext-memcached": "Memcached cache/session driver",
+    "ext-redis": "Redis cache/session driver",
+    "ext-openssl": "Required for encryption libraries",
+    "ext-hash": "Required for encryption libraries"
   },
   "scripts": {
-      "test:coverage": [
-          "@putenv XDEBUG_MODE=coverage",
-          "phpunit --color=always --coverage-text --configuration tests/travis/sqlite.phpunit.xml"
-      ],
-      "test": "phpunit --colors=always",
-      "lint": "find . -name '*.php' -not -path './vendor/*' -exec php -l {} \\;",
-      "post-install-cmd": [
-          "sed -i s/name{0}/name[0]/ vendor/mikey179/vfsstream/src/main/php/org/bovigo/vfs/vfsStream.php"
-      ],
-      "post-update-cmd": [
-          "sed -i s/name{0}/name[0]/ vendor/mikey179/vfsstream/src/main/php/org/bovigo/vfs/vfsStream.php"
-      ]
+    "test:coverage": [
+      "@putenv XDEBUG_MODE=coverage",
+      "phpunit --color=always --coverage-text --configuration tests/travis/sqlite.phpunit.xml"
+    ],
+    "test": "phpunit --colors=always",
+    "lint": "find . -name '*.php' -not -path './vendor/*' -exec php -l {} \\;",
+    "post-install-cmd": [
+      "sed -i s/name{0}/name[0]/ vendor/mikey179/vfsstream/src/main/php/org/bovigo/vfs/vfsStream.php"
+    ],
+    "post-update-cmd": [
+      "sed -i s/name{0}/name[0]/ vendor/mikey179/vfsstream/src/main/php/org/bovigo/vfs/vfsStream.php"
+    ]
   },
   "require-dev": {
-      "mikey179/vfsstream": "1.6.*",
-      "phpunit/phpunit": "^9.0|^10.0",
-      "phpstan/phpstan": "^1.10",
-      "squizlabs/php_codesniffer": "^3.7"
+    "mikey179/vfsstream": "1.6.*",
+    "phpunit/phpunit": "^9.0|^10.0",
+    "phpstan/phpstan": "^1.10",
+    "squizlabs/php_codesniffer": "^3.7"
   },
   "autoload": {
     "psr-4": {
       "Kodhe\\Framework\\": "framework/src/",
-      "Kodhe\\Routing\\": "routing/src/",
-      "Kodhe\\Database\\": "database/src/",
-      "Kodhe\\Http\\": "http/src/",
-      "Kodhe\\Session\\": "session/src/",
-      "Kodhe\\Cache\\": "cache/src/",
-      "Kodhe\\Email\\": "email/src/",
-      "Kodhe\\Encryption\\": "encryption/src/",
-      "Kodhe\\Encrypt\\": "encrypt/src/",
-      "Kodhe\\Validation\\": "validation/src/",
-      "Kodhe\\Upload\\": "upload/src/",
-      "Kodhe\\Image\\": "image/src/",
-      "Kodhe\\Pagination\\": "pagination/src/",
-      "Kodhe\\Parser\\": "parser/src/",
-      "Kodhe\\Profiler\\": "profiler/src/",
-      "Kodhe\\Migration\\": "migration/src/",
-      "Kodhe\\Cart\\": "cart/src/",
-      "Kodhe\\Calendar\\": "calendar/src/",
-      "Kodhe\\Agent\\": "agent/src/",
-      "Kodhe\\Ftp\\": "ftp/src/",
-      "Kodhe\\Javascript\\": "javascript/src/",
-      "Kodhe\\Table\\": "table/src/",
-      "Kodhe\\Test\\": "test/src/",
-      "Kodhe\\Trackback\\": "trackback/src/",
-      "Kodhe\\Typography\\": "typography/src/",
-      "Kodhe\\Xmlrpc\\": "xmlrpc/src/",
-      "Kodhe\\Xmlrpcs\\": "xmlrpcs/src/",
-      "Kodhe\\Zip\\": "zip/src/",
-      "Kodhe\\Driver\\": "driver/src/"
+      "Kodhe\\Framework\\Routing\\": "routing/src/",
+      "Kodhe\\Framework\\Database\\": "database/src/",
+      "Kodhe\\Framework\\Http\\": "http/src/",
+      "Kodhe\\Framework\\Session\\": "session/src/",
+      "Kodhe\\Framework\\Cache\\": "cache/src/",
+      "Kodhe\\Framework\\Email\\": "email/src/",
+      "Kodhe\\Framework\\Encryption\\": "encryption/src/",
+      "Kodhe\\Framework\\Encrypt\\": "encrypt/src/",
+      "Kodhe\\Framework\\Validation\\": "validation/src/",
+      "Kodhe\\Framework\\Upload\\": "upload/src/",
+      "Kodhe\\Framework\\Image\\": "image/src/",
+      "Kodhe\\Framework\\Pagination\\": "pagination/src/",
+      "Kodhe\\Framework\\Parser\\": "parser/src/",
+      "Kodhe\\Framework\\Profiler\\": "profiler/src/",
+      "Kodhe\\Framework\\Migration\\": "migration/src/",
+      "Kodhe\\Framework\\Cart\\": "cart/src/",
+      "Kodhe\\Framework\\Calendar\\": "calendar/src/",
+      "Kodhe\\Framework\\Agent\\": "agent/src/",
+      "Kodhe\\Framework\\Ftp\\": "ftp/src/",
+      "Kodhe\\Framework\\Javascript\\": "javascript/src/",
+      "Kodhe\\Framework\\Table\\": "table/src/",
+      "Kodhe\\Framework\\Test\\": "test/src/",
+      "Kodhe\\Framework\\Trackback\\": "trackback/src/",
+      "Kodhe\\Framework\\Typography\\": "typography/src/",
+      "Kodhe\\Framework\\Xmlrpc\\": "xmlrpc/src/",
+      "Kodhe\\Framework\\Xmlrpcs\\": "xmlrpcs/src/",
+      "Kodhe\\Framework\\Zip\\": "zip/src/",
+      "Kodhe\\Framework\\Driver\\": "driver/src/"
     },
     "files": [
       "framework/src/Support/Legacy/common.php",
@@ -94,18 +94,18 @@
   "autoload-dev": {
     "psr-4": {
       "Kodhe\\Framework\\Tests\\": "framework/tests/",
-      "Kodhe\\Database\\Tests\\": "database/tests/",
-      "Kodhe\\Http\\Tests\\": "http/tests/",
-      "Kodhe\\Encryption\\Tests\\": "encryption/tests/",
-      "Kodhe\\Encrypt\\Tests\\": "encrypt/tests/",
-      "Kodhe\\Test\\Tests\\": "test/tests/",
-      "Kodhe\\Cache\\Tests\\": "cache/tests/",
-      "Kodhe\\Parser\\Tests\\": "parser/tests/",
-      "Kodhe\\Profiler\\Tests\\": "profiler/tests/",
-      "Kodhe\\Driver\\Tests\\": "driver/tests/",
-      "Kodhe\\Cart\\Tests\\": "cart/tests/",
-      "Kodhe\\Agent\\Tests\\": "agent/tests/",
-      "Kodhe\\Ftp\\Tests\\": "ftp/tests/"
+      "Kodhe\\Framework\\Database\\Tests\\": "database/tests/",
+      "Kodhe\\Framework\\Http\\Tests\\": "http/tests/",
+      "Kodhe\\Framework\\Encryption\\Tests\\": "encryption/tests/",
+      "Kodhe\\Framework\\Encrypt\\Tests\\": "encrypt/tests/",
+      "Kodhe\\Framework\\Test\\Tests\\": "test/tests/",
+      "Kodhe\\Framework\\Cache\\Tests\\": "cache/tests/",
+      "Kodhe\\Framework\\Parser\\Tests\\": "parser/tests/",
+      "Kodhe\\Framework\\Profiler\\Tests\\": "profiler/tests/",
+      "Kodhe\\Framework\\Driver\\Tests\\": "driver/tests/",
+      "Kodhe\\Framework\\Cart\\Tests\\": "cart/tests/",
+      "Kodhe\\Framework\\Agent\\Tests\\": "agent/tests/",
+      "Kodhe\\Framework\\Ftp\\Tests\\": "ftp/tests/"
     }
   },
   "minimum-stability": "dev",

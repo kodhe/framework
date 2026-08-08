@@ -9,7 +9,7 @@
   },
   "autoload": {
     "psr-4": {
-      "Kodhe\\Pagination\\": "src/"
+      "Kodhe\\Framework\\Pagination\\": "src/"
     }
   }
 }
