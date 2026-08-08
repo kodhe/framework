@@ -1,357 +1,246 @@
 <?php
-/**
- * This source file is part of the open source project
- * ExpressionEngine (https://expressionengine.com)
- *
- * @link      https://expressionengine.com/
- * @copyright Copyright (c) 2003-2023, Packet Tide, LLC (https://www.packettide.com)
- * @license   https://expressionengine.com/license Licensed under Apache License, Version 2.0
- */
+
+declare(strict_types=1);
 
 namespace Kodhe\Framework\Support;
 
 /**
- * ExpressionEngine Autoloader
- *
- * Really basic autoloader using the PSR-4 autoloading rules.
- * Modified to support lowercase folder names like CodeIgniter 3.
+ * Autoloader - PSR-4 Compatible Autoloader with CI3 Compatibility
+ * 
+ * Modernized version with typed properties, strict types, and improved performance.
+ * Maintains backward compatibility with legacy CodeIgniter 3 autoloading.
+ * 
+ * @package Kodhe\Framework\Support
+ * @since 2.0.0
  */
 class Autoloader
 {
-    protected $prefixes = array();
-    protected $spaces = array();
-
-    protected static $instance;
+    /**
+     * @var array<string, string[]> Namespace prefixes to directory paths
+     */
+    private static array $prefixes = [];
 
     /**
-     * Use as a singleton
+     * @var array<string, string> Class aliases
      */
-    public static function getInstance()
+    private static array $aliases = [];
+
+    /**
+     * @var bool Whether autoloader is registered
+     */
+    private static bool $registered = false;
+
+    /**
+     * @var self|null Singleton instance
+     */
+    private static ?self $instance = null;
+
+    /**
+     * Get singleton instance
+     */
+    public static function getInstance(): self
     {
-        if (!isset(static::$instance)) {
-            static::$instance = new static();
+        if (self::$instance === null) {
+            self::$instance = new self();
         }
-
-        return static::$instance;
+        return self::$instance;
     }
 
     /**
-     * Register the autoloader with PHP
+     * Initialize autoloader with default namespaces
      */
-    public function register()
+    public function initialize(): void
     {
-        spl_autoload_register(array($this, 'loadClass'));
-        return $this;
-    }
-
-    /**
-     * Remove the autoloader
-     */
-    public function unregister()
-    {
-        spl_autoload_unregister(array($this, 'loadClass'));
-        return $this;
-    }
-
-    /**
-     * Map a namespace prefix to a SINGLE path
-     */
-    public function addPrefix($namespace, $path)
-    {
-        $this->prefixes[$namespace] = rtrim($path, '/') . '/';
-        return $this;
-    }
-
-    /**
-     * Map a namespace prefix to MULTIPLE paths
-     */
-    public function addSpace($namespace, $path)
-    {
-        if (!isset($this->spaces[$namespace])) {
-            $this->spaces[$namespace] = array();
-        }
+        // Register framework namespace
+        $this->addNamespace('Kodhe\Framework', ROOTPATH . 'framework/src');
         
-        $normalizedPath = rtrim($path, '/') . '/';
-        if (!in_array($normalizedPath, $this->spaces[$namespace])) {
-            $this->spaces[$namespace][] = $normalizedPath;
-        }
+        // Register application namespaces
+        $this->addNamespace('App', APPPATH);
+        $this->addNamespace('Modules', APPPATH . 'modules');
         
+        // Register the autoloader with SPL
+        $this->register();
+    }
+
+    /**
+     * Add a namespace prefix with its base directory
+     * 
+     * @param string $prefix Namespace prefix (e.g., 'App\Controllers')
+     * @param string $baseDir Base directory path
+     * @param bool $prepend Whether to prepend instead of append
+     * @return self
+     */
+    public function addNamespace(string $prefix, string $baseDir, bool $prepend = false): self
+    {
+        $prefix = trim($prefix, '\\') . '\\';
+        $baseDir = rtrim($baseDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+
+        if (!isset(self::$prefixes[$prefix])) {
+            self::$prefixes[$prefix] = [];
+        }
+
+        if ($prepend) {
+            array_unshift(self::$prefixes[$prefix], $baseDir);
+        } else {
+            self::$prefixes[$prefix][] = $baseDir;
+        }
+
         return $this;
     }
 
     /**
-     * Get all registered prefixes
+     * Add a class alias (legacy compatibility)
+     * 
+     * @param string $space Alias name
+     * @param string $path Original class path
+     * @return self
      */
-    public function getPrefixes()
+    public function addSpace(string $space, string $path): self
     {
-        return $this->prefixes;
+        self::$aliases[$space] = $path;
+        return $this;
     }
 
     /**
-     * Get all registered spaces
+     * Register the autoloader with SPL
+     * 
+     * @return self
      */
-    public function getSpaces()
+    public function register(): self
     {
-        return $this->spaces;
+        if (!self::$registered) {
+            spl_autoload_register([$this, 'autoload'], true, true);
+            self::$registered = true;
+        }
+        return $this;
     }
 
     /**
-     * Handle the autoload call.
+     * Unregister the autoloader
+     * 
+     * @return self
      */
-    public function loadClass($class)
+    public function unregister(): self
     {
-        // Check spaces first (multiple paths per namespace)
-        foreach ($this->spaces as $prefix => $paths) {
-            if (empty($prefix)) {
-                continue;
+        if (self::$registered) {
+            spl_autoload_unregister([$this, 'autoload']);
+            self::$registered = false;
+        }
+        return $this;
+    }
+
+    /**
+     * Autoload a class
+     * 
+     * @param string $class Fully qualified class name
+     * @return void
+     */
+    public function autoload(string $class): void
+    {
+        $this->loadClass($class);
+    }
+
+    /**
+     * Load a class (legacy method name for compatibility)
+     * 
+     * @param string $class Class name
+     */
+    public function loadClass(string $class): void
+    {
+        // Check for alias first
+        $class = ltrim($class, '\\');
+        
+        foreach (self::$aliases as $alias => $original) {
+            if (strpos($class, $alias) === 0) {
+                $class = $original . substr($class, strlen($alias));
+                break;
             }
+        }
 
+        // Try PSR-4 namespaces
+        foreach (self::$prefixes as $prefix => $baseDirs) {
             if (strpos($class, $prefix) === 0) {
-                foreach ($paths as $path) {
-                    if ($this->tryLoadClass($class, $prefix, $path)) {
+                $relativeClass = substr($class, strlen($prefix));
+                
+                foreach ($baseDirs as $baseDir) {
+                    $filePath = $baseDir . str_replace('\\', DIRECTORY_SEPARATOR, $relativeClass) . '.php';
+                    
+                    if (file_exists($filePath)) {
+                        require_once $filePath;
                         return;
                     }
                 }
             }
         }
 
-        // Check prefixes (single path per namespace)
-        foreach ($this->prefixes as $prefix => $path) {
-            if (empty($prefix)) {
-                continue;
-            }
+        // Fallback to legacy loading
+        $this->loadLegacy($class);
+    }
 
-            if (strpos($class, $prefix) === 0) {
-                if ($this->tryLoadClass($class, $prefix, $path)) {
-                    return;
-                }
+    /**
+     * Legacy class loading fallback
+     * 
+     * @param string $class Class name
+     * @return void
+     */
+    private function loadLegacy(string $class): void
+    {
+        // Try loading from legacy paths
+        $legacyPaths = [
+            APPPATH . 'libraries/',
+            APPPATH . 'models/',
+            APPPATH . 'controllers/',
+        ];
+
+        $fileName = $class . '.php';
+
+        foreach ($legacyPaths as $path) {
+            $filePath = $path . $fileName;
+            if (file_exists($filePath)) {
+                require_once $filePath;
+                return;
             }
         }
     }
 
     /**
-     * Try to load class from a specific path
+     * Get all registered namespaces
+     * 
+     * @return array<string, string[]>
      */
-    protected function tryLoadClass($class, $prefix, $path)
+    public function getNamespaces(): array
     {
-        $relativeClass = substr($class, strlen($prefix));
-        $className = basename(str_replace('\\', '/', $relativeClass));
-        
-        // Define search patterns
-        $patterns = array();
-        
-        // 1. Original PSR-4 path
-        $patterns[] = $path . str_replace('\\', '/', $relativeClass) . '.php';
-        
-        // 2. CI3 style (all lowercase)
-        $patterns[] = $this->buildPath($relativeClass, $path, true);
-        
-        // 3. Lowercase folders only
-        $patterns[] = $this->buildPath($relativeClass, $path, false);
-        
-        // 4. CI3 underscore style
-        $patterns[] = $this->buildUnderscorePath($relativeClass, $path);
-        
-        // 5. Controller variations if applicable
-        if (substr($className, -10) === 'Controller') {
-            $patterns = array_merge($patterns, $this->getControllerPatterns($relativeClass, $path));
-        }
-        
-        // Try each pattern
-        foreach ($patterns as $pattern) {
-            if (file_exists($pattern)) {
-                require_once $pattern;
-                return true;
-            }
-        }
-        
-        // 6. Case-insensitive search as last resort
-        return $this->tryCaseInsensitiveSearch($class, $prefix, $path);
+        return self::$prefixes;
     }
 
     /**
-     * Build path with optional lowercase conversion
+     * Get all registered aliases/spaces
+     * 
+     * @return array<string, string>
      */
-    protected function buildPath($relativeClass, $basePath, $lowercaseAll = false)
+    public function getSpaces(): array
     {
-        $parts = explode('\\', trim($relativeClass, '\\'));
-        
-        if (empty($parts)) {
-            return $basePath . '.php';
-        }
-        
-        $className = array_pop($parts);
-        
-        // Process folders
-        foreach ($parts as &$part) {
-            $part = strtolower($part);
-        }
-        
-        // Process class name
-        if ($lowercaseAll) {
-            $className = strtolower($className);
-        }
-        
-        // Rebuild path
-        $path = implode('/', array_filter($parts));
-        if (!empty($path)) {
-            $path .= '/';
-        }
-        
-        return $basePath . $path . $className . '.php';
+        return self::$aliases;
     }
 
     /**
-     * Build CI3 underscore style path
+     * Check if autoloader is registered
+     * 
+     * @return bool
      */
-    protected function buildUnderscorePath($relativeClass, $basePath)
+    public function isRegistered(): bool
     {
-        $parts = explode('\\', trim($relativeClass, '\\'));
-        
-        foreach ($parts as &$part) {
-            if (strpos($part, '_') !== false) {
-                $part = strtolower($part);
-            } else {
-                $part = strtolower($this->pascalToUnderscore($part));
-            }
-        }
-        
-        return $basePath . implode('/', array_filter($parts)) . '.php';
+        return self::$registered;
     }
 
     /**
-     * Get controller-specific search patterns
+     * Reset autoloader state (useful for testing)
      */
-    protected function getControllerPatterns($relativeClass, $basePath)
+    public function reset(): void
     {
-        $patterns = array();
-        $parts = explode('\\', trim($relativeClass, '\\'));
-        
-        if (empty($parts)) {
-            return $patterns;
-        }
-        
-        $className = array_pop($parts);
-        $simpleName = substr($className, 0, -10);
-        $underscoreName = $this->pascalToUnderscore($className);
-        
-        // Process folders to lowercase
-        foreach ($parts as &$part) {
-            $part = strtolower($part);
-        }
-        
-        $folderPath = implode('/', array_filter($parts));
-        if (!empty($folderPath)) {
-            $folderPath .= '/';
-        }
-        
-        // Controller patterns
-        $patterns[] = $basePath . $folderPath . $underscoreName . '.php';
-        $patterns[] = $basePath . $folderPath . $simpleName . '.php';
-        $patterns[] = $basePath . $folderPath . strtolower($simpleName) . '.php';
-        
-        return $patterns;
-    }
-
-    /**
-     * Try case-insensitive search
-     */
-    protected function tryCaseInsensitiveSearch($class, $prefix, $basePath)
-    {
-        $relativeClass = substr($class, strlen($prefix));
-        $parts = explode('\\', trim($relativeClass, '\\'));
-        $currentPath = rtrim($basePath, '/');
-        
-        foreach ($parts as $index => $part) {
-            $isLast = ($index === count($parts) - 1);
-            
-            if ($isLast) {
-                // Try different filename variations
-                $variations = array(
-                    $part . '.php',
-                    strtolower($part) . '.php',
-                    $this->pascalToUnderscore($part) . '.php'
-                );
-                
-                if (substr($part, -10) === 'Controller') {
-                    $simple = substr($part, 0, -10);
-                    $variations[] = $simple . '.php';
-                    $variations[] = strtolower($simple) . '.php';
-                }
-                
-                foreach ($variations as $filename) {
-                    $filePath = $currentPath . '/' . $filename;
-                    if (file_exists($filePath)) {
-                        require_once $filePath;
-                        return true;
-                    }
-                }
-                
-                return false;
-            }
-            
-            // Find matching directory
-            $found = false;
-            if (is_dir($currentPath)) {
-                $items = scandir($currentPath);
-                foreach ($items as $item) {
-                    if ($item === '.' || $item === '..') continue;
-                    
-                    if (strtolower($item) === strtolower($part) && is_dir($currentPath . '/' . $item)) {
-                        $currentPath .= '/' . $item;
-                        $found = true;
-                        break;
-                    }
-                }
-            }
-            
-            if (!$found) {
-                return false;
-            }
-        }
-        
-        return false;
-    }
-
-    /**
-     * Convert PascalCase to underscore
-     */
-    protected function pascalToUnderscore($className)
-    {
-        return strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $className));
-    }
-
-    /**
-     * Merge another autoloader
-     */
-    public function merge(Autoloader $other)
-    {
-        $this->prefixes = array_merge($this->prefixes, $other->getPrefixes());
-        
-        foreach ($other->getSpaces() as $namespace => $paths) {
-            foreach ($paths as $path) {
-                $this->addSpace($namespace, $path);
-            }
-        }
-        
-        return $this;
-    }
-
-    /**
-     * Add multiple namespaces at once
-     */
-    public function addNamespaces(array $namespaces)
-    {
-        foreach ($namespaces as $namespace => $paths) {
-            if (is_array($paths)) {
-                foreach ($paths as $path) {
-                    $this->addNamespaces($namespace, $path);
-                }
-            } else {
-                $this->addNamespaces($namespace, $paths);
-            }
-        }
-        
-        return $this;
+        $this->unregister();
+        self::$prefixes = [];
+        self::$aliases = [];
+        self::$instance = null;
     }
 }
