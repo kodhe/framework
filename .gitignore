@@ -1,62 +1,22 @@
-```gitignore
 # Compiled and build artifacts
 *.pyc
 __pycache__/
-*.o
-*.obj
-*.class
-*.exe
-*.dll
-*.so
-*.a
-*.out
 
 # Dependencies
 vendor/
-node_modules/
-.npm/
-.yarn/
-bower_components/
-.jspm/
-
-# Build and distribution
-dist/
-build/
-target/
-coverage/
-htmlcov/
-*.egg-info/
 
 # Logs and temp files
 *.log
 *.tmp
-*.swp
-*.swo
-*.bak
-*.~*
 
 # Environment
 .env
 .env.local
 .env.*
-.env.local.*
 
-# Editors and IDEs
+# Editors
 .vscode/
 .idea/
-*.sublime-project
-*.sublime-workspace
-.DS_Store
-Thumbs.db
 
-# Testing
-.phpunit.result.cache
-.phpunit/
-.php_cs.cache
-
-# Cache directories
-.cache/
-.mypy_cache/
-.pytest_cache/
-.hadolint.yaml
-```
+# Original rules preserved
+*.log
