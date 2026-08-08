@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Profiler\Support;
+namespace Kodhe\Framework\Profiler\Support;
 
 /**
  * Data Normalizer

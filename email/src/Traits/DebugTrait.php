@@ -1,6 +1,6 @@
 <?php
 
-namespace Kodhe\Email\Traits;
+namespace Kodhe\Framework\Email\Traits;
 
 /**
  * Trait untuk Debug Message Handling

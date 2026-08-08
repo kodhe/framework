@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Email\Tests\Message;
+namespace Kodhe\Framework\Email\Tests\Message;
 
 use PHPUnit\Framework\TestCase;
-use Kodhe\Email\Message\Attachment;
+use Kodhe\Framework\Email\Message\Attachment;
 
 /**
  * Test class for Attachment
  *
  * @package     Kodhe\Email\Tests
- * @covers      \Kodhe\Email\Message\Attachment
+ * @covers      \Kodhe\Framework\Email\Message\Attachment
  */
 class AttachmentTest extends TestCase
 {

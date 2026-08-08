@@ -1,9 +1,9 @@
 <?php
 
-namespace Kodhe\Encrypt\Ciphers;
+namespace Kodhe\Framework\Encrypt\Ciphers;
 
-use Kodhe\Encrypt\Contracts\CipherInterface;
-use Kodhe\Encrypt\Encoding\Base64Encoder;
+use Kodhe\Framework\Encrypt\Contracts\CipherInterface;
+use Kodhe\Framework\Encrypt\Encoding\Base64Encoder;
 
 /**
  * Class OpenSslCipher

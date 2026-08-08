@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Zip\Exceptions;
+namespace Kodhe\Framework\Zip\Exceptions;
 
 /**
  * Exception thrown when archive operations fail

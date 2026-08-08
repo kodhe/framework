@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Agent;
+namespace Kodhe\Framework\Agent;
 
-use Kodhe\Agent\Contracts\AgentInterface;
-use Kodhe\Agent\Drivers\BrowserDriver;
-use Kodhe\Agent\Drivers\DeviceDriver;
-use Kodhe\Agent\Drivers\OsDriver;
-use Kodhe\Agent\Drivers\RobotDriver;
-use Kodhe\Agent\Parsers\UserAgentParser;
-use Kodhe\Agent\Collections\BrowserCollection;
-use Kodhe\Agent\Collections\DeviceCollection;
-use Kodhe\Agent\Collections\OsCollection;
-use Kodhe\Agent\Collections\RobotCollection;
+use Kodhe\Framework\Agent\Contracts\AgentInterface;
+use Kodhe\Framework\Agent\Drivers\BrowserDriver;
+use Kodhe\Framework\Agent\Drivers\DeviceDriver;
+use Kodhe\Framework\Agent\Drivers\OsDriver;
+use Kodhe\Framework\Agent\Drivers\RobotDriver;
+use Kodhe\Framework\Agent\Parsers\UserAgentParser;
+use Kodhe\Framework\Agent\Collections\BrowserCollection;
+use Kodhe\Framework\Agent\Collections\DeviceCollection;
+use Kodhe\Framework\Agent\Collections\OsCollection;
+use Kodhe\Framework\Agent\Collections\RobotCollection;
 
 /**
  * Agent Library for CodeIgniter 3

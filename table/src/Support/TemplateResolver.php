@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Table\Support;
+namespace Kodhe\Framework\Table\Support;
 
 /**
  * Template resolver for table templates

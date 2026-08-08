@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Xmlrpc\Support;
+namespace Kodhe\Framework\Xmlrpc\Support;
 
 /**
  * XML Parser cache for performance optimization

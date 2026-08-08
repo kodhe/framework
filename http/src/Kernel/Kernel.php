@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Kodhe\Framework\Http\Kernel;
 
-use Kodhe\Cli\Cli;
-use Kodhe\Error\CPException;
-use Kodhe\Error\FileNotFound;
+use Kodhe\Framework\Cli\Cli;
+use Kodhe\Framework\Error\CPException;
+use Kodhe\Framework\Error\FileNotFound;
 use Kodhe\Framework\Container\Container;
 use Kodhe\Framework\Foundation\Service\ServiceLocator;
 use Kodhe\Framework\Foundation\Service\ServiceManager;

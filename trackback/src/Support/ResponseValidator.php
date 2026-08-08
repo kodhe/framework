@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Trackback\Support;
+namespace Kodhe\Framework\Trackback\Support;
 
-use Kodhe\Trackback\Exceptions\ParseException;
+use Kodhe\Framework\Trackback\Exceptions\ParseException;
 
 /**
  * Response validation utility.

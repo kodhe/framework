@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Encryption\Contracts;
+namespace Kodhe\Framework\Encryption\Contracts;
 
 /**
  * Interface EncryptionInterface

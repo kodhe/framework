@@ -1,9 +1,9 @@
 <?php
 
-namespace Kodhe\Email\Transports;
+namespace Kodhe\Framework\Email\Transports;
 
-use Kodhe\Email\Contracts\TransportInterface;
-use Kodhe\Email\Message\EmailMessage;
+use Kodhe\Framework\Email\Contracts\TransportInterface;
+use Kodhe\Framework\Email\Message\EmailMessage;
 
 /**
  * Transport menggunakan Sendmail binary

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Trackback\ValueObjects;
+namespace Kodhe\Framework\Trackback\ValueObjects;
 
 /**
  * Value object representing a trackback request.

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Xmlrpcs\Exceptions;
+namespace Kodhe\Framework\Xmlrpcs\Exceptions;
 
 /**
  * Exception for incorrect parameters

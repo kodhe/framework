@@ -1,6 +1,6 @@
 <?php
 
-namespace Kodhe\Encrypt\Exceptions;
+namespace Kodhe\Framework\Encrypt\Exceptions;
 
 /**
  * Class EncryptException

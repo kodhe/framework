@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Profiler\Factory;
+namespace Kodhe\Framework\Profiler\Factory;
 
-use Kodhe\Profiler\Contracts\CollectorInterface;
-use Kodhe\Profiler\Support\SectionResolver;
+use Kodhe\Framework\Profiler\Contracts\CollectorInterface;
+use Kodhe\Framework\Profiler\Support\SectionResolver;
 
 /**
  * Collector Factory

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Pagination\ValueObjects;
+namespace Kodhe\Framework\Pagination\ValueObjects;
 
 /**
  * Pagination Configuration Value Object

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Pagination\Support;
+namespace Kodhe\Framework\Pagination\Support;
 
 /**
  * Link Cache for Performance Optimization

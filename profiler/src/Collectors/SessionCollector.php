@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Profiler\Collectors;
+namespace Kodhe\Framework\Profiler\Collectors;
 
-use Kodhe\Profiler\Contracts\CollectorInterface;
+use Kodhe\Framework\Profiler\Contracts\CollectorInterface;
 
 /**
  * Session Collector

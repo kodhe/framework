@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Pagination\Url;
+namespace Kodhe\Framework\Pagination\Url;
 
-use Kodhe\Pagination\Contracts\UrlBuilderInterface;
+use Kodhe\Framework\Pagination\Contracts\UrlBuilderInterface;
 
 class SegmentUrlBuilder implements UrlBuilderInterface
 {

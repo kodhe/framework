@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Agent\Tests;
+namespace Kodhe\Framework\Agent\Tests;
 
-use Kodhe\Agent\Agent;
+use Kodhe\Framework\Agent\Agent;
 use PHPUnit\Framework\TestCase;
 
 /**

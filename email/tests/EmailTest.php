@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Email\Tests;
+namespace Kodhe\Framework\Email\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Kodhe\Email\Email;
-use Kodhe\Email\Contracts\EmailInterface;
+use Kodhe\Framework\Email\Email;
+use Kodhe\Framework\Email\Contracts\EmailInterface;
 
 /**
  * Test class for Email facade
  *
  * @package     Kodhe\Email\Tests
- * @covers      \Kodhe\Email\Email
+ * @covers      \Kodhe\Framework\Email\Email
  */
 class EmailTest extends TestCase
 {

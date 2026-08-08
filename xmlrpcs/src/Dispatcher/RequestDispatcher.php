@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Xmlrpcs\Dispatcher;
+namespace Kodhe\Framework\Xmlrpcs\Dispatcher;
 
-use Kodhe\Xmlrpcs\Contracts\DispatcherInterface;
-use Kodhe\Xmlrpcs\Contracts\MethodRegistryInterface;
-use Kodhe\Xmlrpcs\Contracts\MethodHandlerInterface;
-use Kodhe\Xmlrpcs\Factory\HandlerFactory;
-use Kodhe\Xmlrpcs\Exceptions\UnknownMethodException;
-use Kodhe\Xmlrpcs\Exceptions\IncorrectParamsException;
+use Kodhe\Framework\Xmlrpcs\Contracts\DispatcherInterface;
+use Kodhe\Framework\Xmlrpcs\Contracts\MethodRegistryInterface;
+use Kodhe\Framework\Xmlrpcs\Contracts\MethodHandlerInterface;
+use Kodhe\Framework\Xmlrpcs\Factory\HandlerFactory;
+use Kodhe\Framework\Xmlrpcs\Exceptions\UnknownMethodException;
+use Kodhe\Framework\Xmlrpcs\Exceptions\IncorrectParamsException;
 
 /**
  * Dispatcher for XML-RPC method calls

@@ -5,15 +5,15 @@
  * @package Kodhe\Parser
  */
 
-namespace Kodhe\Parser;
+namespace Kodhe\Framework\Parser;
 
-use Kodhe\Parser\Contracts\ParserInterface;
-use Kodhe\Parser\Contracts\LexerInterface;
-use Kodhe\Parser\Contracts\CompilerInterface;
-use Kodhe\Parser\Contracts\CacheInterface;
-use Kodhe\Parser\Lexer\TemplateLexer;
-use Kodhe\Parser\Compiler\TemplateCompiler;
-use Kodhe\Parser\Cache\TemplateCache;
+use Kodhe\Framework\Parser\Contracts\ParserInterface;
+use Kodhe\Framework\Parser\Contracts\LexerInterface;
+use Kodhe\Framework\Parser\Contracts\CompilerInterface;
+use Kodhe\Framework\Parser\Contracts\CacheInterface;
+use Kodhe\Framework\Parser\Lexer\TemplateLexer;
+use Kodhe\Framework\Parser\Compiler\TemplateCompiler;
+use Kodhe\Framework\Parser\Cache\TemplateCache;
 
 class Parser implements ParserInterface
 {

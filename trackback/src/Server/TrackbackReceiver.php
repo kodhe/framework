@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Trackback\Server;
+namespace Kodhe\Framework\Trackback\Server;
 
-use Kodhe\Trackback\Contracts\ParserInterface;
-use Kodhe\Trackback\Support\TrackbackConfig;
-use Kodhe\Trackback\Parser\TrackbackParser;
-use Kodhe\Trackback\Exceptions\ParseException;
-use Kodhe\Trackback\Exceptions\TrackbackReceiveException;
+use Kodhe\Framework\Trackback\Contracts\ParserInterface;
+use Kodhe\Framework\Trackback\Support\TrackbackConfig;
+use Kodhe\Framework\Trackback\Parser\TrackbackParser;
+use Kodhe\Framework\Trackback\Exceptions\ParseException;
+use Kodhe\Framework\Trackback\Exceptions\TrackbackReceiveException;
 
 /**
  * Trackback receiver/server for handling incoming trackbacks.

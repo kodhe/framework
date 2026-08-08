@@ -1,6 +1,6 @@
 <?php
 
-namespace Kodhe\Encrypt\Encoding;
+namespace Kodhe\Framework\Encrypt\Encoding;
 
 /**
  * Class HexEncoder

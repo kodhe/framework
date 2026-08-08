@@ -5,7 +5,7 @@
  * @package CodeIgniter\Parser\Support
  */
 
-namespace Kodhe\Parser\Support;
+namespace Kodhe\Framework\Parser\Support;
 
 class TemplateHelper
 {

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Zip\Compression;
+namespace Kodhe\Framework\Zip\Compression;
 
-use Kodhe\Zip\Contracts\CompressionStrategyInterface;
+use Kodhe\Framework\Zip\Contracts\CompressionStrategyInterface;
 
 /**
  * Deflate compression strategy (default)

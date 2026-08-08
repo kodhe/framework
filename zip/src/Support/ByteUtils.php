@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Zip\Support;
+namespace Kodhe\Framework\Zip\Support;
 
 /**
  * Utility class for byte-safe string operations and DOS time conversion

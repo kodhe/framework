@@ -1,6 +1,6 @@
 <?php
 
-namespace Kodhe\Email\Validation;
+namespace Kodhe\Framework\Email\Validation;
 
 /**
  * Validator untuk Email Address

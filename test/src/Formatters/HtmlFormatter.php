@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Test\Formatters;
+namespace Kodhe\Framework\Test\Formatters;
 
-use Kodhe\Test\Contracts\FormatterInterface;
-use Kodhe\Test\Result\TestResultCollection;
+use Kodhe\Framework\Test\Contracts\FormatterInterface;
+use Kodhe\Framework\Test\Result\TestResultCollection;
 
 /**
  * Formats test results as HTML

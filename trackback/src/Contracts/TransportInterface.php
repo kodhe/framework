@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Trackback\Contracts;
+namespace Kodhe\Framework\Trackback\Contracts;
 
 /**
  * Transport interface for sending trackback requests.
@@ -15,7 +15,7 @@ interface TransportInterface
      * @param string $url Target URL
      * @param string $data POST data (URL-encoded)
      * @return array Response with 'success' (bool), 'body' (string), 'error' (string|null)
-     * @throws \Kodhe\Trackback\Exceptions\TransportException On transport failure
+     * @throws \Kodhe\Framework\Trackback\Exceptions\TransportException On transport failure
      */
     public function send(string $url, string $data): array;
 

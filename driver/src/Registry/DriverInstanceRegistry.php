@@ -1,8 +1,8 @@
 <?php
 
-namespace Kodhe\Driver\Registry;
+namespace Kodhe\Framework\Driver\Registry;
 
-use Kodhe\Driver\Contracts\DriverInterface;
+use Kodhe\Framework\Driver\Contracts\DriverInterface;
 
 /**
  * Class DriverInstanceRegistry

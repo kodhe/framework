@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Pagination\Contracts;
+namespace Kodhe\Framework\Pagination\Contracts;
 
 /**
  * URL Builder Interface

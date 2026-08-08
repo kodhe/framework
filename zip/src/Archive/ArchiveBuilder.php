@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Zip\Archive;
+namespace Kodhe\Framework\Zip\Archive;
 
-use Kodhe\Zip\Contracts\CompressionStrategyInterface;
-use Kodhe\Zip\Contracts\FileReaderInterface;
-use Kodhe\Zip\Contracts\ArchiveWriterInterface;
-use Kodhe\Zip\ValueObjects\ZipEntry;
-use Kodhe\Zip\Support\ByteUtils;
-use Kodhe\Zip\Factory\CompressionFactory;
+use Kodhe\Framework\Zip\Contracts\CompressionStrategyInterface;
+use Kodhe\Framework\Zip\Contracts\FileReaderInterface;
+use Kodhe\Framework\Zip\Contracts\ArchiveWriterInterface;
+use Kodhe\Framework\Zip\ValueObjects\ZipEntry;
+use Kodhe\Framework\Zip\Support\ByteUtils;
+use Kodhe\Framework\Zip\Factory\CompressionFactory;
 
 /**
  * Builder class for creating ZIP archives

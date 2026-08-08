@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Test\Contracts;
+namespace Kodhe\Framework\Test\Contracts;
 
-use Kodhe\Test\Result\AssertionResult;
+use Kodhe\Framework\Test\Result\AssertionResult;
 
 /**
  * Interface for assertion implementations

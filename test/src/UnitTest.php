@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Test;
+namespace Kodhe\Framework\Test;
 
-use Kodhe\Test\Contracts\UnitTestInterface;
-use Kodhe\Test\Reporters\DefaultReporter;
-use Kodhe\Test\Result\TestResult;
-use Kodhe\Test\Result\TestResultCollection;
-use Kodhe\Test\Runner\TestRunner;
+use Kodhe\Framework\Test\Contracts\UnitTestInterface;
+use Kodhe\Framework\Test\Reporters\DefaultReporter;
+use Kodhe\Framework\Test\Result\TestResult;
+use Kodhe\Framework\Test\Result\TestResultCollection;
+use Kodhe\Framework\Test\Runner\TestRunner;
 
 /**
  * Unit Testing Class
@@ -415,7 +415,7 @@ class UnitTest implements UnitTestInterface
 }
 
 // Helper function to test boolean TRUE
-if (!function_exists('Kodhe\\Test\\is_true')) {
+if (!function_exists('Kodhe\Framework\Test\\is_true')) {
     /**
      * Helper function to test boolean TRUE
      *
@@ -429,7 +429,7 @@ if (!function_exists('Kodhe\\Test\\is_true')) {
 }
 
 // Helper function to test boolean FALSE
-if (!function_exists('Kodhe\\Test\\is_false')) {
+if (!function_exists('Kodhe\Framework\Test\\is_false')) {
     /**
      * Helper function to test boolean FALSE
      *

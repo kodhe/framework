@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Profiler\ValueObjects;
+namespace Kodhe\Framework\Profiler\ValueObjects;
 
 /**
  * Profile Data Value Object

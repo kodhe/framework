@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Profiler\Collectors;
+namespace Kodhe\Framework\Profiler\Collectors;
 
-use Kodhe\Profiler\Contracts\CollectorInterface;
+use Kodhe\Framework\Profiler\Contracts\CollectorInterface;
 
 /**
  * Database Collector
@@ -38,11 +38,11 @@ class DatabaseCollector implements CollectorInterface
         // Find all database instances in CI
         foreach (get_object_vars($this->ci) as $name => $cobject) {
             if (is_object($cobject)) {
-                if ($cobject instanceof \Kodhe\Database\DB) {
+                if ($cobject instanceof \Kodhe\Framework\Database\DB) {
                     $dbs[get_class($this->ci) . ':$' . $name] = $cobject;
                 } elseif ($cobject instanceof \CI_Model) {
                     foreach (get_object_vars($cobject) as $mname => $mobject) {
-                        if ($mobject instanceof \Kodhe\Database\DB) {
+                        if ($mobject instanceof \Kodhe\Framework\Database\DB) {
                             $dbs[get_class($cobject) . ':$' . $mname] = $mobject;
                         }
                     }

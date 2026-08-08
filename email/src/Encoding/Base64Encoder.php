@@ -1,6 +1,6 @@
 <?php
 
-namespace Kodhe\Email\Encoding;
+namespace Kodhe\Framework\Email\Encoding;
 
 /**
  * Base64 Encoder

@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Xmlrpc\Client;
+namespace Kodhe\Framework\Xmlrpc\Client;
 
-use Kodhe\Xmlrpc\Contracts\TransportInterface;
-use Kodhe\Xmlrpc\Contracts\EncoderInterface;
-use Kodhe\Xmlrpc\Contracts\DecoderInterface;
-use Kodhe\Xmlrpc\Factory\TransportFactory;
-use Kodhe\Xmlrpc\Factory\EncoderFactory;
-use Kodhe\Xmlrpc\Factory\DecoderFactory;
-use Kodhe\Xmlrpc\Exceptions\TransportException;
-use Kodhe\Xmlrpc\Exceptions\FaultException;
-use Kodhe\Xmlrpc\Exceptions\XmlParseException;
+use Kodhe\Framework\Xmlrpc\Contracts\TransportInterface;
+use Kodhe\Framework\Xmlrpc\Contracts\EncoderInterface;
+use Kodhe\Framework\Xmlrpc\Contracts\DecoderInterface;
+use Kodhe\Framework\Xmlrpc\Factory\TransportFactory;
+use Kodhe\Framework\Xmlrpc\Factory\EncoderFactory;
+use Kodhe\Framework\Xmlrpc\Factory\DecoderFactory;
+use Kodhe\Framework\Xmlrpc\Exceptions\TransportException;
+use Kodhe\Framework\Xmlrpc\Exceptions\FaultException;
+use Kodhe\Framework\Xmlrpc\Exceptions\XmlParseException;
 
 /**
  * XML-RPC Client using Dependency Injection pattern

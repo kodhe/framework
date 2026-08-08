@@ -1,6 +1,6 @@
 <?php
 
-namespace Kodhe\Email\Message;
+namespace Kodhe\Framework\Email\Message;
 
 /**
  * Value Object untuk Email Message

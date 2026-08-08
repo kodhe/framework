@@ -1,5 +1,5 @@
 <?php
-namespace Kodhe\Pagination\Support;
+namespace Kodhe\Framework\Pagination\Support;
 
 class AttributeHelper
 {

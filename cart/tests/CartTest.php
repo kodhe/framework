@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Cart\Tests;
+namespace Kodhe\Framework\Cart\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Kodhe\Cart\Cart;
-use Kodhe\Cart\Storage\MemoryStorage;
-use Kodhe\Cart\Factory\CartFactory;
+use Kodhe\Framework\Cart\Cart;
+use Kodhe\Framework\Cart\Storage\MemoryStorage;
+use Kodhe\Framework\Cart\Factory\CartFactory;
 
 /**
  * Cart Test Suite
@@ -34,7 +34,7 @@ class CartTest extends TestCase
     protected function tearDown(): void
     {
         // Clean up memory storage
-        \Kodhe\Cart\Storage\MemoryStorage::clearAll();
+        \Kodhe\Framework\Cart\Storage\MemoryStorage::clearAll();
     }
 
     public function testInsertSingleItem(): void

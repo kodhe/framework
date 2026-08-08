@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Encryption\Tests\Key;
+namespace Kodhe\Framework\Encryption\Tests\Key;
 
-use Kodhe\Encryption\Key\KeyDeriver;
+use Kodhe\Framework\Encryption\Key\KeyDeriver;
 use PHPUnit\Framework\TestCase;
 
 /**

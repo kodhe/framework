@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Trackback\Parser;
+namespace Kodhe\Framework\Trackback\Parser;
 
-use Kodhe\Trackback\Contracts\ParserInterface;
-use Kodhe\Trackback\Exceptions\ParseException;
-use Kodhe\Trackback\Support\TrackbackConfig;
+use Kodhe\Framework\Trackback\Contracts\ParserInterface;
+use Kodhe\Framework\Trackback\Exceptions\ParseException;
+use Kodhe\Framework\Trackback\Support\TrackbackConfig;
 
 /**
  * Trackback parser implementation.

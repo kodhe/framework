@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Cart\Storage;
+namespace Kodhe\Framework\Cart\Storage;
 
-use Kodhe\Cart\Contracts\CartStorageInterface;
+use Kodhe\Framework\Cart\Contracts\CartStorageInterface;
 
 /**
  * Class MemoryStorage

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Upload\Factory;
+namespace Kodhe\Framework\Upload\Factory;
 
-use Kodhe\Upload\Contracts\FilenameStrategyInterface;
+use Kodhe\Framework\Upload\Contracts\FilenameStrategyInterface;
 
 /**
  * Filename Strategy Factory
@@ -62,7 +62,7 @@ class FilenameStrategyFactory
      */
     public static function default(): FilenameStrategyInterface
     {
-        return new \Kodhe\Upload\Drivers\OriginalFilenameStrategy();
+        return new \Kodhe\Framework\Upload\Drivers\OriginalFilenameStrategy();
     }
 
     /**
@@ -72,7 +72,7 @@ class FilenameStrategyFactory
      */
     public static function encrypt(): FilenameStrategyInterface
     {
-        return new \Kodhe\Upload\Drivers\EncryptFilenameStrategy();
+        return new \Kodhe\Framework\Upload\Drivers\EncryptFilenameStrategy();
     }
 
     /**
@@ -82,6 +82,6 @@ class FilenameStrategyFactory
      */
     public static function increment(): FilenameStrategyInterface
     {
-        return new \Kodhe\Upload\Drivers\IncrementFilenameStrategy();
+        return new \Kodhe\Framework\Upload\Drivers\IncrementFilenameStrategy();
     }
 }

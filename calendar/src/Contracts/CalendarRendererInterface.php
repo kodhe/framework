@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Calendar\Contracts;
+namespace Kodhe\Framework\Calendar\Contracts;
 
 /**
  * Interface CalendarRendererInterface

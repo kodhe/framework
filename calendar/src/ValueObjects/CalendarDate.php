@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Calendar\ValueObjects;
+namespace Kodhe\Framework\Calendar\ValueObjects;
 
 /**
  * Class CalendarDate

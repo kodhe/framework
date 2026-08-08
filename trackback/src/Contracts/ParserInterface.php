@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Trackback\Contracts;
+namespace Kodhe\Framework\Trackback\Contracts;
 
 /**
  * Parser interface for parsing trackback requests and responses.
@@ -14,7 +14,7 @@ interface ParserInterface
      *
      * @param array $data POST data
      * @return array Parsed and validated trackback data
-     * @throws \Kodhe\Trackback\Exceptions\ParseException On parse failure
+     * @throws \Kodhe\Framework\Trackback\Exceptions\ParseException On parse failure
      */
     public function parseRequest(array $data): array;
 

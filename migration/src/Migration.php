@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Migration;
+namespace Kodhe\Framework\Migration;
 
 /**
  * Migrations Library

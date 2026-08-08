@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Profiler;
+namespace Kodhe\Framework\Profiler;
 
-use Kodhe\Profiler\Contracts\ProfilerInterface;
-use Kodhe\Profiler\Contracts\CollectorInterface;
-use Kodhe\Profiler\Factory\CollectorFactory;
-use Kodhe\Profiler\Factory\RendererFactory;
-use Kodhe\Profiler\Support\ProfilerConfig;
-use Kodhe\Profiler\Support\DataNormalizer;
-use Kodhe\Profiler\ValueObjects\ProfileSection;
+use Kodhe\Framework\Profiler\Contracts\ProfilerInterface;
+use Kodhe\Framework\Profiler\Contracts\CollectorInterface;
+use Kodhe\Framework\Profiler\Factory\CollectorFactory;
+use Kodhe\Framework\Profiler\Factory\RendererFactory;
+use Kodhe\Framework\Profiler\Support\ProfilerConfig;
+use Kodhe\Framework\Profiler\Support\DataNormalizer;
+use Kodhe\Framework\Profiler\ValueObjects\ProfileSection;
 
 /**
  * CodeIgniter Profiler Class
@@ -282,11 +282,11 @@ class Profiler implements ProfilerInterface
 		// Let's determine which databases are currently connected to
 		foreach (get_object_vars($this->CI) as $name => $cobject) {
 			if (is_object($cobject)) {
-				if ($cobject instanceof \Kodhe\Database\DB) {
+				if ($cobject instanceof \Kodhe\Framework\Database\DB) {
 					$dbs[get_class($this->CI) . ':$' . $name] = $cobject;
 				} elseif ($cobject instanceof CI_Model) {
 					foreach (get_object_vars($cobject) as $mname => $mobject) {
-						if ($mobject instanceof \Kodhe\Database\DB) {
+						if ($mobject instanceof \Kodhe\Framework\Database\DB) {
 							$dbs[get_class($cobject) . ':$' . $mname] = $mobject;
 						}
 					}

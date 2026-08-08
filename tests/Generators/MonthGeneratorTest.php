@@ -1,8 +1,8 @@
 <?php
 
-namespace Kodhe\Calendar\Tests\Generators;
+namespace Kodhe\Framework\Calendar\Tests\Generators;
 
-use Kodhe\Calendar\Generators\MonthGenerator;
+use Kodhe\Framework\Calendar\Generators\MonthGenerator;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
  * Unit tests for MonthGenerator
  *
  * @package     Kodhe\Calendar\Tests\Generators
- * @covers      \Kodhe\Calendar\Generators\MonthGenerator
+ * @covers      \Kodhe\Framework\Calendar\Generators\MonthGenerator
  */
 class MonthGeneratorTest extends TestCase
 {

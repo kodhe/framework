@@ -1,6 +1,6 @@
 <?php
 
-namespace Kodhe\Encrypt\Key;
+namespace Kodhe\Framework\Encrypt\Key;
 
 /**
  * Class KeyDeriver

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Typography\ValueObjects;
+namespace Kodhe\Framework\Typography\ValueObjects;
 
 /**
  * Typographic Configuration Value Object

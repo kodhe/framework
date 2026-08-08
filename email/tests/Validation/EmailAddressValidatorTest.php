@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Email\Tests\Validation;
+namespace Kodhe\Framework\Email\Tests\Validation;
 
 use PHPUnit\Framework\TestCase;
-use Kodhe\Email\Validation\EmailAddressValidator;
+use Kodhe\Framework\Email\Validation\EmailAddressValidator;
 
 /**
  * Test class for EmailAddressValidator
  *
  * @package     Kodhe\Email\Tests
- * @covers      \Kodhe\Email\Validation\EmailAddressValidator
+ * @covers      \Kodhe\Framework\Email\Validation\EmailAddressValidator
  */
 class EmailAddressValidatorTest extends TestCase
 {

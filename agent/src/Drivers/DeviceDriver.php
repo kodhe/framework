@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Agent\Drivers;
+namespace Kodhe\Framework\Agent\Drivers;
 
-use Kodhe\Agent\Contracts\AgentDriverInterface;
-use Kodhe\Agent\Parsers\UserAgentParser;
-use Kodhe\Agent\Collections\DeviceCollection;
+use Kodhe\Framework\Agent\Contracts\AgentDriverInterface;
+use Kodhe\Framework\Agent\Parsers\UserAgentParser;
+use Kodhe\Framework\Agent\Collections\DeviceCollection;
 
 /**
  * Class DeviceDriver
