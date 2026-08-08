@@ -1,1 +1,5 @@
-Nothing should be ignored since only source/config files (.md files) were modified and no build artifacts, dependencies, or temp files were present in the changes.
+```
+vendor/
+composer.lock
+.phpunit.cache/
+```
