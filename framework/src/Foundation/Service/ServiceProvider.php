@@ -323,7 +323,11 @@ class ServiceProvider extends ConcreteBinding
      */
     protected function registerNamespace()
     {
-        $this->autoloader->addPrefix($this->getNamespace(), $this->path);
+        $namespace = $this->getNamespace();
+        
+        if ($namespace !== null && $namespace !== '') {
+            $this->autoloader->addPrefix($namespace, $this->path);
+        }
     }
 
     /**
