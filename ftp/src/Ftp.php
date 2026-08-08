@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Ftp;
+namespace Kodhe\Framework\Ftp;
 
-use Kodhe\Ftp\Contracts\FtpInterface;
-use Kodhe\Ftp\Contracts\ConnectionInterface;
-use Kodhe\Ftp\Connection\FtpConnection;
-use Kodhe\Ftp\Connection\FtpSslConnection;
-use Kodhe\Ftp\Operations\FileOperations;
-use Kodhe\Ftp\Operations\DirectoryOperations;
+use Kodhe\Framework\Ftp\Contracts\FtpInterface;
+use Kodhe\Framework\Ftp\Contracts\ConnectionInterface;
+use Kodhe\Framework\Ftp\Connection\FtpConnection;
+use Kodhe\Framework\Ftp\Connection\FtpSslConnection;
+use Kodhe\Framework\Ftp\Operations\FileOperations;
+use Kodhe\Framework\Ftp\Operations\DirectoryOperations;
 
 /**
  * Class Ftp

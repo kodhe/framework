@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Trackback\Client;
+namespace Kodhe\Framework\Trackback\Client;
 
-use Kodhe\Trackback\Contracts\TransportInterface;
-use Kodhe\Trackback\Contracts\ParserInterface;
-use Kodhe\Trackback\Support\TrackbackConfig;
-use Kodhe\Trackback\Support\UrlValidator;
-use Kodhe\Trackback\Support\ResponseValidator;
-use Kodhe\Trackback\Factory\TransportFactory;
-use Kodhe\Trackback\Parser\TrackbackParser;
-use Kodhe\Trackback\Exceptions\TrackbackSendException;
-use Kodhe\Trackback\Exceptions\InvalidUrlException;
+use Kodhe\Framework\Trackback\Contracts\TransportInterface;
+use Kodhe\Framework\Trackback\Contracts\ParserInterface;
+use Kodhe\Framework\Trackback\Support\TrackbackConfig;
+use Kodhe\Framework\Trackback\Support\UrlValidator;
+use Kodhe\Framework\Trackback\Support\ResponseValidator;
+use Kodhe\Framework\Trackback\Factory\TransportFactory;
+use Kodhe\Framework\Trackback\Parser\TrackbackParser;
+use Kodhe\Framework\Trackback\Exceptions\TrackbackSendException;
+use Kodhe\Framework\Trackback\Exceptions\InvalidUrlException;
 
 /**
  * Trackback client for sending trackbacks.

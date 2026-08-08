@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Test\Result;
+namespace Kodhe\Framework\Test\Result;
 
-use Kodhe\Test\ValueObjects\TestStatus;
+use Kodhe\Framework\Test\ValueObjects\TestStatus;
 
 /**
  * Value object representing a single assertion result

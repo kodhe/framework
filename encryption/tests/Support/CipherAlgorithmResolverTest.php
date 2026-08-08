@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Encryption\Tests\Support;
+namespace Kodhe\Framework\Encryption\Tests\Support;
 
-use Kodhe\Encryption\Support\CipherAlgorithmResolver;
+use Kodhe\Framework\Encryption\Support\CipherAlgorithmResolver;
 use PHPUnit\Framework\TestCase;
 
 /**

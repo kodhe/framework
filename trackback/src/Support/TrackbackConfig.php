@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Trackback\Support;
+namespace Kodhe\Framework\Trackback\Support;
 
 /**
  * Configuration for Trackback operations.

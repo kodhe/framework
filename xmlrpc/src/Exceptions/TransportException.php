@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Xmlrpc\Exceptions;
+namespace Kodhe\Framework\Xmlrpc\Exceptions;
 
 /**
  * Exception for transport errors

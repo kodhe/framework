@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Cart\Calculator;
+namespace Kodhe\Framework\Cart\Calculator;
 
-use Kodhe\Cart\Contracts\DiscountInterface;
+use Kodhe\Framework\Cart\Contracts\DiscountInterface;
 
 /**
  * Class DiscountCalculator

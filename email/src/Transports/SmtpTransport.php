@@ -1,11 +1,11 @@
 <?php
 
-namespace Kodhe\Email\Transports;
+namespace Kodhe\Framework\Email\Transports;
 
-use Kodhe\Email\Contracts\TransportInterface;
-use Kodhe\Email\Message\EmailMessage;
-use Kodhe\Email\Traits\ConfigurableTrait;
-use Kodhe\Email\Traits\DebugTrait;
+use Kodhe\Framework\Email\Contracts\TransportInterface;
+use Kodhe\Framework\Email\Message\EmailMessage;
+use Kodhe\Framework\Email\Traits\ConfigurableTrait;
+use Kodhe\Framework\Email\Traits\DebugTrait;
 
 /**
  * Transport menggunakan SMTP protocol

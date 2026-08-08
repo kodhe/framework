@@ -1,8 +1,8 @@
 <?php
 
-namespace Kodhe\Email\Contracts;
+namespace Kodhe\Framework\Email\Contracts;
 
-use Kodhe\Email\Message\EmailMessage;
+use Kodhe\Framework\Email\Message\EmailMessage;
 
 /**
  * Interface untuk Transport Email

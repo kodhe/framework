@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Cart\Models;
+namespace Kodhe\Framework\Cart\Models;
 
 /**
  * Class CartSummary

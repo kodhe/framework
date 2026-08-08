@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Upload\Drivers;
+namespace Kodhe\Framework\Upload\Drivers;
 
-use Kodhe\Upload\Contracts\FilenameStrategyInterface;
+use Kodhe\Framework\Upload\Contracts\FilenameStrategyInterface;
 
 /**
  * Original Filename Strategy

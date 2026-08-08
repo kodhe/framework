@@ -1,11 +1,11 @@
 <?php
-namespace Kodhe\Pagination\Factory;
+namespace Kodhe\Framework\Pagination\Factory;
 
-use Kodhe\Pagination\Contracts\RendererInterface;
-use Kodhe\Pagination\Pagination;
-use Kodhe\Pagination\Renderers\DefaultRenderer;
-use Kodhe\Pagination\Renderers\BootstrapRenderer;
-use Kodhe\Pagination\Renderers\TailwindRenderer;
+use Kodhe\Framework\Pagination\Contracts\RendererInterface;
+use Kodhe\Framework\Pagination\Pagination;
+use Kodhe\Framework\Pagination\Renderers\DefaultRenderer;
+use Kodhe\Framework\Pagination\Renderers\BootstrapRenderer;
+use Kodhe\Framework\Pagination\Renderers\TailwindRenderer;
 
 class RendererFactory
 {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Tests;
+namespace Kodhe\Framework\Tests;
 
 use PHPUnit\Framework\TestCase;
 
@@ -12,7 +12,7 @@ use PHPUnit\Framework\TestCase;
 class UnitTestTest extends TestCase
 {
     /**
-     * @var \Kodhe\Test\UnitTest
+     * @var \Kodhe\Framework\Test\UnitTest
      */
     private $unit;
 
@@ -20,11 +20,11 @@ class UnitTestTest extends TestCase
     {
         parent::setUp();
         // Include the mock kodhe() function if not already defined
-        if (!function_exists('Kodhe\\Test\\kodhe')) {
+        if (!function_exists('Kodhe\Framework\Test\\kodhe')) {
             // The UnitTest class depends on kodhe() function and legacy classes
             // We need to provide mocks for these dependencies
         }
-        $this->unit = new \Kodhe\Test\UnitTest();
+        $this->unit = new \Kodhe\Framework\Test\UnitTest();
     }
 
     /**
@@ -32,7 +32,7 @@ class UnitTestTest extends TestCase
      */
     public function testCanBeInstantiated(): void
     {
-        $this->assertInstanceOf(\Kodhe\Test\UnitTest::class, $this->unit);
+        $this->assertInstanceOf(\Kodhe\Framework\Test\UnitTest::class, $this->unit);
     }
 
     /**
@@ -297,10 +297,10 @@ class UnitTestTest extends TestCase
      */
     public function testIsTrueHelperFunction(): void
     {
-        $this->assertTrue(\Kodhe\Test\is_true(true));
-        $this->assertFalse(\Kodhe\Test\is_true(false));
-        $this->assertFalse(\Kodhe\Test\is_true(1));
-        $this->assertFalse(\Kodhe\Test\is_true('true'));
+        $this->assertTrue(\Kodhe\Framework\Test\is_true(true));
+        $this->assertFalse(\Kodhe\Framework\Test\is_true(false));
+        $this->assertFalse(\Kodhe\Framework\Test\is_true(1));
+        $this->assertFalse(\Kodhe\Framework\Test\is_true('true'));
     }
 
     /**
@@ -308,10 +308,10 @@ class UnitTestTest extends TestCase
      */
     public function testIsFalseHelperFunction(): void
     {
-        $this->assertTrue(\Kodhe\Test\is_false(false));
-        $this->assertFalse(\Kodhe\Test\is_false(true));
-        $this->assertFalse(\Kodhe\Test\is_false(0));
-        $this->assertFalse(\Kodhe\Test\is_false('false'));
+        $this->assertTrue(\Kodhe\Framework\Test\is_false(false));
+        $this->assertFalse(\Kodhe\Framework\Test\is_false(true));
+        $this->assertFalse(\Kodhe\Framework\Test\is_false(0));
+        $this->assertFalse(\Kodhe\Framework\Test\is_false('false'));
     }
 
     /**

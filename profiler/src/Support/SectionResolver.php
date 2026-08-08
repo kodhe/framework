@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Profiler\Support;
+namespace Kodhe\Framework\Profiler\Support;
 
 /**
  * Section Resolver
@@ -12,16 +12,16 @@ namespace Kodhe\Profiler\Support;
 class SectionResolver
 {
     private array $sectionCollectorMap = [
-        'benchmarks' => \Kodhe\Profiler\Collectors\BenchmarkCollector::class,
+        'benchmarks' => \Kodhe\Framework\Profiler\Collectors\BenchmarkCollector::class,
         'get' => null, // Handled inline or by generic collector
-        'memory_usage' => \Kodhe\Profiler\Collectors\MemoryCollector::class,
+        'memory_usage' => \Kodhe\Framework\Profiler\Collectors\MemoryCollector::class,
         'post' => null, // Handled inline or by generic collector
-        'uri_string' => \Kodhe\Profiler\Collectors\UriCollector::class,
-        'controller_info' => \Kodhe\Profiler\Collectors\ControllerCollector::class,
-        'queries' => \Kodhe\Profiler\Collectors\DatabaseCollector::class,
-        'http_headers' => \Kodhe\Profiler\Collectors\HttpHeadersCollector::class,
-        'session_data' => \Kodhe\Profiler\Collectors\SessionCollector::class,
-        'config' => \Kodhe\Profiler\Collectors\ConfigCollector::class,
+        'uri_string' => \Kodhe\Framework\Profiler\Collectors\UriCollector::class,
+        'controller_info' => \Kodhe\Framework\Profiler\Collectors\ControllerCollector::class,
+        'queries' => \Kodhe\Framework\Profiler\Collectors\DatabaseCollector::class,
+        'http_headers' => \Kodhe\Framework\Profiler\Collectors\HttpHeadersCollector::class,
+        'session_data' => \Kodhe\Framework\Profiler\Collectors\SessionCollector::class,
+        'config' => \Kodhe\Framework\Profiler\Collectors\ConfigCollector::class,
     ];
 
     private array $customCollectors = [];

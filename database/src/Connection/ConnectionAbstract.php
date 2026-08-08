@@ -284,7 +284,7 @@ abstract class ConnectionAbstract {
 		// result object and save it to a cache file.
 		if ($this->cache_on === TRUE && $this->_cache_init())
 		{
-			$CR = new \Kodhe\Database\Result\Result($this);
+			$CR = new \Kodhe\Framework\Database\Result\Result($this);
 			$CR->result_object	= $RES->result_object();
 			$CR->result_array	= $RES->result_array();
 			$CR->num_rows		= $RES->num_rows();
@@ -872,7 +872,7 @@ abstract class ConnectionAbstract {
 			return TRUE;
 		}
 
-		$this->CACHE = new \Kodhe\Database\Cache\Cache($this); // pass db object to support multiple db connections and returned db objects
+		$this->CACHE = new \Kodhe\Framework\Database\Cache\Cache($this); // pass db object to support multiple db connections and returned db objects
 		return TRUE;
 	}
 

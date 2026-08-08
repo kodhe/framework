@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Email;
+namespace Kodhe\Framework\Email;
 
-use Kodhe\Email\Contracts\EmailInterface;
-use Kodhe\Email\Message\EmailMessage;
-use Kodhe\Email\Message\Attachment;
-use Kodhe\Email\Message\HeaderCollection;
-use Kodhe\Email\Validation\EmailAddressValidator;
-use Kodhe\Email\Contracts\TransportInterface;
-use Kodhe\Email\Transports\MailTransport;
-use Kodhe\Email\Transports\SendmailTransport;
-use Kodhe\Email\Transports\SmtpTransport;
-use Kodhe\Email\Traits\ConfigurableTrait;
-use Kodhe\Email\Traits\DebugTrait;
+use Kodhe\Framework\Email\Contracts\EmailInterface;
+use Kodhe\Framework\Email\Message\EmailMessage;
+use Kodhe\Framework\Email\Message\Attachment;
+use Kodhe\Framework\Email\Message\HeaderCollection;
+use Kodhe\Framework\Email\Validation\EmailAddressValidator;
+use Kodhe\Framework\Email\Contracts\TransportInterface;
+use Kodhe\Framework\Email\Transports\MailTransport;
+use Kodhe\Framework\Email\Transports\SendmailTransport;
+use Kodhe\Framework\Email\Transports\SmtpTransport;
+use Kodhe\Framework\Email\Traits\ConfigurableTrait;
+use Kodhe\Framework\Email\Traits\DebugTrait;
 
 /**
  * Email Facade Class

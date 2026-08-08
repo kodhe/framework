@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Typography\Contracts;
+namespace Kodhe\Framework\Typography\Contracts;
 
 /**
  * Formatter Interface

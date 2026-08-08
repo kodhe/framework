@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Pagination;
+namespace Kodhe\Framework\Pagination;
 
-use Kodhe\Pagination\Contracts\RendererInterface;
-use Kodhe\Pagination\Contracts\UrlBuilderInterface;
-use Kodhe\Pagination\Factory\RendererFactory;
-use Kodhe\Pagination\Support\LinkCache;
-use Kodhe\Pagination\Support\AttributeHelper;
-use Kodhe\Pagination\ValueObjects\LinkData;
-use Kodhe\Pagination\ValueObjects\PaginationConfig;
+use Kodhe\Framework\Pagination\Contracts\RendererInterface;
+use Kodhe\Framework\Pagination\Contracts\UrlBuilderInterface;
+use Kodhe\Framework\Pagination\Factory\RendererFactory;
+use Kodhe\Framework\Pagination\Support\LinkCache;
+use Kodhe\Framework\Pagination\Support\AttributeHelper;
+use Kodhe\Framework\Pagination\ValueObjects\LinkData;
+use Kodhe\Framework\Pagination\ValueObjects\PaginationConfig;
 
 class Pagination
 {

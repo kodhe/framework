@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Test\ValueObjects;
+namespace Kodhe\Framework\Test\ValueObjects;
 
 /**
  * Value object representing test status

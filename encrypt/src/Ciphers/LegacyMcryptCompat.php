@@ -1,8 +1,8 @@
 <?php
 
-namespace Kodhe\Encrypt\Ciphers;
+namespace Kodhe\Framework\Encrypt\Ciphers;
 
-use Kodhe\Encrypt\Contracts\CipherInterface;
+use Kodhe\Framework\Encrypt\Contracts\CipherInterface;
 
 /**
  * Class LegacyMcryptCompat

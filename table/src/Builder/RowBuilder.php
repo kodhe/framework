@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Table\Builder;
+namespace Kodhe\Framework\Table\Builder;
 
-use Kodhe\Table\Support\ColumnNormalizer;
+use Kodhe\Framework\Table\Support\ColumnNormalizer;
 
 /**
  * Builder for table rows

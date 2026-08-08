@@ -1,9 +1,9 @@
 <?php
 
-namespace Kodhe\Ftp\Operations;
+namespace Kodhe\Framework\Ftp\Operations;
 
-use Kodhe\Ftp\Contracts\ConnectionInterface;
-use Kodhe\Ftp\Validation\ModeResolver;
+use Kodhe\Framework\Ftp\Contracts\ConnectionInterface;
+use Kodhe\Framework\Ftp\Validation\ModeResolver;
 
 /**
  * Class FileOperations

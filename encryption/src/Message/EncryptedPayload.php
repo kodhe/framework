@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Encryption\Message;
+namespace Kodhe\Framework\Encryption\Message;
 
 /**
  * Class EncryptedPayload

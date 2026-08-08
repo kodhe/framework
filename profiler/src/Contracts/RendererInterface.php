@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Profiler\Contracts;
+namespace Kodhe\Framework\Profiler\Contracts;
 
 /**
  * Renderer Interface

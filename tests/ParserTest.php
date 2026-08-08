@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Tests;
+namespace Kodhe\Framework\Tests;
 
-use Kodhe\Parser\Parser;
+use Kodhe\Framework\Parser\Parser;
 use PHPUnit\Framework\TestCase;
 
 /**

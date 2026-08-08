@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Test\Contracts;
+namespace Kodhe\Framework\Test\Contracts;
 
 /**
  * Interface for Unit Test implementations

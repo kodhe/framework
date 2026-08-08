@@ -1,8 +1,8 @@
 <?php
 
-namespace Kodhe\Migration\Tests;
+namespace Kodhe\Framework\Migration\Tests;
 
-use Kodhe\Migration\Runner\MigrationFileRunner;
+use Kodhe\Framework\Migration\Runner\MigrationFileRunner;
 use PHPUnit\Framework\TestCase;
 
 /**

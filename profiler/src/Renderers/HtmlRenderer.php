@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Profiler\Renderers;
+namespace Kodhe\Framework\Profiler\Renderers;
 
-use Kodhe\Profiler\Contracts\RendererInterface;
+use Kodhe\Framework\Profiler\Contracts\RendererInterface;
 
 /**
  * HTML Renderer

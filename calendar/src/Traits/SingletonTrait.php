@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Calendar\Traits;
+namespace Kodhe\Framework\Calendar\Traits;
 
 /**
  * Trait SingletonTrait

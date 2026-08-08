@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Typography\Factory;
+namespace Kodhe\Framework\Typography\Factory;
 
-use Kodhe\Typography\Contracts\FormatterInterface;
-use Kodhe\Typography\Formatters\CharacterFormatter;
-use Kodhe\Typography\Formatters\ParagraphFormatter;
-use Kodhe\Typography\Exceptions/TypographyException;
+use Kodhe\Framework\Typography\Contracts\FormatterInterface;
+use Kodhe\Framework\Typography\Formatters\CharacterFormatter;
+use Kodhe\Framework\Typography\Formatters\ParagraphFormatter;
+use Kodhe\Framework\Typography\Exceptions/TypographyException;
 
 /**
  * Formatter Factory

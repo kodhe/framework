@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Upload\Contracts;
+namespace Kodhe\Framework\Upload\Contracts;
 
 /**
  * Storage Interface

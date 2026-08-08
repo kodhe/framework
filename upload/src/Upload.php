@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Upload;
+namespace Kodhe\Framework\Upload;
 
-use Kodhe\Upload\Contracts\UploadInterface;
-use Kodhe\Upload\Contracts\StorageInterface;
-use Kodhe\Upload\ValueObjects\UploadedFile;
-use Kodhe\Upload\Validators\FileValidator;
-use Kodhe\Upload\Storage\LocalStorage;
-use Kodhe\Upload\Support\MimeCache;
-use Kodhe\Upload\Factory\FilenameStrategyFactory;
+use Kodhe\Framework\Upload\Contracts\UploadInterface;
+use Kodhe\Framework\Upload\Contracts\StorageInterface;
+use Kodhe\Framework\Upload\ValueObjects\UploadedFile;
+use Kodhe\Framework\Upload\Validators\FileValidator;
+use Kodhe\Framework\Upload\Storage\LocalStorage;
+use Kodhe\Framework\Upload\Support\MimeCache;
+use Kodhe\Framework\Upload\Factory\FilenameStrategyFactory;
 use ReflectionClass;
 
 /**
@@ -270,7 +270,7 @@ class Upload implements UploadInterface
             return $strategy->generate(pathinfo($filename, PATHINFO_FILENAME), $this->file_ext, $path);
         }
         if ($this->overwrite !== true && $this->storage->exists($path . $filename)) {
-            $strategy = new \Kodhe\Upload\Drivers\IncrementFilenameStrategy($this->max_filename_increment);
+            $strategy = new \Kodhe\Framework\Upload\Drivers\IncrementFilenameStrategy($this->max_filename_increment);
             $newFilename = $strategy->generate(pathinfo($filename, PATHINFO_FILENAME), $this->file_ext, $path);
             if ($newFilename === '') {
                 $this->setError('upload_bad_filename', 'debug');

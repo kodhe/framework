@@ -5,10 +5,10 @@
  * @package CodeIgniter\Parser\Compiler
  */
 
-namespace Kodhe\Parser\Compiler;
+namespace Kodhe\Framework\Parser\Compiler;
 
-use Kodhe\Parser\Contracts\CompilerInterface;
-use Kodhe\Parser\ValueObjects\Token;
+use Kodhe\Framework\Parser\Contracts\CompilerInterface;
+use Kodhe\Framework\Parser\ValueObjects\Token;
 
 class TemplateCompiler implements CompilerInterface
 {

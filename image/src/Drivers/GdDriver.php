@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Image\Drivers;
+namespace Kodhe\Framework\Image\Drivers;
 
-use Kodhe\Image\Contracts\ImageDriverInterface;
-use Kodhe\Image\Support\ImageMetadataCache;
-use Kodhe\Image\ValueObjects\ImageInfo;
-use Kodhe\Image\ValueObjects\ImageDimensions;
+use Kodhe\Framework\Image\Contracts\ImageDriverInterface;
+use Kodhe\Framework\Image\Support\ImageMetadataCache;
+use Kodhe\Framework\Image\ValueObjects\ImageInfo;
+use Kodhe\Framework\Image\ValueObjects\ImageDimensions;
 
 /**
  * Class GdDriver

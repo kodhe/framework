@@ -1,6 +1,6 @@
 <?php
 
-namespace Kodhe\Ftp\Contracts;
+namespace Kodhe\Framework\Ftp\Contracts;
 
 /**
  * Interface FtpInterface

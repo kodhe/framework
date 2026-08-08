@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Encryption\Encoding;
+namespace Kodhe\Framework\Encryption\Encoding;
 
 /**
  * Class Base64Encoder

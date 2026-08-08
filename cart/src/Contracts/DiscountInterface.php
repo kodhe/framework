@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Cart\Contracts;
+namespace Kodhe\Framework\Cart\Contracts;
 
 /**
  * Interface DiscountInterface

@@ -5,7 +5,7 @@
  * @package CodeIgniter\Parser\Contracts
  */
 
-namespace Kodhe\Parser\Contracts;
+namespace Kodhe\Framework\Parser\Contracts;
 
 interface CacheInterface
 {

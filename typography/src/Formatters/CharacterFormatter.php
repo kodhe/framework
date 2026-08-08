@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Typography\Formatters;
+namespace Kodhe\Framework\Typography\Formatters;
 
-use Kodhe\Typography\Contracts\FormatterInterface;
-use Kodhe\Typography\Support\RegexCache;
+use Kodhe\Framework\Typography\Contracts\FormatterInterface;
+use Kodhe\Framework\Typography\Support\RegexCache;
 
 /**
  * Character Formatter

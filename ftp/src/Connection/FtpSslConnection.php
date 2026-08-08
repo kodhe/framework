@@ -1,8 +1,8 @@
 <?php
 
-namespace Kodhe\Ftp\Connection;
+namespace Kodhe\Framework\Ftp\Connection;
 
-use Kodhe\Ftp\Contracts\ConnectionInterface;
+use Kodhe\Framework\Ftp\Contracts\ConnectionInterface;
 
 /**
  * Class FtpSslConnection

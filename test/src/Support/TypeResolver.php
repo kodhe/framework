@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Test\Support;
+namespace Kodhe\Framework\Test\Support;
 
 /**
  * Utility class for resolving types

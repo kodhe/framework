@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Encryption\Handlers;
+namespace Kodhe\Framework\Encryption\Handlers;
 
-use Kodhe\Encryption\Contracts\HandlerInterface;
-use Kodhe\Encryption\Encoding\Base64Encoder;
-use Kodhe\Encryption\Support\CipherAlgorithmResolver;
+use Kodhe\Framework\Encryption\Contracts\HandlerInterface;
+use Kodhe\Framework\Encryption\Encoding\Base64Encoder;
+use Kodhe\Framework\Encryption\Support\CipherAlgorithmResolver;
 
 /**
  * Class OpenSslHandler

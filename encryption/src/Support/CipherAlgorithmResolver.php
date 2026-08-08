@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Encryption\Support;
+namespace Kodhe\Framework\Encryption\Support;
 
 /**
  * Class CipherAlgorithmResolver

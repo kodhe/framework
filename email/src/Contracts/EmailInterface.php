@@ -1,6 +1,6 @@
 <?php
 
-namespace Kodhe\Email\Contracts;
+namespace Kodhe\Framework\Email\Contracts;
 
 /**
  * Interface untuk Email Library

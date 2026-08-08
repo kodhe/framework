@@ -1,9 +1,9 @@
 <?php
 
-namespace Kodhe\Migration\Tests;
+namespace Kodhe\Framework\Migration\Tests;
 
-use Kodhe\Migration\Parser\MigrationFilenameParser;
-use Kodhe\Migration\Exceptions\InvalidMigrationFileException;
+use Kodhe\Framework\Migration\Parser\MigrationFilenameParser;
+use Kodhe\Framework\Migration\Exceptions\InvalidMigrationFileException;
 use PHPUnit\Framework\TestCase;
 
 /**

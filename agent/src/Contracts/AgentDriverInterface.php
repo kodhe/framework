@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Agent\Contracts;
+namespace Kodhe\Framework\Agent\Contracts;
 
 /**
  * Interface AgentDriverInterface

@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Test\Runner;
+namespace Kodhe\Framework\Test\Runner;
 
-use Kodhe\Test\Contracts\AssertionInterface;
-use Kodhe\Test\Result\AssertionResult;
-use Kodhe\Test\Result\TestResult;
-use Kodhe\Test\Result\TestResultCollection;
-use Kodhe\Test\Support\TypeResolver;
-use Kodhe\Test\Support\ValueComparator;
-use Kodhe\Test\ValueObjects\TestStatus;
-use Kodhe\Test\Assertions\TypeAssertion;
-use Kodhe\Test\Assertions\EqualsAssertion;
+use Kodhe\Framework\Test\Contracts\AssertionInterface;
+use Kodhe\Framework\Test\Result\AssertionResult;
+use Kodhe\Framework\Test\Result\TestResult;
+use Kodhe\Framework\Test\Result\TestResultCollection;
+use Kodhe\Framework\Test\Support\TypeResolver;
+use Kodhe\Framework\Test\Support\ValueComparator;
+use Kodhe\Framework\Test\ValueObjects\TestStatus;
+use Kodhe\Framework\Test\Assertions\TypeAssertion;
+use Kodhe\Framework\Test\Assertions\EqualsAssertion;
 
 /**
  * Test runner that executes tests and collects results

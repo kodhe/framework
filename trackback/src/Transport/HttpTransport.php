@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Trackback\Transport;
+namespace Kodhe\Framework\Trackback\Transport;
 
-use Kodhe\Trackback\Contracts\TransportInterface;
-use Kodhe\Trackback\Exceptions\TransportException;
-use Kodhe\Trackback\Support\TrackbackConfig;
+use Kodhe\Framework\Trackback\Contracts\TransportInterface;
+use Kodhe\Framework\Trackback\Exceptions\TransportException;
+use Kodhe\Framework\Trackback\Support\TrackbackConfig;
 
 /**
  * HTTP transport implementation using sockets (legacy compatible).
