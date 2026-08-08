@@ -28,7 +28,6 @@ return [
         'Benchmark' => Kodhe\Framework\Support\Legacy\Benchmark::class,
 
         // Codeigniter 3 Alias
-        'CI_Model' => Kodhe\Framework\Database\ORM\CI_Model::class,
         'CI_model' => Kodhe\Framework\Database\ORM\CI_Model::class,
         'CI_Lang' => Language::class,
         'CI_Router' => Router::class,
