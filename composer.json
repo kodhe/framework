@@ -74,7 +74,7 @@
       "Kodhe\\Framework\\Xmlrpcs\\": "xmlrpcs/src/",
       "Kodhe\\Framework\\Zip\\": "zip/src/",
       "Kodhe\\Framework\\Driver\\": "driver/src/",
-      "Kodhe\\Framework\\View\\": "View/src/"
+      "Kodhe\\Framework\\View\\": "view/src/"
     },
     "files": [
       "framework/src/Support/Legacy/common.php",
