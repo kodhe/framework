@@ -15,15 +15,15 @@ use RuntimeException;
  */
 final class Application
 {
-    /** @var object Kernel instance (Kodhe\Framework\Http\Kernel\Kernel) */
+    /** @var object Kernel instance (Kodhe\Http\Kernel\Kernel) */
     private object $kernel;
 
     private Container $container;
 
     private bool $isBooted = false;
 
-    private const KERNEL_CLASS = 'Kodhe\\Framework\\Http\\Kernel\\Kernel';
-    private const REQUEST_CLASS = 'Kodhe\\Framework\\Http\\Request';
+    private const KERNEL_CLASS = 'Kodhe\Http\Kernel\Kernel';
+    private const REQUEST_CLASS = 'Kodhe\Http\Request';
 
     /**
      * Create new application instance
@@ -84,8 +84,8 @@ final class Application
     /**
      * Handle HTTP request
      *
-     * @param object $request Kodhe\Framework\Http\Request
-     * @return object Kodhe\Framework\Http\Response
+     * @param object $request Kodhe\Http\Request
+     * @return object Kodhe\Http\Response
      */
     public function handle(object $request): object
     {
