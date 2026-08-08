@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Cache;
+namespace Kodhe\Cache;
 
 use Kodhe\Driver\Library as DriverLibrary;
 
