@@ -186,9 +186,9 @@ class ServiceProvider extends ConcreteBinding
     /**
      * Get the 'namespace' key
      *
-     * @return String namespace name
+     * @return String|null namespace name
      */
-    public function getNamespace()
+    public function getNamespace(): ?string
     {
         return $this->get('namespace');
     }
@@ -233,7 +233,7 @@ class ServiceProvider extends ConcreteBinding
                 return $element;
             }
 
-            return $ns . '\\' . $element;
+            return $ns ? $ns . '\\' . $element : $element;
         });
     }
 
@@ -344,7 +344,8 @@ class ServiceProvider extends ConcreteBinding
                 $closure = function () use ($closure, $self) {
                     $args = func_get_args();
                     array_shift($args);
-                    $class = $self->getNamespace() . '\\' . $closure;
+                    $namespace = $self->getNamespace();
+                    $class = $namespace ? $namespace . '\\' . $closure : $closure;
                     $object = new \ReflectionClass($class);
 
                     return $object->newInstanceArgs($args);
