@@ -5,10 +5,10 @@
  * @package CodeIgniter\Parser\Lexer
  */
 
-namespace CodeIgniter\Parser\Lexer;
+namespace Kodhe\Parser\Lexer;
 
-use CodeIgniter\Parser\Contracts\LexerInterface;
-use CodeIgniter\Parser\ValueObjects\Token;
+use Kodhe\Parser\Contracts\LexerInterface;
+use Kodhe\Parser\ValueObjects\Token;
 
 class TemplateLexer implements LexerInterface
 {

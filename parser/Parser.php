@@ -2,18 +2,18 @@
 /**
  * Parser - CodeIgniter 3 Compatible Template Parser
  *
- * @package CodeIgniter\Parser
+ * @package Kodhe\Parser
  */
 
-namespace CodeIgniter\Parser;
+namespace Kodhe\Parser;
 
-use CodeIgniter\Parser\Contracts\ParserInterface;
-use CodeIgniter\Parser\Contracts\LexerInterface;
-use CodeIgniter\Parser\Contracts\CompilerInterface;
-use CodeIgniter\Parser\Contracts\CacheInterface;
-use CodeIgniter\Parser\Lexer\TemplateLexer;
-use CodeIgniter\Parser\Compiler\TemplateCompiler;
-use CodeIgniter\Parser\Cache\TemplateCache;
+use Kodhe\Parser\Contracts\ParserInterface;
+use Kodhe\Parser\Contracts\LexerInterface;
+use Kodhe\Parser\Contracts\CompilerInterface;
+use Kodhe\Parser\Contracts\CacheInterface;
+use Kodhe\Parser\Lexer\TemplateLexer;
+use Kodhe\Parser\Compiler\TemplateCompiler;
+use Kodhe\Parser\Cache\TemplateCache;
 
 class Parser implements ParserInterface
 {

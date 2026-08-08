@@ -5,15 +5,15 @@
  * @package CodeIgniter\Parser\Factory
  */
 
-namespace CodeIgniter\Parser\Factory;
+namespace Kodhe\Parser\Factory;
 
-use CodeIgniter\Parser\Contracts\LexerInterface;
-use CodeIgniter\Parser\Contracts\CompilerInterface;
-use CodeIgniter\Parser\Contracts\CacheInterface;
-use CodeIgniter\Parser\Lexer\TemplateLexer;
-use CodeIgniter\Parser\Compiler\TemplateCompiler;
-use CodeIgniter\Parser\Cache\TemplateCache;
-use CodeIgniter\Parser\Parser;
+use Kodhe\Parser\Contracts\LexerInterface;
+use Kodhe\Parser\Contracts\CompilerInterface;
+use Kodhe\Parser\Contracts\CacheInterface;
+use Kodhe\Parser\Lexer\TemplateLexer;
+use Kodhe\Parser\Compiler\TemplateCompiler;
+use Kodhe\Parser\Cache\TemplateCache;
+use Kodhe\Parser\Parser;
 
 class ParserFactory
 {
