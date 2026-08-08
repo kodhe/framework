@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Http\Middleware\Routing;
+namespace Kodhe\Http\Middleware\Routing;
 
 use Kodhe\Framework\Exceptions\TooManyRequestsException;
-use Kodhe\Framework\Http\Request;
-use Kodhe\Framework\Http\Response;
-use Kodhe\Framework\Http\Routing\RateLimiter;
+use Kodhe\Http\Request;
+use Kodhe\Http\Response;
+use Kodhe\Http\Routing\RateLimiter;
 
 class ThrottleRequests
 {

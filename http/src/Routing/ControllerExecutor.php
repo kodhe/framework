@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Http\Routing;
+namespace Kodhe\Http\Routing;
 
 use Kodhe\Framework\Container\Container;
 use Kodhe\Framework\Exceptions\Http\{
@@ -14,8 +14,8 @@ use Kodhe\Framework\Exceptions\Http\{
     MethodNotAllowedException
 };
 use Kodhe\Framework\Foundation\Application;
-use Kodhe\Framework\Http\Request;
-use Kodhe\Framework\Http\Response;
+use Kodhe\Http\Request;
+use Kodhe\Http\Response;
 use Kodhe\Framework\Support\Facades\Facade;
 
 /**

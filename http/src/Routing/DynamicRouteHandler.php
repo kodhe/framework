@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Http\Routing;
+namespace Kodhe\Http\Routing;
 
 use Kodhe\Framework\Exceptions\Http\{
     BadRequestException,
@@ -12,7 +12,7 @@ use Kodhe\Framework\Exceptions\Http\{
     MethodNotAllowedException,
     UnauthorizedException
 };
-use Kodhe\Framework\Http\Response;
+use Kodhe\Http\Response;
 
 class DynamicRouteHandler
 {

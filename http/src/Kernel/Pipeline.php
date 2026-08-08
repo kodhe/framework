@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Http\Kernel;
+namespace Kodhe\Http\Kernel;
 
 use Kodhe\Framework\Exceptions\BaseException;
 use Kodhe\Framework\Exceptions\Http\HttpException;
-use Kodhe\Framework\Http\Middleware\MiddlewareGroup;
-use Kodhe\Framework\Http\Middleware\MiddlewareInterface;
-use Kodhe\Framework\Http\Middleware\MiddlewareRegistry;
-use Kodhe\Framework\Http\Request;
-use Kodhe\Framework\Http\Response;
+use Kodhe\Http\Middleware\MiddlewareGroup;
+use Kodhe\Http\Middleware\MiddlewareInterface;
+use Kodhe\Http\Middleware\MiddlewareRegistry;
+use Kodhe\Http\Request;
+use Kodhe\Http\Response;
 use Throwable;
 
 class Pipeline

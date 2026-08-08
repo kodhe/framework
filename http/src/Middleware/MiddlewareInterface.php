@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Http\Middleware;
+namespace Kodhe\Http\Middleware;
 
-use Kodhe\Framework\Http\Request;
-use Kodhe\Framework\Http\Response;
+use Kodhe\Http\Request;
+use Kodhe\Http\Response;
 
 interface MiddlewareInterface
 {

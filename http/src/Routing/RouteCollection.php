@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Http\Routing;
+namespace Kodhe\Http\Routing;
 
 use Kodhe\Framework\Exceptions\Http\BadRequestException;
-use Kodhe\Framework\Http\Request;
+use Kodhe\Http\Request;
 
 class RouteCollection
 {

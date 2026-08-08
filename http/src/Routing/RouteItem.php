@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Http\Routing;
+namespace Kodhe\Http\Routing;
 
 use Kodhe\Framework\Exceptions\Http\{
     NotFoundException,
@@ -10,8 +10,8 @@ use Kodhe\Framework\Exceptions\Http\{
     ForbiddenException,
     TooManyRequestsException
 };
-use Kodhe\Framework\Http\Request;
-use Kodhe\Framework\Http\Response;
+use Kodhe\Http\Request;
+use Kodhe\Http\Response;
 
 class RouteItem
 {

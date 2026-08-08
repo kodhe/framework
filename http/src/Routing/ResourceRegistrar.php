@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Http\Routing;
+namespace Kodhe\Http\Routing;
 // Buat class ResourceRegistrar:
 class ResourceRegistrar
 {

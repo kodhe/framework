@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Http;
+namespace Kodhe\Http;
 
 use Kodhe\Framework\Exceptions\Http\BadRequestException;
 use Kodhe\Framework\Exceptions\Http\MethodNotAllowedException;

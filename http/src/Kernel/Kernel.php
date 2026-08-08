@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Http\Kernel;
+namespace Kodhe\Http\Kernel;
 
 use Kodhe\Cli\Cli;
 use Kodhe\Error\CPException;
@@ -10,14 +10,14 @@ use Kodhe\Error\FileNotFound;
 use Kodhe\Framework\Container\Container;
 use Kodhe\Framework\Foundation\Service\ServiceLocator;
 use Kodhe\Framework\Foundation\Service\ServiceManager;
-use Kodhe\Framework\Http\Middleware\MiddlewareInterface;
-use Kodhe\Framework\Http\Middleware\MiddlewareRegistry;
-use Kodhe\Framework\Http\Request;
-use Kodhe\Framework\Http\Response;
-use Kodhe\Framework\Http\Routing\ControllerExecutor;
-use Kodhe\Framework\Http\Routing\ModernRouter;
-use Kodhe\Framework\Http\Routing\Router;
-use Kodhe\Framework\Http\Routing\RoutingManager;
+use Kodhe\Http\Middleware\MiddlewareInterface;
+use Kodhe\Http\Middleware\MiddlewareRegistry;
+use Kodhe\Http\Request;
+use Kodhe\Http\Response;
+use Kodhe\Http\Routing\ControllerExecutor;
+use Kodhe\Http\Routing\ModernRouter;
+use Kodhe\Http\Routing\Router;
+use Kodhe\Http\Routing\RoutingManager;
 use Kodhe\Framework\Support\Facades\Facade;
 
 /**
@@ -473,8 +473,8 @@ class Kernel
     {
   
         if (!class_exists(\CI_Controller::class, false) && 
-            class_exists(\Kodhe\Framework\Http\Controllers\BaseController::class)) {
-            class_alias(\Kodhe\Framework\Http\Controllers\BaseController::class, 'CI_Controller');
+            class_exists(\Kodhe\Http\Controllers\BaseController::class)) {
+            class_alias(\Kodhe\Http\Controllers\BaseController::class, 'CI_Controller');
         }
         
         $subclassPrefix = $this->container->make('config')->item('subclass_prefix') ?? 'MY_';

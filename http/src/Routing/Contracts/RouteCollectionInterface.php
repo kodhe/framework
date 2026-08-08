@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Http\Routing\Contracts;
+namespace Kodhe\Http\Routing\Contracts;
 
-use Kodhe\Framework\Http\Request;
+use Kodhe\Http\Request;
 
 /**
  * RouteCollectionInterface - Collection of routes contract

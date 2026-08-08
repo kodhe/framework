@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Http\Controllers;
+namespace Kodhe\Http\Controllers;
 
 use Kodhe\Framework\Support\Facades\Facade;
 

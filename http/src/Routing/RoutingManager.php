@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Http\Routing;
+namespace Kodhe\Http\Routing;
 
 use Kodhe\Framework\Config\Config;
 use Kodhe\Framework\Exceptions\Http\{
@@ -10,7 +10,7 @@ use Kodhe\Framework\Exceptions\Http\{
     BadRequestException,
     ForbiddenException
 };
-use Kodhe\Framework\Http\Request;
+use Kodhe\Http\Request;
 use Kodhe\Framework\Support\Facades\Facade;
 
 /**
@@ -381,7 +381,7 @@ class RoutingManager
     {
         $uri = $request->getUri();
         
-        if ($uri instanceof \Kodhe\Framework\Http\Uri) {
+        if ($uri instanceof \Kodhe\Http\Uri) {
             $path = $uri->getPath();
         } elseif (is_string($uri)) {
             $parsed = parse_url($uri);

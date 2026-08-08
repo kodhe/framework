@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Http\Routing\Contracts;
+namespace Kodhe\Http\Routing\Contracts;
 
 /**
  * RouteRegistrarInterface - Route registration contract

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Http\Routing;
+namespace Kodhe\Http\Routing;
 
 use Kodhe\Framework\Foundation\Kernel;
-use Kodhe\Framework\Http\Request;
-use Kodhe\Framework\Http\Response;
+use Kodhe\Http\Request;
+use Kodhe\Http\Response;
 
 class RouterProxy implements RouterInterface
 {

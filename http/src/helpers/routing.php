@@ -1,6 +1,6 @@
 <?php
 
-use Kodhe\Framework\Http\Routing\Route;
+use Kodhe\Http\Routing\Route;
 
 if (!function_exists('route')) {
     /**

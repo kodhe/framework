@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Http;
+namespace Kodhe\Http;
 final class ResponseFactory
 {
     

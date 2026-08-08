@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Http\Middleware;
+namespace Kodhe\Http\Middleware;
 
 use Kodhe\Framework\Exceptions\BaseException;
 use Kodhe\Framework\Exceptions\Http\HttpException;
-use Kodhe\Framework\Http\Request;
-use Kodhe\Framework\Http\Response;
+use Kodhe\Http\Request;
+use Kodhe\Http\Response;
 use Throwable;
 abstract class Middleware implements MiddlewareInterface
 {
