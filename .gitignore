@@ -1,4 +1,3 @@
-```php
 # Compiled and build artifacts
 *.pyc
 __pycache__/
@@ -12,37 +11,39 @@ __pycache__/
 *.out
 
 # Dependencies
-node_modules/
 vendor/
-composer.lock
+node_modules/
+venv/
+.venv/
 .env
 .env.local
-.env.*
-
-# Logs and temp files
-*.log
-*.tmp
-*.swp
-*.swo
+*.env.*
 
 # Build directories
 dist/
 build/
 target/
+.coverage
 coverage/
 htmlcov/
-.coverage
 
 # Editors
 .vscode/
 .idea/
 *.swp
 *.swo
+*.tmp
+
+# Logs
+*.log
 
 # System files
 .DS_Store
 Thumbs.db
+
+# Cache directories
 .mypy_cache/
 .pytest_cache/
 .gradle/
-```
+.julia/
+zig-cache/
