@@ -3,7 +3,9 @@
 namespace Kodhe\Email\Traits;
 
 /**
- * Trait untuk Configuration Handling
+ * Trait for Configuration Handling
+ *
+ * Note: The using class must provide a protected $config property.
  *
  * @package     Kodhe\Email
  * @author      Your Name
@@ -13,11 +15,6 @@ namespace Kodhe\Email\Traits;
 trait ConfigurableTrait
 {
     /**
-     * @var array Configuration storage
-     */
-    private $config = [];
-
-    /**
      * Set configuration
      *
      * @param array $config
@@ -25,6 +22,9 @@ trait ConfigurableTrait
      */
     public function setConfig(array $config): self
     {
+        if (!isset($this->config) || !is_array($this->config)) {
+            $this->config = [];
+        }
         $this->config = array_merge($this->config, $config);
         return $this;
     }
