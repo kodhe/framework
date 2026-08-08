@@ -198,6 +198,18 @@ class EmailMessage
     }
 
     /**
+     * Add attachment object
+     *
+     * @param Attachment $attachment
+     * @return self
+     */
+    public function addAttachmentObject(Attachment $attachment): self
+    {
+        $this->attachments[] = $attachment;
+        return $this;
+    }
+
+    /**
      * Get from address
      *
      * @return string
