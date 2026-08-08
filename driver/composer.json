@@ -2,7 +2,13 @@
   "name": "kodhe/driver",
   "description": "Modular PSR-4 compatible Driver Library for CodeIgniter 3",
   "type": "library",
-  "keywords": ["codeigniter", "ci3", "driver", "psr-4", "modular"],
+  "keywords": [
+    "codeigniter",
+    "ci3",
+    "driver",
+    "psr-4",
+    "modular"
+  ],
   "version": "2.0.0",
   "license": "MIT",
   "authors": [
@@ -19,12 +25,12 @@
   },
   "autoload": {
     "psr-4": {
-      "Kodhe\\Driver\\": "src/"
+      "Kodhe\\Framework\\Driver\\": "src/"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "Kodhe\\Driver\\Tests\\": "tests/"
+      "Kodhe\\Framework\\Driver\\Tests\\": "tests/"
     }
   },
   "scripts": {

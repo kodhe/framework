@@ -4,8 +4,12 @@
   "type": "library",
   "version": "1.1.0",
   "license": "MIT",
-  "require": { "php": ">=8.1" },
+  "require": {
+    "php": ">=8.1"
+  },
   "autoload": {
-    "psr-4": { "Kodhe\\Xmlrpcs\\": "src/" }
+    "psr-4": {
+      "Kodhe\\Framework\\Xmlrpcs\\": "src/"
+    }
   }
 }

@@ -11,7 +11,7 @@
   },
   "autoload": {
     "psr-4": {
-      "Kodhe\\Email\\": "src/"
+      "Kodhe\\Framework\\Email\\": "src/"
     },
     "files": [
       "src/compat.php"
@@ -19,7 +19,7 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "Kodhe\\Email\\Tests\\": "tests/"
+      "Kodhe\\Framework\\Email\\Tests\\": "tests/"
     }
   },
   "scripts": {

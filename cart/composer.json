@@ -4,28 +4,28 @@
   "type": "library",
   "version": "2.0.0",
   "license": "MIT",
-  "require": { 
-    "php": ">=8.1" 
+  "require": {
+    "php": ">=8.1"
   },
   "require-dev": {
     "phpunit/phpunit": "^9.0"
   },
   "autoload": {
-    "psr-4": { 
-      "Kodhe\\Cart\\": "src/",
-      "Kodhe\\Cart\\Contracts\\": "src/Contracts/",
-      "Kodhe\\Cart\\Storage\\": "src/Storage/",
-      "Kodhe\\Cart\\Models\\": "src/Models/",
-      "Kodhe\\Cart\\Calculator\\": "src/Calculator/",
-      "Kodhe\\Cart\\Factory\\": "src/Factory/",
-      "Kodhe\\Cart\\Support\\": "src/Support/",
-      "Kodhe\\Cart\\ValueObjects\\": "src/ValueObjects/",
-      "Kodhe\\Cart\\Exceptions\\": "src/Exceptions/"
+    "psr-4": {
+      "Kodhe\\Framework\\Cart\\": "src/",
+      "Kodhe\\Framework\\Cart\\Contracts\\": "src/Contracts/",
+      "Kodhe\\Framework\\Cart\\Storage\\": "src/Storage/",
+      "Kodhe\\Framework\\Cart\\Models\\": "src/Models/",
+      "Kodhe\\Framework\\Cart\\Calculator\\": "src/Calculator/",
+      "Kodhe\\Framework\\Cart\\Factory\\": "src/Factory/",
+      "Kodhe\\Framework\\Cart\\Support\\": "src/Support/",
+      "Kodhe\\Framework\\Cart\\ValueObjects\\": "src/ValueObjects/",
+      "Kodhe\\Framework\\Cart\\Exceptions\\": "src/Exceptions/"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "Kodhe\\Cart\\Tests\\": "tests/"
+      "Kodhe\\Framework\\Cart\\Tests\\": "tests/"
     }
   }
 }
