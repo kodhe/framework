@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types=0);
 
 namespace Kodhe\Framework\Console\Commands;
 
@@ -201,7 +201,7 @@ class MakeCommand extends Command
         return <<<PHP
 <?php
 
-declare(strict_types=1);
+declare(strict_types=0);
 
 namespace {$namespace};
 
@@ -238,7 +238,7 @@ PHP;
         return <<<PHP
 <?php
 
-declare(strict_types=1);
+declare(strict_types=0);
 
 namespace {$namespace};
 
@@ -261,7 +261,7 @@ PHP;
         return <<<PHP
 <?php
 
-declare(strict_types=1);
+declare(strict_types=0);
 
 namespace {$namespace};
 
@@ -281,7 +281,7 @@ PHP;
         return <<<PHP
 <?php
 
-declare(strict_types=1);
+declare(strict_types=0);
 
 return new class {
     public function up(): void
@@ -306,7 +306,7 @@ PHP;
         return <<<PHP
 <?php
 
-declare(strict_types=1);
+declare(strict_types=0);
 
 namespace {$namespace};
 
