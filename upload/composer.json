@@ -9,7 +9,7 @@
   },
   "autoload": {
     "psr-4": {
-      "Kodhe\\Upload\\": "src/"
+      "Kodhe\\Framework\\Upload\\": "src/"
     },
     "files": [
       "src/compat.php"
