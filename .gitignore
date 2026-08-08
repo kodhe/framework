@@ -1,31 +1,10 @@
 ```
-# Dependencies
-vendor/
+/vendor/
 composer.lock
-
-# Cache and temporary files
-.cache/
-*.cache
-*.tmp
-*.log
-
-# PHP specific
-*.php~
-*.swp
-.php_cs.cache
-
-# Environment
 .env
 .env.local
 .env.*
-
-# Editors
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS generated files
+*.log
 .DS_Store
 Thumbs.db
 ```
