@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Xmlrpcs\Support;
+namespace Kodhe\Framework\Xmlrpcs\Support;
 
-use Kodhe\Xmlrpcs\Contracts\XmlParserInterface;
-use Kodhe\Xmlrpcs\Exceptions\XmlParseException;
+use Kodhe\Framework\Xmlrpcs\Contracts\XmlParserInterface;
+use Kodhe\Framework\Xmlrpcs\Exceptions\XmlParseException;
 
 /**
  * XML Parser using PHP's built-in XML functions

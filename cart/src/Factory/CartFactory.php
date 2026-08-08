@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Cart\Factory;
+namespace Kodhe\Framework\Cart\Factory;
 
-use Kodhe\Cart\Contracts\CartStorageInterface;
-use Kodhe\Cart\Storage\SessionStorage;
-use Kodhe\Cart\Storage\DatabaseStorage;
-use Kodhe\Cart\Storage\MemoryStorage;
-use Kodhe\Cart\Calculator\TaxCalculator;
-use Kodhe\Cart\Calculator\DiscountCalculator;
-use Kodhe\Cart\Calculator\ShippingCalculator;
+use Kodhe\Framework\Cart\Contracts\CartStorageInterface;
+use Kodhe\Framework\Cart\Storage\SessionStorage;
+use Kodhe\Framework\Cart\Storage\DatabaseStorage;
+use Kodhe\Framework\Cart\Storage\MemoryStorage;
+use Kodhe\Framework\Cart\Calculator\TaxCalculator;
+use Kodhe\Framework\Cart\Calculator\DiscountCalculator;
+use Kodhe\Framework\Cart\Calculator\ShippingCalculator;
 
 /**
  * Class CartFactory
@@ -25,9 +25,9 @@ class CartFactory
      * Create a cart with session storage (default, backward compatible)
      *
      * @param array $config Configuration options
-     * @return \Kodhe\Cart\Cart
+     * @return \Kodhe\Framework\Cart\Cart
      */
-    public static function create(array $config = []): \Kodhe\Cart\Cart
+    public static function create(array $config = []): \Kodhe\Framework\Cart\Cart
     {
         $storage = self::createStorage('session', $config);
         return self::createWithStorage($storage, $config);
@@ -38,9 +38,9 @@ class CartFactory
      *
      * @param string $type Storage type: 'session', 'database', 'memory'
      * @param array $config Configuration options
-     * @return \Kodhe\Cart\Cart
+     * @return \Kodhe\Framework\Cart\Cart
      */
-    public static function createWithStorageType(string $type, array $config = []): \Kodhe\Cart\Cart
+    public static function createWithStorageType(string $type, array $config = []): \Kodhe\Framework\Cart\Cart
     {
         $storage = self::createStorage($type, $config);
         return self::createWithStorage($storage, $config);
@@ -51,11 +51,11 @@ class CartFactory
      *
      * @param CartStorageInterface $storage
      * @param array $config Configuration options
-     * @return \Kodhe\Cart\Cart
+     * @return \Kodhe\Framework\Cart\Cart
      */
-    public static function createWithStorage(CartStorageInterface $storage, array $config = []): \Kodhe\Cart\Cart
+    public static function createWithStorage(CartStorageInterface $storage, array $config = []): \Kodhe\Framework\Cart\Cart
     {
-        $cart = new \Kodhe\Cart\Cart($config);
+        $cart = new \Kodhe\Framework\Cart\Cart($config);
         $cart->setStorage($storage);
         
         // Configure calculators if provided
@@ -109,9 +109,9 @@ class CartFactory
      * Create a cart configured for testing
      *
      * @param string $key Unique cart key for test isolation
-     * @return \Kodhe\Cart\Cart
+     * @return \Kodhe\Framework\Cart\Cart
      */
-    public static function createForTesting(string $key = 'test_cart'): \Kodhe\Cart\Cart
+    public static function createForTesting(string $key = 'test_cart'): \Kodhe\Framework\Cart\Cart
     {
         return self::createWithStorageType('memory', ['key' => $key]);
     }
@@ -121,9 +121,9 @@ class CartFactory
      *
      * @param string $userId User ID
      * @param array $config Additional configuration
-     * @return \Kodhe\Cart\Cart
+     * @return \Kodhe\Framework\Cart\Cart
      */
-    public static function createForUser(string $userId, array $config = []): \Kodhe\Cart\Cart
+    public static function createForUser(string $userId, array $config = []): \Kodhe\Framework\Cart\Cart
     {
         $config['user_id'] = $userId;
         return self::createWithStorageType('database', $config);
@@ -135,13 +135,13 @@ class CartFactory
      * @param string $userId User ID
      * @param bool $merge Whether to merge existing guest cart
      * @param array $config Additional configuration
-     * @return \Kodhe\Cart\Cart
+     * @return \Kodhe\Framework\Cart\Cart
      */
     public static function createWithMergeOnLogin(
         string $userId,
         bool $merge = true,
         array $config = []
-    ): \Kodhe\Cart\Cart {
+    ): \Kodhe\Framework\Cart\Cart {
         $cart = self::createForUser($userId, $config);
 
         if ($merge) {

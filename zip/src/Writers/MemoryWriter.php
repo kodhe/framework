@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Zip\Writers;
+namespace Kodhe\Framework\Zip\Writers;
 
-use Kodhe\Zip\Contracts\ArchiveWriterInterface;
-use Kodhe\Zip\Contracts\ZipEntryInterface;
-use Kodhe\Zip\Support\ByteUtils;
+use Kodhe\Framework\Zip\Contracts\ArchiveWriterInterface;
+use Kodhe\Framework\Zip\Contracts\ZipEntryInterface;
+use Kodhe\Framework\Zip\Support\ByteUtils;
 
 /**
  * In-memory archive writer implementation

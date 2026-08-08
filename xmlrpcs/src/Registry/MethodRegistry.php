@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Xmlrpcs\Registry;
+namespace Kodhe\Framework\Xmlrpcs\Registry;
 
-use Kodhe\Xmlrpcs\Contracts\MethodRegistryInterface;
+use Kodhe\Framework\Xmlrpcs\Contracts\MethodRegistryInterface;
 
 /**
  * Registry for XML-RPC methods

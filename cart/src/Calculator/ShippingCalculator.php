@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Cart\Calculator;
+namespace Kodhe\Framework\Cart\Calculator;
 
 /**
  * Class ShippingCalculator

@@ -35,7 +35,7 @@ class Router extends LegacyRouter
         'allow_namespace_in_routes' => true,
         'controller_suffix' => '',
         'default_404_controller' => 'FileNotFound',
-        'default_404_namespace' => 'Kodhe\\Controllers\\Error\\'
+        'default_404_namespace' => 'Kodhe\Framework\Controllers\\Error\\'
     ];
     public function __construct(array $config = []) 
     {

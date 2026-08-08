@@ -5,9 +5,9 @@
  * @package CodeIgniter\Parser\Contracts
  */
 
-namespace Kodhe\Parser\Contracts;
+namespace Kodhe\Framework\Parser\Contracts;
 
-use Kodhe\Parser\ValueObjects\Token;
+use Kodhe\Framework\Parser\ValueObjects\Token;
 
 interface LexerInterface
 {

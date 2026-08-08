@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Xmlrpc;
+namespace Kodhe\Framework\Xmlrpc;
 
-use Kodhe\Xmlrpc\Client\XmlRpcClient;
-use Kodhe\Xmlrpc\Message\XmlRpcMessage;
-use Kodhe\Xmlrpc\Message\XmlRpcResponse;
-use Kodhe\Xmlrpc\ValueObjects\XmlRpcValue;
-use Kodhe\Xmlrpc\Factory\EncoderFactory;
-use Kodhe\Xmlrpc\Factory\DecoderFactory;
-use Kodhe\Xmlrpc\Factory\TransportFactory;
-use Kodhe\Xmlrpc\Exceptions\XmlRpcException;
-use Kodhe\Xmlrpc\Exceptions\FaultException;
-use Kodhe\Xmlrpc\Exceptions\TransportException;
-use Kodhe\Xmlrpc\Exceptions\XmlParseException;
+use Kodhe\Framework\Xmlrpc\Client\XmlRpcClient;
+use Kodhe\Framework\Xmlrpc\Message\XmlRpcMessage;
+use Kodhe\Framework\Xmlrpc\Message\XmlRpcResponse;
+use Kodhe\Framework\Xmlrpc\ValueObjects\XmlRpcValue;
+use Kodhe\Framework\Xmlrpc\Factory\EncoderFactory;
+use Kodhe\Framework\Xmlrpc\Factory\DecoderFactory;
+use Kodhe\Framework\Xmlrpc\Factory\TransportFactory;
+use Kodhe\Framework\Xmlrpc\Exceptions\XmlRpcException;
+use Kodhe\Framework\Xmlrpc\Exceptions\FaultException;
+use Kodhe\Framework\Xmlrpc\Exceptions\TransportException;
+use Kodhe\Framework\Xmlrpc\Exceptions\XmlParseException;
 
 /**
  * XML-RPC request handler class - Backward Compatible CI3 API

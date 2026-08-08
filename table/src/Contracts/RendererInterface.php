@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Table\Contracts;
+namespace Kodhe\Framework\Table\Contracts;
 
 /**
  * Interface for table renderers

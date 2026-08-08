@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Cart;
+namespace Kodhe\Framework\Cart;
 
-use Kodhe\Cart\Contracts\CartInterface;
-use Kodhe\Cart\Contracts\CartStorageInterface;
-use Kodhe\Cart\Storage\SessionStorage;
-use Kodhe\Cart\Calculator\TaxCalculator;
-use Kodhe\Cart\Calculator\DiscountCalculator;
-use Kodhe\Cart\Calculator\ShippingCalculator;
-use Kodhe\Cart\Models\CartItem;
-use Kodhe\Cart\Models\CartSummary;
+use Kodhe\Framework\Cart\Contracts\CartInterface;
+use Kodhe\Framework\Cart\Contracts\CartStorageInterface;
+use Kodhe\Framework\Cart\Storage\SessionStorage;
+use Kodhe\Framework\Cart\Calculator\TaxCalculator;
+use Kodhe\Framework\Cart\Calculator\DiscountCalculator;
+use Kodhe\Framework\Cart\Calculator\ShippingCalculator;
+use Kodhe\Framework\Cart\Models\CartItem;
+use Kodhe\Framework\Cart\Models\CartSummary;
 
 /**
  * Shopping Cart Class

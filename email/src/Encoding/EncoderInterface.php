@@ -1,6 +1,6 @@
 <?php
 
-namespace Kodhe\Email\Encoding;
+namespace Kodhe\Framework\Email\Encoding;
 
 /**
  * Interface untuk Encoder

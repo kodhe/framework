@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Xmlrpc\Message;
+namespace Kodhe\Framework\Xmlrpc\Message;
 
-use Kodhe\Xmlrpc\ValueObjects\XmlRpcValue;
-use Kodhe\Xmlrpc\Factory\EncoderFactory;
-use Kodhe\Xmlrpc\Contracts\EncoderInterface;
+use Kodhe\Framework\Xmlrpc\ValueObjects\XmlRpcValue;
+use Kodhe\Framework\Xmlrpc\Factory\EncoderFactory;
+use Kodhe\Framework\Xmlrpc\Contracts\EncoderInterface;
 
 /**
  * XML-RPC Message class

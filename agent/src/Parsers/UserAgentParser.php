@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Agent\Parsers;
+namespace Kodhe\Framework\Agent\Parsers;
 
 /**
  * Class UserAgentParser

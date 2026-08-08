@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Encryption\Tests\Handlers;
+namespace Kodhe\Framework\Encryption\Tests\Handlers;
 
-use Kodhe\Encryption\Handlers\OpenSslHandler;
+use Kodhe\Framework\Encryption\Handlers\OpenSslHandler;
 use PHPUnit\Framework\TestCase;
 
 /**

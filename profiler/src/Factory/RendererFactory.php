@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Profiler\Factory;
+namespace Kodhe\Framework\Profiler\Factory;
 
-use Kodhe\Profiler\Contracts\RendererInterface;
-use Kodhe\Profiler\Renderers\HtmlRenderer;
-use Kodhe\Profiler\Renderers\TextRenderer;
+use Kodhe\Framework\Profiler\Contracts\RendererInterface;
+use Kodhe\Framework\Profiler\Renderers\HtmlRenderer;
+use Kodhe\Framework\Profiler\Renderers\TextRenderer;
 
 /**
  * Renderer Factory

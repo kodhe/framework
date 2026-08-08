@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Xmlrpc\Decoder;
+namespace Kodhe\Framework\Xmlrpc\Decoder;
 
-use Kodhe\Xmlrpc\Contracts\DecoderInterface;
-use Kodhe\Xmlrpc\Exceptions\XmlParseException;
-use Kodhe\Xmlrpc\Support\XmlParserCache;
+use Kodhe\Framework\Xmlrpc\Contracts\DecoderInterface;
+use Kodhe\Framework\Xmlrpc\Exceptions\XmlParseException;
+use Kodhe\Framework\Xmlrpc\Support\XmlParserCache;
 
 /**
  * XML-RPC decoder implementation using Strategy pattern

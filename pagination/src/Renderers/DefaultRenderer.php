@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Pagination\Renderers;
+namespace Kodhe\Framework\Pagination\Renderers;
 
-use Kodhe\Pagination\Contracts\RendererInterface;
-use Kodhe\Pagination\ValueObjects\LinkData;
+use Kodhe\Framework\Pagination\Contracts\RendererInterface;
+use Kodhe\Framework\Pagination\ValueObjects\LinkData;
 
 /**
  * Default HTML Renderer

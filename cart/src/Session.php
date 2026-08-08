@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Cart;
+namespace Kodhe\Framework\Cart;
 
 /**
  * Simple Session handler for Cart storage

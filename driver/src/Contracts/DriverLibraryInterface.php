@@ -1,6 +1,6 @@
 <?php
 
-namespace Kodhe\Driver\Contracts;
+namespace Kodhe\Framework\Driver\Contracts;
 
 /**
  * Interface DriverLibraryInterface

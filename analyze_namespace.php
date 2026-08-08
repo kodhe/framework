@@ -30,7 +30,7 @@ foreach ($files as $file) {
     if (preg_match_all('/^\s*use\s+([^;]+);/m', $content, $matches)) {
         foreach ($matches[1] as $useStmt) {
             $useStmt = trim($useStmt);
-            if (stripos($useStmt, 'Kodhe\\') === 0 || stripos($useStmt, '\\Kodhe\\') === 0) {
+            if (stripos($useStmt, 'Kodhe\Framework\') === 0 || stripos($useStmt, '\\Kodhe\Framework\\') === 0) {
                 if (!isset($results['use_statements'][$relativePath])) {
                     $results['use_statements'][$relativePath] = [];
                 }
@@ -39,8 +39,8 @@ foreach ($files as $file) {
         }
     }
     
-    // 3. Cek fully qualified calls (\Kodhe\...)
-    if (preg_match_all('/\\\\Kodhe\\\\[a-zA-Z0-9_\\\\]+/i', $content, $matches)) {
+    // 3. Cek fully qualified calls (\Kodhe\Framework\...)
+    if (preg_match_all('/\\\\Kodhe\Framework\\\\[a-zA-Z0-9_\\\\]+/i', $content, $matches)) {
         foreach ($matches[0] as $call) {
             if (!isset($results['fully_qualified_calls'][$relativePath])) {
                 $results['fully_qualified_calls'][$relativePath] = [];
@@ -73,14 +73,14 @@ echo "   Total: " . count($results['namespace_declarations']) . " file\n\n";
 echo "2. FILE DENGAN USE STATEMENTS (Kodhe):\n";
 echo "   Total: " . count($results['use_statements']) . " file\n\n";
 
-echo "3. FILE DENGAN FULLY QUALIFIED CALLS (\\Kodhe\\...):\n";
+echo "3. FILE DENGAN FULLY QUALIFIED CALLS (\\Kodhe\Framework\\...):\n";
 echo "   Total: " . count($results['fully_qualified_calls']) . " file\n";
 foreach (array_keys($results['fully_qualified_calls']) as $file) {
     echo "   - $file\n";
 }
 echo "\n";
 
-echo "4. FILE DENGAN STRING REFERENCES ('Kodhe\\...'):\n";
+echo "4. FILE DENGAN STRING REFERENCES ('Kodhe\Framework\...'):\n";
 echo "   Total: " . count($results['string_references']) . " file\n";
 foreach (array_keys($results['string_references']) as $file) {
     echo "   - $file\n";

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Table\Renderers;
+namespace Kodhe\Framework\Table\Renderers;
 
-use Kodhe\Table\Contracts\RendererInterface;
+use Kodhe\Framework\Table\Contracts\RendererInterface;
 
 /**
  * Plain text renderer for table output

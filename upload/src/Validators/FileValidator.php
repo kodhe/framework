@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Upload\Validators;
+namespace Kodhe\Framework\Upload\Validators;
 
-use Kodhe\Upload\Contracts\ValidatorInterface;
-use Kodhe\Upload\Support\MimeCache;
+use Kodhe\Framework\Upload\Contracts\ValidatorInterface;
+use Kodhe\Framework\Upload\Support\MimeCache;
 
 /**
  * File Validator

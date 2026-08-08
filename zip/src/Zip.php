@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Zip;
+namespace Kodhe\Framework\Zip;
 
-use Kodhe\Zip\Archive\ArchiveBuilder;
-use Kodhe\Zip\Writers\MemoryWriter;
-use Kodhe\Zip\Readers\FileSystemReader;
-use Kodhe\Zip\Factory\CompressionFactory;
-use Kodhe\Zip\Support\ByteUtils;
+use Kodhe\Framework\Zip\Archive\ArchiveBuilder;
+use Kodhe\Framework\Zip\Writers\MemoryWriter;
+use Kodhe\Framework\Zip\Readers\FileSystemReader;
+use Kodhe\Framework\Zip\Factory\CompressionFactory;
+use Kodhe\Framework\Zip\Support\ByteUtils;
 
 /**
  * Zip Compression Class - Backward Compatible Facade

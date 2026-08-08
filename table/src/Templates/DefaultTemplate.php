@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Table\Templates;
+namespace Kodhe\Framework\Table\Templates;
 
-use Kodhe\Table\Contracts\TemplateInterface;
-use Kodhe\Table\Support\TemplateResolver;
+use Kodhe\Framework\Table\Contracts\TemplateInterface;
+use Kodhe\Framework\Table\Support\TemplateResolver;
 
 /**
  * Default template implementation

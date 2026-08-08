@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Zip\Readers;
+namespace Kodhe\Framework\Zip\Readers;
 
-use Kodhe\Zip\Contracts\FileReaderInterface;
-use Kodhe\Zip\Exceptions\FileReadException;
-use Kodhe\Zip\Exceptions\DirectoryReadException;
+use Kodhe\Framework\Zip\Contracts\FileReaderInterface;
+use Kodhe\Framework\Zip\Exceptions\FileReadException;
+use Kodhe\Framework\Zip\Exceptions\DirectoryReadException;
 
 /**
  * Default file system reader implementation

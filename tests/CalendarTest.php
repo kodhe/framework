@@ -1,9 +1,9 @@
 <?php
 
-namespace Kodhe\Calendar\Tests;
+namespace Kodhe\Framework\Calendar\Tests;
 
-use Kodhe\Calendar\Calendar;
-use Kodhe\Calendar\Renderers\JsonRenderer;
+use Kodhe\Framework\Calendar\Calendar;
+use Kodhe\Framework\Calendar\Renderers\JsonRenderer;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -12,7 +12,7 @@ use PHPUnit\Framework\TestCase;
  * Unit tests for main Calendar class
  *
  * @package     Kodhe\Calendar\Tests
- * @covers      \Kodhe\Calendar\Calendar
+ * @covers      \Kodhe\Framework\Calendar\Calendar
  */
 class CalendarTest extends TestCase
 {
@@ -157,13 +157,13 @@ class CalendarTest extends TestCase
     public function testGetGeneratorReturnsMonthGeneratorInstance(): void
     {
         $generator = $this->calendar->getGenerator();
-        $this->assertInstanceOf(\Kodhe\Calendar\Generators\MonthGenerator::class, $generator);
+        $this->assertInstanceOf(\Kodhe\Framework\Calendar\Generators\MonthGenerator::class, $generator);
     }
 
     public function testGetLexiconRepositoryReturnsInstance(): void
     {
         $repository = $this->calendar->getLexiconRepository();
-        $this->assertInstanceOf(\Kodhe\Calendar\Localization\LexiconRepository::class, $repository);
+        $this->assertInstanceOf(\Kodhe\Framework\Calendar\Localization\LexiconRepository::class, $repository);
     }
 
     public function testGenerateWithMondayStartDay(): void

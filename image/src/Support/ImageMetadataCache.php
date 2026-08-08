@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Image\Support;
+namespace Kodhe\Framework\Image\Support;
 
 /**
  * Class ImageMetadataCache

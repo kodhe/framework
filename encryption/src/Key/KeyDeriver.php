@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Encryption\Key;
+namespace Kodhe\Framework\Encryption\Key;
 
 /**
  * Class KeyDeriver

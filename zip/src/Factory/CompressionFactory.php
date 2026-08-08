@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Zip\Factory;
+namespace Kodhe\Framework\Zip\Factory;
 
-use Kodhe\Zip\Contracts\CompressionStrategyInterface;
-use Kodhe\Zip\Compression\DeflateStrategy;
-use Kodhe\Zip\Compression\StoreStrategy;
+use Kodhe\Framework\Zip\Contracts\CompressionStrategyInterface;
+use Kodhe\Framework\Zip\Compression\DeflateStrategy;
+use Kodhe\Framework\Zip\Compression\StoreStrategy;
 
 /**
  * Factory for creating compression strategies

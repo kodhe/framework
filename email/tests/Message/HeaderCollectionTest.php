@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Email\Tests\Message;
+namespace Kodhe\Framework\Email\Tests\Message;
 
 use PHPUnit\Framework\TestCase;
-use Kodhe\Email\Message\HeaderCollection;
+use Kodhe\Framework\Email\Message\HeaderCollection;
 
 /**
  * Test class for HeaderCollection
  *
  * @package     Kodhe\Email\Tests
- * @covers      \Kodhe\Email\Message\HeaderCollection
+ * @covers      \Kodhe\Framework\Email\Message\HeaderCollection
  */
 class HeaderCollectionTest extends TestCase
 {

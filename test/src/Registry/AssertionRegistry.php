@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Test\Registry;
+namespace Kodhe\Framework\Test\Registry;
 
-use Kodhe\Test\Contracts\AssertionInterface;
-use Kodhe\Test\Exceptions\AssertionException;
+use Kodhe\Framework\Test\Contracts\AssertionInterface;
+use Kodhe\Framework\Test\Exceptions\AssertionException;
 
 /**
  * Registry for managing assertion implementations

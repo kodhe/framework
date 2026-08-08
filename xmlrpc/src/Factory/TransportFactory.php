@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Xmlrpc\Factory;
+namespace Kodhe\Framework\Xmlrpc\Factory;
 
-use Kodhe\Xmlrpc\Transport\SocketTransport;
-use Kodhe\Xmlrpc\Contracts\TransportInterface;
+use Kodhe\Framework\Xmlrpc\Transport\SocketTransport;
+use Kodhe\Framework\Xmlrpc\Contracts\TransportInterface;
 
 /**
  * Factory for creating transport instances

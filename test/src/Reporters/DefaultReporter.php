@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Test\Reporters;
+namespace Kodhe\Framework\Test\Reporters;
 
-use Kodhe\Test\Contracts\ReporterInterface;
-use Kodhe\Test\Formatters\HtmlFormatter;
-use Kodhe\Test\Result\TestResultCollection;
+use Kodhe\Framework\Test\Contracts\ReporterInterface;
+use Kodhe\Framework\Test\Formatters\HtmlFormatter;
+use Kodhe\Framework\Test\Result\TestResultCollection;
 
 /**
  * Default reporter that produces HTML output (legacy compatible)

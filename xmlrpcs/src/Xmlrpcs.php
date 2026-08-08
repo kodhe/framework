@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Xmlrpcs;
+namespace Kodhe\Framework\Xmlrpcs;
 
-use Kodhe\Xmlrpcs\Contracts\MethodRegistryInterface;
-use Kodhe\Xmlrpcs\Contracts\DispatcherInterface;
-use Kodhe\Xmlrpcs\Registry\MethodRegistry;
-use Kodhe\Xmlrpcs\Dispatcher\RequestDispatcher;
-use Kodhe\Xmlrpcs\ValueObjects\Request;
-use Kodhe\Xmlrpcs\Exceptions\UnknownMethodException;
+use Kodhe\Framework\Xmlrpcs\Contracts\MethodRegistryInterface;
+use Kodhe\Framework\Xmlrpcs\Contracts\DispatcherInterface;
+use Kodhe\Framework\Xmlrpcs\Registry\MethodRegistry;
+use Kodhe\Framework\Xmlrpcs\Dispatcher\RequestDispatcher;
+use Kodhe\Framework\Xmlrpcs\ValueObjects\Request;
+use Kodhe\Framework\Xmlrpcs\Exceptions\UnknownMethodException;
 
 if (!function_exists('xml_parser_create')) {
     show_error('Your PHP installation does not support XML');
 }
 
-if (!class_exists('Kodhe\Xmlrpc\Xmlrpc', false)) {
+if (!class_exists('Kodhe\Framework\Xmlrpc\Xmlrpc', false)) {
     show_error('You must load the Xmlrpc class before loading the Xmlrpcs class in order to create a server.');
 }
 
@@ -28,7 +28,7 @@ if (!class_exists('Kodhe\Xmlrpc\Xmlrpc', false)) {
  * @package     Kodhe\Xmlrpcs
  * @category    XML-RPC
  */
-class Xmlrpcs extends \Kodhe\Xmlrpc\Xmlrpc
+class Xmlrpcs extends \Kodhe\Framework\Xmlrpc\Xmlrpc
 {
     /**
      * Method registry

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Xmlrpc\Contracts;
+namespace Kodhe\Framework\Xmlrpc\Contracts;
 
 /**
  * Interface for XML-RPC encoder implementations

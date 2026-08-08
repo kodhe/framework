@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Test\Contracts;
+namespace Kodhe\Framework\Test\Contracts;
 
-use Kodhe\Test\Result\TestResultCollection;
+use Kodhe\Framework\Test\Result\TestResultCollection;
 
 /**
  * Interface for formatter implementations

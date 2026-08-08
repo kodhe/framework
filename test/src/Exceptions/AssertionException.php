@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Test\Exceptions;
+namespace Kodhe\Framework\Test\Exceptions;
 
 /**
  * Exception for assertion-related errors

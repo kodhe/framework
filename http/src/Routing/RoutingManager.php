@@ -64,14 +64,14 @@ class RoutingManager
             'cache_routes' => ENVIRONMENT === 'production',
             'namespaces' => [
                 'app' => 'App\\Controllers\\',
-                'kodhe' => 'Kodhe\\Controllers\\',
+                'kodhe' => 'Kodhe\Framework\Controllers\\',
                 'modules' => 'App\\Modules\\'
             ],
             'router_type' => 'hybrid',
             '404_override' => '',
             'show_404_on_missing' => true,
             'default_404_controller' => 'FileNotFound',
-            'default_404_namespace' => 'Kodhe\\Controllers\\Error\\',
+            'default_404_namespace' => 'Kodhe\Framework\Controllers\\Error\\',
             'enable_auto_route' => true
         ];
     }

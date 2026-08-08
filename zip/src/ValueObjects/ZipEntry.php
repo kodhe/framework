@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Zip\ValueObjects;
+namespace Kodhe\Framework\Zip\ValueObjects;
 
 /**
  * Value object representing a ZIP archive entry
  */
-class ZipEntry implements \Kodhe\Zip\Contracts\ZipEntryInterface
+class ZipEntry implements \Kodhe\Framework\Zip\Contracts\ZipEntryInterface
 {
     private string $filename;
     private string $data;

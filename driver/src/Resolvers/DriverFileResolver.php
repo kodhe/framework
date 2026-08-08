@@ -1,6 +1,6 @@
 <?php
 
-namespace Kodhe\Driver\Resolvers;
+namespace Kodhe\Framework\Driver\Resolvers;
 
 /**
  * Class DriverFileResolver

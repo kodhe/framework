@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Xmlrpc\Message;
+namespace Kodhe\Framework\Xmlrpc\Message;
 
-use Kodhe\Xmlrpc\ValueObjects\XmlRpcValue;
+use Kodhe\Framework\Xmlrpc\ValueObjects\XmlRpcValue;
 
 /**
  * XML-RPC Response class

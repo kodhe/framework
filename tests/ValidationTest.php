@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Tests;
+namespace Kodhe\Framework\Tests;
 
 use PHPUnit\Framework\TestCase;
 
@@ -12,7 +12,7 @@ use PHPUnit\Framework\TestCase;
 class ValidationTest extends TestCase
 {
     /**
-     * @var \Kodhe\Validation\Validation
+     * @var \Kodhe\Framework\Validation\Validation
      */
     private $validation;
 

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Cache\Drivers;
+namespace Kodhe\Framework\Cache\Drivers;
 
-use Kodhe\Driver\Driver as Driver;
+use Kodhe\Framework\Driver\Driver as Driver;
 use Kodhe\Framework\Cache\Contracts\CacheDriverInterface;
 
 /**

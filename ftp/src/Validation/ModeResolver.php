@@ -1,6 +1,6 @@
 <?php
 
-namespace Kodhe\Ftp\Validation;
+namespace Kodhe\Framework\Ftp\Validation;
 
 /**
  * Class ModeResolver

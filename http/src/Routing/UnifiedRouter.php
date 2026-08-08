@@ -58,7 +58,7 @@ class UnifiedRouter
         'allow_namespace_in_routes' => true,
         'controller_suffix' => '',
         'default_404_controller' => 'FileNotFound',
-        'default_404_namespace' => 'Kodhe\\Controllers\\Error\\'
+        'default_404_namespace' => 'Kodhe\Framework\Controllers\\Error\\'
     ];
     
     // =========== CONSTRUCTOR ===========
@@ -937,7 +937,7 @@ class UnifiedRouter
                 log_message('error', 'Default controller not found after all attempts');
                 
                 // Jangan langsung show_error, biarkan system handle 404
-                $this->class = 'Kodhe\Controllers\Error\FileNotFound';
+                $this->class = 'Kodhe\Framework\Controllers\Error\FileNotFound';
                 $this->method = 'index';
                 return;
             }
