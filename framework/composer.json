@@ -8,7 +8,8 @@
   "require": {
     "php": ">=8.1",
     "paragonie/random_compat": "^9.99",
-    "kodhe/http": "*"
+    "kodhe/http": "*",
+    "kodhe/agent": "*"
   },
   "suggest": {
     "kodhe/session": "Session handling",
