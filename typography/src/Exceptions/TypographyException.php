@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Typography\Exceptions;
+namespace Kodhe\Framework\Typography\Exceptions;
 
 /**
  * Typography Exception

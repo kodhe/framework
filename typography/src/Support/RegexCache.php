@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Typography\Support;
+namespace Kodhe\Framework\Typography\Support;
 
 /**
  * Regex Cache

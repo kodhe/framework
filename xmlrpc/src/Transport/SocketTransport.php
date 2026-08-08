@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Xmlrpc\Transport;
+namespace Kodhe\Framework\Xmlrpc\Transport;
 
-use Kodhe\Xmlrpc\Contracts\TransportInterface;
-use Kodhe\Xmlrpc\Exceptions\TransportException;
+use Kodhe\Framework\Xmlrpc\Contracts\TransportInterface;
+use Kodhe\Framework\Xmlrpc\Exceptions\TransportException;
 
 /**
  * Socket-based transport implementation for XML-RPC

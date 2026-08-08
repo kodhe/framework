@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Image\ValueObjects;
+namespace Kodhe\Framework\Image\ValueObjects;
 
 /**
  * Class ImageDimensions

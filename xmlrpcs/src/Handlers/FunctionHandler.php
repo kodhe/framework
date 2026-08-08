@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Xmlrpcs\Handlers;
+namespace Kodhe\Framework\Xmlrpcs\Handlers;
 
-use Kodhe\Xmlrpcs\Contracts\MethodHandlerInterface;
+use Kodhe\Framework\Xmlrpcs\Contracts\MethodHandlerInterface;
 
 /**
  * Handler for function-based methods

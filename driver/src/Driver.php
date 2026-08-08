@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Driver;
+namespace Kodhe\Framework\Driver;
 
 use ReflectionObject;
 // --------------------------------------------------------------------------

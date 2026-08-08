@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Trackback\Factory;
+namespace Kodhe\Framework\Trackback\Factory;
 
-use Kodhe\Trackback\Contracts\TransportInterface;
-use Kodhe\Trackback\Support\TrackbackConfig;
-use Kodhe\Trackback\Transport\HttpTransport;
-use Kodhe\Trackback\Exceptions\TransportException;
+use Kodhe\Framework\Trackback\Contracts\TransportInterface;
+use Kodhe\Framework\Trackback\Support\TrackbackConfig;
+use Kodhe\Framework\Trackback\Transport\HttpTransport;
+use Kodhe\Framework\Trackback\Exceptions\TransportException;
 
 /**
  * Factory for creating transport instances.

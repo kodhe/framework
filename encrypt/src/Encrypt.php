@@ -1,11 +1,11 @@
 <?php
 
-namespace Kodhe\Encrypt;
+namespace Kodhe\Framework\Encrypt;
 
-use Kodhe\Encrypt\Ciphers\OpenSslCipher;
-use Kodhe\Encrypt\Ciphers\LegacyMcryptCompat;
-use Kodhe\Encrypt\Key\KeyDeriver;
-use Kodhe\Encrypt\Exceptions\EncryptException;
+use Kodhe\Framework\Encrypt\Ciphers\OpenSslCipher;
+use Kodhe\Framework\Encrypt\Ciphers\LegacyMcryptCompat;
+use Kodhe\Framework\Encrypt\Key\KeyDeriver;
+use Kodhe\Framework\Encrypt\Exceptions\EncryptException;
 
 /**
  * Class Encrypt

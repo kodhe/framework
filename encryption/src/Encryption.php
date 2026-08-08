@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Encryption;
+namespace Kodhe\Framework\Encryption;
 
-use Kodhe\Encryption\Contracts\EncryptionInterface;
-use Kodhe\Encryption\Contracts\HandlerInterface;
-use Kodhe\Encryption\Handlers\OpenSslHandler;
-use Kodhe\Encryption\Key\KeyDeriver;
-use Kodhe\Encryption\Key\KeyGenerator;
+use Kodhe\Framework\Encryption\Contracts\EncryptionInterface;
+use Kodhe\Framework\Encryption\Contracts\HandlerInterface;
+use Kodhe\Framework\Encryption\Handlers\OpenSslHandler;
+use Kodhe\Framework\Encryption\Key\KeyDeriver;
+use Kodhe\Framework\Encryption\Key\KeyGenerator;
 
 /**
  * Encryption Library for CodeIgniter 3

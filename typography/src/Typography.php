@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Typography;
+namespace Kodhe\Framework\Typography;
 
-use Kodhe\Typography\Parsers\HtmlParser;
-use Kodhe\Typography\Parsers\TextParser;
-use Kodhe\Typography\Formatters\CharacterFormatter;
-use Kodhe\Typography\Factory\FormatterFactory;
-use Kodhe\Typography\Support\HtmlProtect;
-use Kodhe\Typography\Support\RegexCache;
-use Kodhe\Typography\ValueObjects\TypographicConfig;
-use Kodhe\Typography\Exceptions/TypographyException;
+use Kodhe\Framework\Typography\Parsers\HtmlParser;
+use Kodhe\Framework\Typography\Parsers\TextParser;
+use Kodhe\Framework\Typography\Formatters\CharacterFormatter;
+use Kodhe\Framework\Typography\Factory\FormatterFactory;
+use Kodhe\Framework\Typography\Support\HtmlProtect;
+use Kodhe\Framework\Typography\Support\RegexCache;
+use Kodhe\Framework\Typography\ValueObjects\TypographicConfig;
+use Kodhe\Framework\Typography\Exceptions/TypographyException;
 
 /**
  * Typography Class

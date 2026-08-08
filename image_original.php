@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Image;
+namespace Kodhe\Framework\Image;
 
 /**
  * Image Manipulation class

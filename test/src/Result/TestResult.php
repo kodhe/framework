@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Test\Result;
+namespace Kodhe\Framework\Test\Result;
 
 /**
  * Value object representing a complete test result (legacy format compatible)

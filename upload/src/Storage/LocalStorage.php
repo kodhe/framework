@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Upload\Storage;
+namespace Kodhe\Framework\Upload\Storage;
 
-use Kodhe\Upload\Contracts\StorageInterface;
+use Kodhe\Framework\Upload\Contracts\StorageInterface;
 
 /**
  * Local Storage

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Test\Assertions;
+namespace Kodhe\Framework\Test\Assertions;
 
-use Kodhe\Test\Contracts\AssertionInterface;
-use Kodhe\Test\Result\AssertionResult;
-use Kodhe\Test\Support\ValueComparator;
-use Kodhe\Test\ValueObjects\TestStatus;
+use Kodhe\Framework\Test\Contracts\AssertionInterface;
+use Kodhe\Framework\Test\Result\AssertionResult;
+use Kodhe\Framework\Test\Support\ValueComparator;
+use Kodhe\Framework\Test\ValueObjects\TestStatus;
 
 /**
  * Assertion for equality comparison (loose)

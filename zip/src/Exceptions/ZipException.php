@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Zip\Exceptions;
+namespace Kodhe\Framework\Zip\Exceptions;
 
 /**
  * Base exception for Zip library

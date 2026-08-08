@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Pagination\ValueObjects;
+namespace Kodhe\Framework\Pagination\ValueObjects;
 
 /**
  * Immutable-ish value object describing a pagination link.

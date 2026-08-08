@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Trackback\Exceptions;
+namespace Kodhe\Framework\Trackback\Exceptions;
 
 /**
  * Exception thrown when trackback receiving fails.

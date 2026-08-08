@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Typography\Parsers;
+namespace Kodhe\Framework\Typography\Parsers;
 
-use Kodhe\Typography\Contracts\ParserInterface;
-use Kodhe\Typography\Contracts\FormatterInterface;
-use Kodhe\Typography\Support\HtmlProtect;
-use Kodhe\Typography\Support\RegexCache;
-use Kodhe\Typography\Formatters\ParagraphFormatter;
-use Kodhe\Typography\Formatters\CharacterFormatter;
-use Kodhe\Typography\Exceptions/TypographyException;
+use Kodhe\Framework\Typography\Contracts\ParserInterface;
+use Kodhe\Framework\Typography\Contracts\FormatterInterface;
+use Kodhe\Framework\Typography\Support\HtmlProtect;
+use Kodhe\Framework\Typography\Support\RegexCache;
+use Kodhe\Framework\Typography\Formatters\ParagraphFormatter;
+use Kodhe\Framework\Typography\Formatters\CharacterFormatter;
+use Kodhe\Framework\Typography\Exceptions/TypographyException;
 
 /**
  * HTML Parser

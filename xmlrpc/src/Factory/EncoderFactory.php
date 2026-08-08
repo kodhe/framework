@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Xmlrpc\Factory;
+namespace Kodhe\Framework\Xmlrpc\Factory;
 
-use Kodhe\Xmlrpc\Encoder\XmlRpcEncoder;
-use Kodhe\Xmlrpc\Contracts\EncoderInterface;
+use Kodhe\Framework\Xmlrpc\Encoder\XmlRpcEncoder;
+use Kodhe\Framework\Xmlrpc\Contracts\EncoderInterface;
 
 /**
  * Factory for creating encoder instances

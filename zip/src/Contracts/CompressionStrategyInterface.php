@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Zip\Contracts;
+namespace Kodhe\Framework\Zip\Contracts;
 
 /**
  * Interface for compression strategies

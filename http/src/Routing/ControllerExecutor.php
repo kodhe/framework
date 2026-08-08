@@ -257,7 +257,7 @@ class ControllerExecutor
                 $possibleFqcns[] = 'App\\Controllers\\' . $className;
                 
                 // Format 3: Kodhe\Controllers\ClassName
-                $possibleFqcns[] = 'Kodhe\\Controllers\\' . $className;
+                $possibleFqcns[] = 'Kodhe\Framework\Controllers\\' . $className;
                 
                 // Format 4: Nama class saja (untuk autoloading)
                 $possibleFqcns[] = $className;
@@ -442,19 +442,19 @@ class ControllerExecutor
                     $type = $param->getType()->getName();
                     
                     // Special cases
-                    if ($type === Application::class || $type === 'Kodhe\\Core\\Foundation\\Application') {
+                    if ($type === Application::class || $type === 'Kodhe\Framework\Core\\Foundation\\Application') {
                         $args[] = $this->application ?? Application::create($this->container);
                     }
-                    elseif ($type === Facade::class || $type === 'Kodhe\\Core\\Support\\Facades\\Facade') {
+                    elseif ($type === Facade::class || $type === 'Kodhe\Framework\Core\\Support\\Facades\\Facade') {
                         $args[] = $this->facade;
                     }
-                    elseif ($type === Container::class || $type === 'Kodhe\\Core\\Container\\Container') {
+                    elseif ($type === Container::class || $type === 'Kodhe\Framework\Core\\Container\\Container') {
                         $args[] = $this->container;
                     }
-                    elseif ($type === Request::class || $type === 'Kodhe\\Core\\Http\\Request') {
+                    elseif ($type === Request::class || $type === 'Kodhe\Framework\Core\\Http\\Request') {
                         $args[] = $this->getRequest();
                     }
-                    elseif ($type === Response::class || $type === 'Kodhe\\Core\\Http\\Response') {
+                    elseif ($type === Response::class || $type === 'Kodhe\Framework\Core\\Http\\Response') {
                         $args[] = $this->getResponse();
                     }
                     // Try container or create instance
@@ -590,7 +590,7 @@ class ControllerExecutor
             foreach ($params as $param) {
                 if ($param->hasType()) {
                     $type = $param->getType()->getName();
-                    if ($type === Application::class || $type === 'Kodhe\\Core\\Foundation\\Application') {
+                    if ($type === Application::class || $type === 'Kodhe\Framework\Core\\Foundation\\Application') {
                         if ($this->application) {
                             return new $className($this->application);
                         }

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Trackback;
+namespace Kodhe\Framework\Trackback;
 
-use Kodhe\Trackback\Support\TrackbackConfig;
+use Kodhe\Framework\Trackback\Support\TrackbackConfig;
 
 /**
  * Trackback Class - Main Facade

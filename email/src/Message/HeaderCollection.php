@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Email\Message;
+namespace Kodhe\Framework\Email\Message;
 
 /**
  * Collection class for managing email headers

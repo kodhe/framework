@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Trackback\Contracts;
+namespace Kodhe\Framework\Trackback\Contracts;
 
 /**
  * Main Trackback interface defining the public API.

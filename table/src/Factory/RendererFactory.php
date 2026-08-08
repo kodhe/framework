@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Table\Factory;
+namespace Kodhe\Framework\Table\Factory;
 
-use Kodhe\Table\Contracts\RendererInterface;
-use Kodhe\Table\Renderers\HtmlRenderer;
-use Kodhe\Table\Renderers\PlainTextRenderer;
+use Kodhe\Framework\Table\Contracts\RendererInterface;
+use Kodhe\Framework\Table\Renderers\HtmlRenderer;
+use Kodhe\Framework\Table\Renderers\PlainTextRenderer;
 use InvalidArgumentException;
 
 /**

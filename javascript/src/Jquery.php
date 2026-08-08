@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Javascript;
+namespace Kodhe\Framework\Javascript;
 
 /**
  * Jquery Class

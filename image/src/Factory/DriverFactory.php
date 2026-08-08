@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Image\Factory;
+namespace Kodhe\Framework\Image\Factory;
 
-use Kodhe\Image\Contracts\ImageDriverInterface;
-use Kodhe\Image\Drivers\GdDriver;
-use Kodhe\Image\Drivers\ImagickDriver;
-use Kodhe\Image\Support\ImageMetadataCache;
+use Kodhe\Framework\Image\Contracts\ImageDriverInterface;
+use Kodhe\Framework\Image\Drivers\GdDriver;
+use Kodhe\Framework\Image\Drivers\ImagickDriver;
+use Kodhe\Framework\Image\Support\ImageMetadataCache;
 use RuntimeException;
 
 /**

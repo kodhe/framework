@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Pagination\Renderers;
+namespace Kodhe\Framework\Pagination\Renderers;
 
-use Kodhe\Pagination\ValueObjects\LinkData;
+use Kodhe\Framework\Pagination\ValueObjects\LinkData;
 
 /**
  * Bootstrap 4/5 Pagination Renderer

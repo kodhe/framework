@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Xmlrpcs\Factory;
+namespace Kodhe\Framework\Xmlrpcs\Factory;
 
-use Kodhe\Xmlrpcs\Contracts\MethodHandlerInterface;
-use Kodhe\Xmlrpcs\Handlers\FunctionHandler;
-use Kodhe\Xmlrpcs\Handlers\ObjectMethodHandler;
-use Kodhe\Xmlrpcs\Handlers\SystemMethodHandler;
+use Kodhe\Framework\Xmlrpcs\Contracts\MethodHandlerInterface;
+use Kodhe\Framework\Xmlrpcs\Handlers\FunctionHandler;
+use Kodhe\Framework\Xmlrpcs\Handlers\ObjectMethodHandler;
+use Kodhe\Framework\Xmlrpcs\Handlers\SystemMethodHandler;
 
 /**
  * Factory for creating method handlers

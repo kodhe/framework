@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Xmlrpcs\ValueObjects;
+namespace Kodhe\Framework\Xmlrpcs\ValueObjects;
 
 /**
  * Value object for XML-RPC response

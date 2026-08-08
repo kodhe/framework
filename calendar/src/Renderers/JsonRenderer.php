@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Calendar\Renderers;
+namespace Kodhe\Framework\Calendar\Renderers;
 
-use Kodhe\Calendar\Contracts\CalendarRendererInterface;
+use Kodhe\Framework\Calendar\Contracts\CalendarRendererInterface;
 
 /**
  * Class JsonRenderer

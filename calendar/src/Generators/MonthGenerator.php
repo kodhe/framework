@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Calendar\Generators;
+namespace Kodhe\Framework\Calendar\Generators;
 
 /**
  * Class MonthGenerator

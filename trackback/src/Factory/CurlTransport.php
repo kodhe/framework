@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Trackback\Factory;
+namespace Kodhe\Framework\Trackback\Factory;
 
-use Kodhe\Trackback\Contracts\TransportInterface;
-use Kodhe\Trackback\Support\TrackbackConfig;
+use Kodhe\Framework\Trackback\Contracts\TransportInterface;
+use Kodhe\Framework\Trackback\Support\TrackbackConfig;
 
 /**
  * cURL transport implementation.
@@ -30,7 +30,7 @@ class CurlTransport implements TransportInterface
         $ch = curl_init();
 
         if ($ch === false) {
-            throw new \Kodhe\Trackback\Exceptions\TransportException('Failed to initialize cURL');
+            throw new \Kodhe\Framework\Trackback\Exceptions\TransportException('Failed to initialize cURL');
         }
 
         // Extract tb_id from URL if present
@@ -58,7 +58,7 @@ class CurlTransport implements TransportInterface
         if ($response === false) {
             $error = curl_error($ch);
             curl_close($ch);
-            throw new \Kodhe\Trackback\Exceptions\TransportException('cURL error: ' . $error);
+            throw new \Kodhe\Framework\Trackback\Exceptions\TransportException('cURL error: ' . $error);
         }
 
         curl_close($ch);

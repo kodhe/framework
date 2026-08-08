@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Image\Contracts;
+namespace Kodhe\Framework\Image\Contracts;
 
 /**
  * Interface ImageDriverInterface

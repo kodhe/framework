@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Typography\Parsers;
+namespace Kodhe\Framework\Typography\Parsers;
 
 /**
  * Text Parser

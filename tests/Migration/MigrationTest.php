@@ -1,10 +1,10 @@
 <?php
 
-namespace Kodhe\Migration\Tests;
+namespace Kodhe\Framework\Migration\Tests;
 
-use Kodhe\Migration\Migration;
-use Kodhe\Migration\Repository\FileMigrationRepository;
-use Kodhe\Migration\Runner\MigrationFileRunner;
+use Kodhe\Framework\Migration\Migration;
+use Kodhe\Framework\Migration\Repository\FileMigrationRepository;
+use Kodhe\Framework\Migration\Runner\MigrationFileRunner;
 use PHPUnit\Framework\TestCase;
 
 /**

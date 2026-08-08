@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Calendar;
+namespace Kodhe\Framework\Calendar;
 
-use Kodhe\Calendar\Contracts\CalendarInterface;
-use Kodhe\Calendar\Contracts\CalendarRendererInterface;
-use Kodhe\Calendar\Generators\MonthGenerator;
-use Kodhe\Calendar\Renderers\HtmlTableRenderer;
-use Kodhe\Calendar\Renderers\JsonRenderer;
-use Kodhe\Calendar\Localization\LexiconRepository;
-use Kodhe\Calendar\Traits\ConfigurableTrait;
+use Kodhe\Framework\Calendar\Contracts\CalendarInterface;
+use Kodhe\Framework\Calendar\Contracts\CalendarRendererInterface;
+use Kodhe\Framework\Calendar\Generators\MonthGenerator;
+use Kodhe\Framework\Calendar\Renderers\HtmlTableRenderer;
+use Kodhe\Framework\Calendar\Renderers\JsonRenderer;
+use Kodhe\Framework\Calendar\Localization\LexiconRepository;
+use Kodhe\Framework\Calendar\Traits\ConfigurableTrait;
 
 /**
  * Calendar Library for CodeIgniter 3

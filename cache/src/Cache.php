@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Cache;
+namespace Kodhe\Framework\Cache;
 
-use Kodhe\Driver\Library as DriverLibrary;
+use Kodhe\Framework\Driver\Library as DriverLibrary;
 
 /**
  * CodeIgniter Caching Class

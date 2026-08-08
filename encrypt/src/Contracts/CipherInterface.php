@@ -1,6 +1,6 @@
 <?php
 
-namespace Kodhe\Encrypt\Contracts;
+namespace Kodhe\Framework\Encrypt\Contracts;
 
 /**
  * Interface CipherInterface

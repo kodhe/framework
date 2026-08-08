@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Xmlrpcs\Contracts;
+namespace Kodhe\Framework\Xmlrpcs\Contracts;
 
 /**
  * Interface for method registry

@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Table;
+namespace Kodhe\Framework\Table;
 
-use Kodhe\Table\Contracts\TableInterface;
-use Kodhe\Table\Contracts\RendererInterface;
-use Kodhe\Table\Builder\HeaderBuilder;
-use Kodhe\Table\Builder\RowBuilder;
-use Kodhe\Table\Support\ColumnNormalizer;
-use Kodhe\Table\Support\TemplateResolver;
-use Kodhe\Table\Support\TableValidator;
-use Kodhe\Table\Templates\TemplateAdapter;
-use Kodhe\Table\Renderers\HtmlRenderer;
-use Kodhe\Table\Factory\RendererFactory;
+use Kodhe\Framework\Table\Contracts\TableInterface;
+use Kodhe\Framework\Table\Contracts\RendererInterface;
+use Kodhe\Framework\Table\Builder\HeaderBuilder;
+use Kodhe\Framework\Table\Builder\RowBuilder;
+use Kodhe\Framework\Table\Support\ColumnNormalizer;
+use Kodhe\Framework\Table\Support\TemplateResolver;
+use Kodhe\Framework\Table\Support\TableValidator;
+use Kodhe\Framework\Table\Templates\TemplateAdapter;
+use Kodhe\Framework\Table\Renderers\HtmlRenderer;
+use Kodhe\Framework\Table\Factory\RendererFactory;
 
 /**
  * HTML Table Generating Class

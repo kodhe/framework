@@ -1,6 +1,6 @@
 <?php
 
-namespace Kodhe\Driver\Traits;
+namespace Kodhe\Framework\Driver\Traits;
 
 /**
  * Trait MagicCallTrait

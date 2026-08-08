@@ -1,9 +1,9 @@
 <?php
 
-namespace Kodhe\Driver;
+namespace Kodhe\Framework\Driver;
 
-use Kodhe\Driver\Contracts\DriverInterface;
-use Kodhe\Driver\Contracts\DriverLibraryInterface;
+use Kodhe\Framework\Driver\Contracts\DriverInterface;
+use Kodhe\Framework\Driver\Contracts\DriverLibraryInterface;
 
 /**
  * Class AbstractDriver

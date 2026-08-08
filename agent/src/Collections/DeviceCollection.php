@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Agent\Collections;
+namespace Kodhe\Framework\Agent\Collections;
 
 /**
  * Class DeviceCollection

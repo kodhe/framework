@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Xmlrpc\Encoder;
+namespace Kodhe\Framework\Xmlrpc\Encoder;
 
-use Kodhe\Xmlrpc\Contracts\EncoderInterface;
-use Kodhe\Xmlrpc\Support\LazyEncoder;
-use Kodhe\Xmlrpc\ValueObjects\XmlRpcValue;
+use Kodhe\Framework\Xmlrpc\Contracts\EncoderInterface;
+use Kodhe\Framework\Xmlrpc\Support\LazyEncoder;
+use Kodhe\Framework\Xmlrpc\ValueObjects\XmlRpcValue;
 
 /**
  * XML-RPC encoder implementation using Strategy pattern

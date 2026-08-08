@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Table\ValueObjects;
+namespace Kodhe\Framework\Table\ValueObjects;
 
 /**
  * Value object for a table cell

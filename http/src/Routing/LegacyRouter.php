@@ -296,7 +296,7 @@ class LegacyRouter
                 log_message('error', 'Default controller not found after all attempts');
                 
                 // Jangan langsung show_error, biarkan system handle 404
-                $this->class = 'Kodhe\Controllers\Error\FileNotFound';
+                $this->class = 'Kodhe\Framework\Controllers\Error\FileNotFound';
                 $this->method = 'index';
                 return;
             }

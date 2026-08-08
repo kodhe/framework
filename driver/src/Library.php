@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Driver;
+namespace Kodhe\Framework\Driver;
 
 use ReflectionObject;
 
@@ -78,7 +78,7 @@ class Library
 			$lib_name = basename(str_replace('\\','/',$lib_name));
 		}
 
-		$class_name = 'Kodhe\\'.$lib_name.'\Drivers\\'.ucwords($child);
+		$class_name = 'Kodhe\Framework\'.$lib_name.'\Drivers\\'.ucwords($child);
 
 		if(class_exists($class_name)) {
 			// Instantiate, decorate and add child
