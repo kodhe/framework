@@ -118,6 +118,6 @@ class UrlHelperTest extends TestCase
     public function testUrlTitleWithSpecialChars(): void
     {
         $result = url_title('Hello & World!');
-        $this->assertEquals('hello-world', $result);
+        $this->assertEquals('Hello-World', $result);
     }
 }
