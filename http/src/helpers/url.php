@@ -469,7 +469,6 @@ if ( ! function_exists('url_title'))
 	 * human-friendly URL string with a "separator" string
 	 * as the word separator.
 	 *
-	 * @todo	Remove old 'dash' and 'underscore' usage in 3.1+.
 	 * @param	string	$str		Input string
 	 * @param	string	$separator	Word separator
 	 *			(usually '-' or '_')
@@ -499,7 +498,9 @@ if ( ! function_exists('url_title'))
 		$str = strip_tags($str);
 		foreach ($trans as $key => $val)
 		{
-			$str = preg_replace('#'.$key.'#i'.(UTF8_ENABLED ? 'u' : ''), $val, $str);
+			// Use UTF-8 flag if available, otherwise default to no flag
+			$utf8_flag = defined('UTF8_ENABLED') && UTF8_ENABLED ? 'u' : '';
+			$str = preg_replace('#'.$key.'#i'.$utf8_flag, $val, $str);
 		}
 
 		if ($lowercase === TRUE)
