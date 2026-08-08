@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="tests/ci3_compat/bootstrap.php"
+         colors="true"
+         processIsolation="false"
+         stopOnFailure="false"
+         cacheDirectory=".phpunit.cache"
+         backupGlobals="false">
+
+    <testsuites>
+        <!-- CI3 Compatibility Tests -->
+        <testsuite name="ci3-compat">
+            <directory suffix="Test.php">tests/ci3_compat</directory>
+        </testsuite>
+
+        <!-- Framework Tests -->
+        <testsuite name="framework">
+            <directory suffix="Test.php">framework/tests</directory>
+        </testsuite>
+
+        <!-- HTTP Tests -->
+        <testsuite name="http">
+            <directory suffix="Test.php">http/tests</directory>
+        </testsuite>
+
+        <!-- Database Tests -->
+        <testsuite name="database">
+            <directory suffix="Test.php">database/tests</directory>
+        </testsuite>
+
+        <!-- Email Tests -->
+        <testsuite name="email">
+            <directory suffix="Test.php">email/tests</directory>
+        </testsuite>
+
+        <!-- Cache Tests -->
+        <testsuite name="cache">
+            <directory suffix="Test.php">cache/tests</directory>
+        </testsuite>
+
+        <!-- Encryption Tests -->
+        <testsuite name="encryption">
+            <directory suffix="Test.php">encryption/tests</directory>
+        </testsuite>
+
+        <!-- Validation Tests -->
+        <testsuite name="validation">
+            <directory suffix="Test.php">validation/tests</directory>
+        </testsuite>
+
+        <!-- Parser Tests -->
+        <testsuite name="parser">
+            <directory suffix="Test.php">parser/tests</directory>
+        </testsuite>
+
+        <!-- Profiler Tests -->
+        <testsuite name="profiler">
+            <directory suffix="Test.php">profiler/tests</directory>
+        </testsuite>
+
+        <!-- Driver Tests -->
+        <testsuite name="driver">
+            <directory suffix="Test.php">driver/tests</directory>
+        </testsuite>
+
+        <!-- Cart Tests -->
+        <testsuite name="cart">
+            <directory suffix="Test.php">cart/tests</directory>
+        </testsuite>
+
+        <!-- Agent Tests -->
+        <testsuite name="agent">
+            <directory suffix="Test.php">agent/tests</directory>
+        </testsuite>
+
+        <!-- FTP Tests -->
+        <testsuite name="ftp">
+            <directory suffix="Test.php">ftp/tests</directory>
+        </testsuite>
+    </testsuites>
+
+    <source>
+        <include>
+            <directory suffix=".php">framework/src</directory>
+            <directory suffix=".php">http/src</directory>
+            <directory suffix=".php">database/src</directory>
+            <directory suffix=".php">email/src</directory>
+            <directory suffix=".php">cache/src</directory>
+            <directory suffix=".php">encryption/src</directory>
+            <directory suffix=".php">upload/src</directory>
+            <directory suffix=".php">image/src</directory>
+            <directory suffix=".php">zip/src</directory>
+            <directory suffix=".php">validation/src</directory>
+            <directory suffix=".php">pagination/src</directory>
+            <directory suffix=".php">table/src</directory>
+            <directory suffix=".php">calendar/src</directory>
+            <directory suffix=".php">cart/src</directory>
+            <directory suffix=".php">agent/src</directory>
+            <directory suffix=".php">ftp/src</directory>
+            <directory suffix=".php">trackback/src</directory>
+            <directory suffix=".php">typography/src</directory>
+            <directory suffix=".php">xmlrpc/src</directory>
+            <directory suffix=".php">migration/src</directory>
+            <directory suffix=".php">profiler/src</directory>
+            <directory suffix=".php">javascript/src</directory>
+            <directory suffix=".php">view/src</directory>
+        </include>
+    </source>
+
+    <php>
+        <env name="APP_ENV" value="testing"/>
+        <env name="XDEBUG_MODE" value="coverage"/>
+    </php>
+</phpunit>
