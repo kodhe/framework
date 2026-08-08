@@ -73,7 +73,7 @@
       "Kodhe\\Xmlrpc\\": "xmlrpc/src/",
       "Kodhe\\Xmlrpcs\\": "xmlrpcs/src/",
       "Kodhe\\Zip\\": "zip/src/",
-      "Kodhe\\Driver\\": "driver/src/",
+      "Kodhe\\Driver\\": "driver/src/"
     },
     "files": [
       "framework/src/Support/Legacy/common.php",

@@ -1,193 +1,99 @@
-# Kodhe Database Module
 
-Database module yang direfactor untuk CodeIgniter 3 dengan arsitektur modern.
-
-## Fitur
-
-- **PSR-4 Autoloading**: Struktur namespace yang konsisten
-- **PSR-12 Coding Standards**: Format kode yang standar
-- **Modular Architecture**: Components terpisah (Connection, Builder, Model)
-- **PHPUnit Ready**: Test suite lengkap dengan coverage >80%
-- **Backward Compatible**: 100% kompatibel dengan CodeIgniter 3
-- **Type Hints**: Strict typing untuk PHP 8.1+
-- **Traits & Interfaces**: Reusable components dan contracts
-
-## Struktur Direktori
-
-```
-database/
-├── src/
-│   ├── Contracts/          # Interfaces
-│   │   ├── ConnectionInterface.php
-│   │   ├── BuilderInterface.php
-│   │   └── ModelInterface.php
-│   ├── Traits/             # Reusable traits
-│   │   ├── ManagesConnectionTrait.php
-│   │   └── BuildsQueriesTrait.php
-│   ├── Connections/        # Connection management
-│   │   └── Connection.php
-│   ├── Builders/           # Query builders
-│   │   └── QueryBuilder.php
-│   ├── BaseModel.php       # Base model class
-│   └── DB.php              # Facade class
-├── tests/
-│   ├── Unit/               # Unit tests
-│   └── Integration/        # Integration tests
-├── composer.json
-├── phpunit.xml
-└── README.md
-```
-
-## Instalasi
-
-```bash
-cd database
-composer install
-```
-
-## Penggunaan
-
-### Query Builder
+## File Test `test_parser.php`
 
 ```php
-use Kodhe\Database\DB;
+<?php
 
-// Select dari table
-$users = DB::table('users')->select(['id', 'name'])->get();
+require_once __DIR__ . '/vendor/autoload.php';
 
-// Dengan where clause
-$user = DB::table('users')
-    ->where('status', '=', 'active')
-    ->orderBy('created_at', 'DESC')
-    ->limit(10)
-    ->first();
+use Kodhe\Library\Parser\Parser;
 
-// Join tables
-$posts = DB::table('posts')
-    ->join('users', 'posts.user_id', '=', 'users.id', 'left')
-    ->select(['posts.*', 'users.name'])
-    ->get();
-```
+echo "=== Kodhe Parser Tests ===\n\n";
 
-### Model
+$parser = new Parser();
 
-```php
-use Kodhe\Database\BaseModel;
+// Test 1: Simple variable replacement
+echo "Test 1: Simple Variable Replacement\n";
+$template = "Hello, {name}! Welcome to {site}.";
+$data = ['name' => 'John', 'site' => 'MyApp'];
+$result = $parser->parse_string($template, $data, true);
+echo "Template: {$template}\n";
+echo "Result: {$result}\n\n";
+assert($result === 'Hello, John! Welcome to MyApp.', 'Test 1 failed');
+echo "✓ Passed\n\n";
 
-class UserModel extends BaseModel
-{
-    protected $table = 'users';
-    protected $primaryKey = 'id';
-    protected $allowedFields = ['name', 'email', 'status'];
-    protected $useTimestamps = true;
-}
-
-// Usage
-$model = new UserModel();
-
-// Find by ID
-$user = $model->find(1);
-
-// Get all
-$users = $model->all();
-
-// Create
-$id = $model->create([
-    'name' => 'John Doe',
-    'email' => 'john@example.com'
-]);
-
-// Update
-$model->update(1, ['status' => 'active']);
-
-// Delete
-$model->delete(1);
-
-// Complex query
-$users = $model->where('status', 'active')
-    ->orderBy('name')
-    ->limit(10)
-    ->all();
-```
-
-### Transaction
-
-```php
-use Kodhe\Database\DB;
-
-// Menggunakan transaction helper
-DB::transaction(function($db) {
-    $db->query("INSERT INTO users (name) VALUES ('John')");
-    $db->query("INSERT INTO posts (user_id, title) VALUES (1, 'First Post')");
-});
-
-// Manual transaction
-DB::beginTransaction();
-try {
-    // ... queries
-    DB::commit();
-} catch (\Exception $e) {
-    DB::rollback();
-    throw $e;
-}
-```
-
-### Connection Management
-
-```php
-use Kodhe\Database\Connections\Connection;
-
-$config = [
-    'hostname' => 'localhost',
-    'database' => 'mydb',
-    'username' => 'root',
-    'password' => '',
-    'dbdriver' => 'mysqli'
+// Test 2: Tag pair (loop)
+echo "Test 2: Tag Pair Loop\n";
+$template = "<ul>{items}<li>{item}</li>{/items}</ul>";
+$data = [
+    'items' => [
+        ['item' => 'First'],
+        ['item' => 'Second'],
+        ['item' => 'Third']
+    ]
 ];
+$result = $parser->parse_string($template, $data, true);
+echo "Template: {$template}\n";
+echo "Result: {$result}\n\n";
+assert($result === '<ul><li>First</li><li>Second</li><li>Third</li></ul>', 'Test 2 failed');
+echo "✓ Passed\n\n";
 
-$connection = new Connection($config);
-$connection->connect();
+// Test 3: Nested tag pairs
+echo "Test 3: Nested Tag Pairs\n";
+$template = "{menu}{items}<li>{item}</li>{/items}{/menu}";
+$data = [
+    'menu' => [
+        [
+            'items' => [
+                ['item' => 'Home'],
+                ['item' => 'About']
+            ]
+        ],
+        [
+            'items' => [
+                ['item' => 'Contact'],
+                ['item' => 'Help']
+            ]
+        ]
+    ]
+];
+$result = $parser->parse_string($template, $data, true);
+echo "Template: {$template}\n";
+echo "Result: {$result}\n\n";
+assert(str_contains($result, '<li>Home</li>'), 'Test 3 failed');
+assert(str_contains($result, '<li>Contact</li>'), 'Test 3 failed');
+echo "✓ Passed\n\n";
 
-// Execute query
-$result = $connection->query("SELECT * FROM users");
+// Test 4: Custom delimiters
+echo "Test 4: Custom Delimiters\n";
+$parser->set_delimiters('{{', '}}');
+$template = "Hello, {{name}}!";
+$result = $parser->parse_string($template, ['name' => 'World'], true);
+echo "Template: {$template}\n";
+echo "Result: {$result}\n\n";
+assert($result === 'Hello, World!', 'Test 4 failed');
+echo "✓ Passed\n\n";
 
-// Check connection status
-if ($connection->isConnected()) {
-    echo "Connected!";
-}
-```
+// Test 5: Empty template
+echo "Test 5: Empty Template\n";
+$result = $parser->parse_string('', [], true);
+echo "Result: " . var_export($result, true) . "\n\n";
+assert($result === false, 'Test 5 failed');
+echo "✓ Passed\n\n";
 
-## Testing
+// Test 6: Multiple variables
+echo "Test 6: Multiple Variables\n";
+$parser->set_delimiters('{', '}'); // Reset to default
+$template = "{greeting}, {name}! You have {count} new messages.";
+$data = [
+    'greeting' => 'Good morning',
+    'name' => 'Alice',
+    'count' => 5
+];
+$result = $parser->parse_string($template, $data, true);
+echo "Template: {$template}\n";
+echo "Result: {$result}\n\n";
+assert($result === 'Good morning, Alice! You have 5 new messages.', 'Test 6 failed');
+echo "✓ Passed\n\n";
 
-```bash
-# Run semua tests
-./vendor/bin/phpunit
-
-# Run unit tests saja
-./vendor/bin/phpunit --testsuite Unit
-
-# Run dengan coverage
-./vendor/bin/phpunit --coverage-html coverage/html
-
-# Run specific test
-./vendor/bin/phpunit tests/Unit/QueryBuilderTest.php
-```
-
-## Backward Compatibility
-
-Module ini mempertahankan kompatibilitas penuh dengan CodeIgniter 3:
-
-- Method signatures lama tetap berfungsi
-- Helper functions tetap tersedia
-- Global functions dipertahankan
-- CI superobject integration terjaga
-
-## Requirements
-
-- PHP >= 8.1
-- CodeIgniter 3.x
-- PHPUnit 10.x (untuk testing)
-
-## License
-
-MIT License
+echo "=== All Tests Passed ===\n";

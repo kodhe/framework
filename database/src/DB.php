@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Database;
+namespace Kodhe\Framework\Database;
 
 /**
- * Database Facade untuk backward compatibility
- * dengan CodeIgniter 3
+ * Database Manager Facade
+ * @package Kodhe\Framework\Database
  */
 class DB
 {
@@ -14,80 +14,68 @@ class DB
      * @var array Model instances
      */
     private static $instances = [];
-
-    /**
-     * @var mixed Database connection
-     */
-    private static $connection = null;
-
+    
     /**
      * Get model instance
      * @param string $model
-     * @return BaseModel
+     * @return Model
      */
-    public static function model($model): BaseModel
+    public static function model($model)
     {
         if (!isset(self::$instances[$model])) {
             self::$instances[$model] = new $model();
         }
-
+        
         return self::$instances[$model];
     }
-
+    
     /**
      * Table method facade
      * @param string $table
-     * @return Builders\QueryBuilder
+     * @return Model
      */
     public static function table($table)
     {
-        return new Builders\QueryBuilder($table);
+        $model = new class extends Model {
+            public function __construct()
+            {
+                parent::__construct();
+            }
+        };
+        
+        return $model->table($table);
     }
-
-    /**
-     * Get connection instance
-     * @param array $config
-     * @return Connections\Connection
-     */
-    public static function connect(array $config = []): Connections\Connection
-    {
-        if (!self::$connection) {
-            self::$connection = new Connections\Connection($config);
-        }
-
-        return self::$connection;
-    }
-
+    
     /**
      * Begin transaction
      * @return void
      */
-    public static function beginTransaction(): void
+    public static function beginTransaction()
     {
-        $db = self::connect();
-        $db->beginTransaction();
+        $ci =& get_instance();
+        $ci->db->trans_begin();
     }
-
+    
     /**
      * Commit transaction
      * @return void
      */
-    public static function commit(): void
+    public static function commit()
     {
-        $db = self::connect();
-        $db->commit();
+        $ci =& get_instance();
+        $ci->db->trans_commit();
     }
-
+    
     /**
      * Rollback transaction
      * @return void
      */
-    public static function rollback(): void
+    public static function rollback()
     {
-        $db = self::connect();
-        $db->rollback();
+        $ci =& get_instance();
+        $ci->db->trans_rollback();
     }
-
+    
     /**
      * Raw query
      * @param string $sql
@@ -96,51 +84,19 @@ class DB
      */
     public static function raw($sql, $binds = [])
     {
-        $db = self::connect();
-        return $db->query($sql, $binds);
+        $ci =& get_instance();
+        return $ci->db->query($sql, $binds);
     }
-
+    
     /**
      * Select raw
      * @param string $expression
      * @param array $bindings
-     * @return mixed
+     * @return \CI_DB_query_builder
      */
     public static function rawSelect($expression, $bindings = [])
     {
         $ci =& get_instance();
         return $ci->db->select($expression, false);
-    }
-
-    /**
-     * Execute within transaction
-     * @param callable $callback
-     * @return mixed
-     */
-    public static function transaction(callable $callback)
-    {
-        $db = self::connect();
-        return $db->transaction($callback);
-    }
-
-    /**
-     * Clear instances
-     * @return void
-     */
-    public static function clearInstances(): void
-    {
-        self::$instances = [];
-    }
-
-    /**
-     * Disconnect
-     * @return void
-     */
-    public static function disconnect(): void
-    {
-        if (self::$connection) {
-            self::$connection->disconnect();
-            self::$connection = null;
-        }
     }
 }
