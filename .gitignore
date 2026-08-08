@@ -1,10 +1,1 @@
-```
-vendor/
-composer.lock
-.env
-.env.local
-.env.*
-*.log
-.DS_Store
-Thumbs.db
-```
+Nothing should be ignored based on the provided file changes. The only modified file is a source code file (Library.php), which should not be ignored. There are no build artifacts, dependencies, or temporary files in the changes that require gitignore rules.
