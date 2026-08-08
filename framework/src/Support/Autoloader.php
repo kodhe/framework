@@ -89,21 +89,24 @@ class Autoloader
     }
 
     /**
-     * Add a class alias (legacy compatibility)
+     * Add a class prefix (legacy compatibility - alias for addNamespace)
      * 
-     * @param string $space Alias name
-     * @param string $path Original class path
+     * This method maintains backward compatibility with CodeIgniter 3 style autoloading.
+     * 
+     * @param string $prefix Class prefix (e.g., 'App')
+     * @param string $baseDir Base directory path
      * @return self
+     * @deprecated Use addNamespace() instead
      */
-    public function addSpace(string $space, string $path): self
+    public function addPrefix(string $prefix, string $baseDir): self
     {
-        self::$aliases[$space] = $path;
-        return $this;
+        return $this->addNamespace($prefix, $baseDir);
     }
+
 
     /**
      * Register the autoloader with SPL
-     * 
+     *
      * @return self
      */
     public function register(): self
