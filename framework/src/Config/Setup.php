@@ -20,7 +20,7 @@ use Kodhe\Framework\Support\Legacy\Output;
 use Kodhe\Framework\Support\Legacy\Utf8;
 use Kodhe\Framework\Support\Legacy\Security;
 use Kodhe\Framework\Support\Legacy\Benchmark;
-use Kodhe\Framework\Database\ORM\CI_Model;
+use Kodhe\Database\ORM\CI_Model;
 use Kodhe\Framework\View\ViewFactory;
 
 return [
