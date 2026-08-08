@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Agent;
+namespace Kodhe\Agent;
 
 /**
  * User Agent Class
