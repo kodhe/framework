@@ -5,9 +5,9 @@
  * @package CodeIgniter\Parser\Cache
  */
 
-namespace CodeIgniter\Parser\Cache;
+namespace Kodhe\Parser\Cache;
 
-use CodeIgniter\Parser\Contracts\CacheInterface;
+use Kodhe\Parser\Contracts\CacheInterface;
 
 class TemplateCache implements CacheInterface
 {
