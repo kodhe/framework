@@ -41,7 +41,9 @@ class Pipeline
         $this->response = $response ?: new Response();
         
         $this->handler = function($request, $response, $params) {
-            log_message('debug', 'Default pipeline handler called');
+            if (function_exists('log_message')) {
+                log_message('debug', 'Default pipeline handler called');
+            }
             return $response;
         };
     }
@@ -52,7 +54,9 @@ class Pipeline
     public function pipe($middleware)
     {
         $this->middlewares[] = $middleware;
-        log_message('debug', 'Middleware added to pipeline: ' . $this->getMiddlewareDescription($middleware));
+        if (function_exists('log_message')) {
+            log_message('debug', 'Middleware added to pipeline: ' . $this->getMiddlewareDescription($middleware));
+        }
         return $this;
     }
     
@@ -73,7 +77,9 @@ class Pipeline
     public function setHandler(callable $handler)
     {
         $this->handler = $handler;
-        log_message('debug', 'Pipeline handler set');
+        if (function_exists('log_message')) {
+            log_message('debug', 'Pipeline handler set');
+        }
         return $this;
     }
     
@@ -109,15 +115,19 @@ class Pipeline
      */
     public function run(array $params = [])
     {
-        log_message('debug', 'MiddlewarePipeline::run() started with ' . count($this->middlewares) . ' middlewares');
-        
-        // Debug: list semua middlewares
-        foreach ($this->middlewares as $index => $mw) {
-            log_message('debug', "Pipeline middleware [{$index}]: " . $this->getMiddlewareDescription($mw));
+        if (function_exists('log_message')) {
+            log_message('debug', 'MiddlewarePipeline::run() started with ' . count($this->middlewares) . ' middlewares');
+            
+            // Debug: list semua middlewares
+            foreach ($this->middlewares as $index => $mw) {
+                log_message('debug', "Pipeline middleware [{$index}]: " . $this->getMiddlewareDescription($mw));
+            }
         }
         
         if (empty($this->middlewares)) {
-            log_message('debug', 'No middlewares in pipeline, calling handler directly');
+            if (function_exists('log_message')) {
+                log_message('debug', 'No middlewares in pipeline, calling handler directly');
+            }
             return call_user_func($this->handler, $this->request, $this->response, $params);
         }
         
@@ -130,7 +140,9 @@ class Pipeline
             
             // Pastikan response adalah Response object
             if (!$response instanceof Response) {
-                log_message('debug', 'Pipeline did not return Response, creating new Response');
+                if (function_exists('log_message')) {
+                    log_message('debug', 'Pipeline did not return Response, creating new Response');
+                }
                 $newResponse = clone $this->response;
                 
                 if ($response !== null) {
@@ -145,7 +157,9 @@ class Pipeline
                 $response = $newResponse;
             }
             
-            log_message('debug', 'MiddlewarePipeline::run() completed successfully');
+            if (function_exists('log_message')) {
+                log_message('debug', 'MiddlewarePipeline::run() completed successfully');
+            }
             return $response;
             
         } catch (Throwable $e) {
@@ -158,38 +172,52 @@ class Pipeline
      */
     protected function handlePipelineException(Throwable $e, array $params): Response
     {
-        log_message('error', 'Middleware pipeline error: ' . $e->getMessage());
+        if (function_exists('log_message')) {
+            log_message('error', 'Middleware pipeline error: ' . $e->getMessage());
+        }
         
         // Jika custom exception handler diset, gunakan itu
         if ($this->exceptionHandler && is_callable($this->exceptionHandler)) {
             try {
-                log_message('debug', 'Using custom exception handler');
+                if (function_exists('log_message')) {
+                    log_message('debug', 'Using custom exception handler');
+                }
                 return call_user_func($this->exceptionHandler, $e, $this->request, $this->response, $params);
             } catch (Throwable $handlerError) {
-                log_message('error', 'Custom exception handler failed: ' . $handlerError->getMessage());
+                if (function_exists('log_message')) {
+                    log_message('error', 'Custom exception handler failed: ' . $handlerError->getMessage());
+                }
                 // Fallback ke default handler
             }
         }
         
         // Jika exception handling disabled, re-throw
         if (!$this->exceptionHandling) {
-            log_message('debug', 'Exception handling disabled, re-throwing exception');
+            if (function_exists('log_message')) {
+                log_message('debug', 'Exception handling disabled, re-throwing exception');
+            }
             throw $e;
         }
         
         // Handle exception based on type
         if ($e instanceof BaseException) {
-            log_message('error', 'Handling BaseException: ' . $e->getLogMessage());
+            if (function_exists('log_message')) {
+                log_message('error', 'Handling BaseException: ' . $e->getLogMessage());
+            }
             return $this->handleBaseException($e);
         }
         
         if ($e instanceof HttpException) {
-            log_message('warning', 'Handling HttpException: ' . $e->getMessage());
+            if (function_exists('log_message')) {
+                log_message('warning', 'Handling HttpException: ' . $e->getMessage());
+            }
             return $this->handleHttpException($e);
         }
         
         // Convert unknown exception to BaseException
-        log_message('error', 'Converting unknown exception to BaseException');
+        if (function_exists('log_message')) {
+            log_message('error', 'Converting unknown exception to BaseException');
+        }
         $baseException = new BaseException(
             'Internal server error: ' . $e->getMessage(),
             $e->getCode(),
@@ -309,28 +337,38 @@ class Pipeline
         
         // Reverse array untuk membangun pipeline dari dalam ke luar
         foreach (array_reverse($this->middlewares) as $index => $middleware) {
-            log_message('debug', "Building pipeline step [{$index}]: " . $this->getMiddlewareDescription($middleware));
+            if (function_exists('log_message')) {
+                log_message('debug', "Building pipeline step [{$index}]: " . $this->getMiddlewareDescription($middleware));
+            }
             
             $resolved = $this->resolveMiddleware($middleware);
             
             if ($resolved instanceof MiddlewareInterface) {
                 $pipeline = function($request, $response, $params) use ($resolved, $pipeline, $index) {
-                    log_message('debug', "Executing middleware [{$index}]: " . get_class($resolved));
+                    if (function_exists('log_message')) {
+                        log_message('debug', "Executing middleware [{$index}]: " . get_class($resolved));
+                    }
                     return $resolved->handle($request, $response, $pipeline, $params);
                 };
             } elseif (is_callable($resolved)) {
                 $pipeline = function($request, $response, $params) use ($resolved, $pipeline, $index) {
-                    log_message('debug', "Executing callable middleware [{$index}]");
+                    if (function_exists('log_message')) {
+                        log_message('debug', "Executing callable middleware [{$index}]");
+                    }
                     return call_user_func($resolved, $request, $response, $pipeline, $params);
                 };
             } else {
-                log_message('error', 'Cannot resolve middleware at index ' . $index . ': ' . $this->getMiddlewareDescription($middleware));
+                if (function_exists('log_message')) {
+                    log_message('error', 'Cannot resolve middleware at index ' . $index . ': ' . $this->getMiddlewareDescription($middleware));
+                }
                 // Lanjut tanpa middleware ini
                 continue;
             }
         }
         
-        log_message('debug', 'Pipeline built successfully');
+        if (function_exists('log_message')) {
+            log_message('debug', 'Pipeline built successfully');
+        }
         return $pipeline;
     }
     
@@ -345,11 +383,15 @@ class Pipeline
             $resolved = $registry->resolve($middleware);
             
             if ($resolved === null) {
-                log_message('error', 'Middleware registry returned null for: ' . $this->getMiddlewareDescription($middleware));
+                if (function_exists('log_message')) {
+                    log_message('error', 'Middleware registry returned null for: ' . $this->getMiddlewareDescription($middleware));
+                }
                 
                 // Jika array, coba sebagai inline group
                 if (is_array($middleware)) {
-                    log_message('debug', 'Trying to resolve array as inline group');
+                    if (function_exists('log_message')) {
+                        log_message('debug', 'Trying to resolve array as inline group');
+                    }
                     $group = new MiddlewareGroup();
                     foreach ($middleware as $mw) {
                         $resolvedMw = $registry->resolve($mw);
@@ -362,14 +404,18 @@ class Pipeline
                     }
                 }
             } else {
-                log_message('debug', 'Successfully resolved middleware: ' . get_class($resolved));
+                if (function_exists('log_message')) {
+                    log_message('debug', 'Successfully resolved middleware: ' . get_class($resolved));
+                }
             }
             
             return $resolved;
             
         } catch (\Exception $e) {
-            log_message('error', 'Error resolving middleware: ' . $e->getMessage());
-            log_message('error', 'Middleware: ' . $this->getMiddlewareDescription($middleware));
+            if (function_exists('log_message')) {
+                log_message('error', 'Error resolving middleware: ' . $e->getMessage());
+                log_message('error', 'Middleware: ' . $this->getMiddlewareDescription($middleware));
+            }
             
             // Throw exception dengan context
             $baseException = new BaseException(
