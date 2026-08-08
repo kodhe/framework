@@ -5,9 +5,9 @@
  * @package CodeIgniter\Parser\ValueObjects
  */
 
-namespace CodeIgniter\Parser\ValueObjects;
+namespace Kodhe\Parser\ValueObjects;
 
-use CodeIgniter\Parser\Contracts\TokenInterface;
+use Kodhe\Parser\Contracts\TokenInterface;
 
 class Token implements TokenInterface
 {

@@ -5,7 +5,7 @@
  * @package CodeIgniter\Parser\Context
  */
 
-namespace CodeIgniter\Parser\Context;
+namespace Kodhe\Parser\Context;
 
 class ParseContext
 {

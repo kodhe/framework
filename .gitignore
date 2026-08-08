@@ -1,10 +1,30 @@
-```
-/vendor/
+```php
+# Dependencies
+vendor/
 composer.lock
+
+# Cache and compiled files
+*.cache
+*.compiled
+.cache/
+tmp/
+temp/
+
+# Logs
+*.log
+
+# Environment
 .env
 .env.local
 .env.*
-*.log
+
+# Editor/IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
 .DS_Store
 Thumbs.db
 ```
