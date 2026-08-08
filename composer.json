@@ -46,7 +46,7 @@
   "autoload": {
     "psr-4": {
       "Kodhe\\Framework\\": "framework/src/",
-      "Kodhe\\Routing\\": "routing/src/",
+      "Kodhe\\Http\\Routing\\": "http/src/Routing/",
       "Kodhe\\Database\\": "database/src/",
       "Kodhe\\Http\\": "http/src/",
       "Kodhe\\Session\\": "session/src/",
@@ -73,7 +73,8 @@
       "Kodhe\\Xmlrpc\\": "xmlrpc/src/",
       "Kodhe\\Xmlrpcs\\": "xmlrpcs/src/",
       "Kodhe\\Zip\\": "zip/src/",
-      "Kodhe\\Driver\\": "driver/src/"
+      "Kodhe\\Driver\\": "driver/src/",
+      "Kodhe\\View\\": "view/src/"
     },
     "files": [
       "framework/src/Support/Legacy/common.php",

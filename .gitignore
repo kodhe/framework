@@ -1,1 +1,22 @@
-Nothing should be ignored based on the provided file changes. The only modified file is a source code file (`framework/src/Foundation/Application.php`), which should not be ignored. There are no build artifacts, dependencies, temporary files, or other items that require ignoring in the provided change list.
+```
+# Dependencies
+vendor/
+
+# Cache and temporary files
+*.log
+*.tmp
+*.swp
+
+# Environment
+.env
+.env.local
+.env.*
+
+# Editors
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+```

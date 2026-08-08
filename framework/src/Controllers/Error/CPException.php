@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kodhe\Framework\Controllers\Error;
 
-use Kodhe\Framework\Http\Controllers\BaseController;
+use Kodhe\Http\Controllers\BaseController;
 
 class CPException extends BaseController
 {

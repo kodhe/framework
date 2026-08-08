@@ -595,7 +595,7 @@ class URI
 	 */
 	public function ruri_string()
 	{
-		$router = new \Kodhe\Framework\Http\Routing\Router();
+		$router = new \Kodhe\Http\Routing\Router();
 
 		return ltrim($router->directory, '/').implode('/', $this->rsegments);
 	}

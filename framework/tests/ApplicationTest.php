@@ -119,6 +119,6 @@ class ApplicationTest extends TestCase
         $kernel = $app->getKernel();
         
         $this->assertIsObject($kernel);
-        $this->assertEquals('Kodhe\Framework\Http\Kernel\Kernel', get_class($kernel));
+        $this->assertEquals('Kodhe\Http\Kernel\Kernel', get_class($kernel));
     }
 }

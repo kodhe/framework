@@ -28,6 +28,7 @@ class ComposerStaticInit4f8b9bb74719a23f0e71d425b92326b0
             'Kodhe\\Zip\\' => 10,
             'Kodhe\\Xmlrpcs\\' => 14,
             'Kodhe\\Xmlrpc\\' => 13,
+            'Kodhe\\View\\' => 11,
             'Kodhe\\Validation\\' => 17,
             'Kodhe\\Upload\\' => 13,
             'Kodhe\\Typography\\' => 17,
@@ -35,13 +36,13 @@ class ComposerStaticInit4f8b9bb74719a23f0e71d425b92326b0
             'Kodhe\\Test\\' => 11,
             'Kodhe\\Table\\' => 12,
             'Kodhe\\Session\\' => 14,
-            'Kodhe\\Routing\\' => 14,
             'Kodhe\\Profiler\\' => 15,
             'Kodhe\\Parser\\' => 13,
             'Kodhe\\Pagination\\' => 17,
             'Kodhe\\Migration\\' => 16,
             'Kodhe\\Javascript\\' => 17,
             'Kodhe\\Image\\' => 12,
+            'Kodhe\\Http\\Routing\\' => 19,
             'Kodhe\\Http\\' => 11,
             'Kodhe\\Ftp\\' => 10,
             'Kodhe\\Framework\\' => 16,
@@ -69,6 +70,10 @@ class ComposerStaticInit4f8b9bb74719a23f0e71d425b92326b0
         'Kodhe\\Xmlrpc\\' =>
         array (
             0 => __DIR__ . '/../..' . '/xmlrpc/src',
+        ),
+        'Kodhe\\View\\' =>
+        array (
+            0 => __DIR__ . '/../..' . '/view/src',
         ),
         'Kodhe\\Validation\\' =>
         array (
@@ -98,10 +103,6 @@ class ComposerStaticInit4f8b9bb74719a23f0e71d425b92326b0
         array (
             0 => __DIR__ . '/../..' . '/session/src',
         ),
-        'Kodhe\\Routing\\' =>
-        array (
-            0 => __DIR__ . '/../..' . '/routing/src',
-        ),
         'Kodhe\\Profiler\\' =>
         array (
             0 => __DIR__ . '/../..' . '/profiler/src',
@@ -125,6 +126,10 @@ class ComposerStaticInit4f8b9bb74719a23f0e71d425b92326b0
         'Kodhe\\Image\\' =>
         array (
             0 => __DIR__ . '/../..' . '/image/src',
+        ),
+        'Kodhe\\Http\\Routing\\' =>
+        array (
+            0 => __DIR__ . '/../..' . '/http/src/Routing',
         ),
         'Kodhe\\Http\\' =>
         array (

@@ -6,8 +6,8 @@ namespace Kodhe\Framework\Exceptions\Middleware;
 
 use Kodhe\Framework\Exceptions\BaseException;
 use Kodhe\Framework\Exceptions\Http\HttpException;
-use Kodhe\Framework\Http\Request;
-use Kodhe\Framework\Http\Response;
+use Kodhe\Http\Request;
+use Kodhe\Http\Response;
 use Kodhe\Framework\Middleware\Middleware;
 use Throwable;
 

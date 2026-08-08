@@ -6,8 +6,8 @@ namespace Kodhe\Framework\Foundation\Service;
 
 use FilesystemIterator;
 use Kodhe\Framework\Container\Binding\BindingInterface;
-use Kodhe\Framework\Http\Request;
-use Kodhe\Framework\Http\Response;
+use Kodhe\Http\Request;
+use Kodhe\Http\Response;
 use Kodhe\Framework\Support\Autoloader;
 
 /**

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kodhe\Framework\View;
 
 use Exception;
-use Kodhe\Framework\Http\Response;
+use Kodhe\Http\Response;
 use Kodhe\Framework\View\Engine\EngineFactory;
 
 class ViewFactory

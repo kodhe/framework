@@ -43,7 +43,7 @@ class ServiceManagerTest extends TestCase
 
     public function testSetAndGetRequest(): void
     {
-        $mockRequest = $this->createMock(\Kodhe\Framework\Http\Request::class);
+        $mockRequest = $this->createMock(\Kodhe\Http\Request::class);
         
         $this->assertNull($this->manager->getRequest());
         
@@ -54,7 +54,7 @@ class ServiceManagerTest extends TestCase
 
     public function testSetAndGetResponse(): void
     {
-        $mockResponse = $this->createMock(\Kodhe\Framework\Http\Response::class);
+        $mockResponse = $this->createMock(\Kodhe\Http\Response::class);
         
         $this->assertNull($this->manager->getResponse());
         
