@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Database\Connection\Drivers\Mysqli;
+namespace Kodhe\Database\Connection\Drivers\Mysqli;
 
-use Kodhe\Framework\Database\Query\Grammar;
+use Kodhe\Database\Query\Grammar;
 
 class Utility extends Grammar 
 {

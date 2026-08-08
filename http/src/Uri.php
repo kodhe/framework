@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kodhe\Http;
 
-use Kodhe\Framework\Exceptions\Http\BadRequestException;
+use Kodhe\Http\Exceptions\Http\BadRequestException;
 
 /**
  * URI class

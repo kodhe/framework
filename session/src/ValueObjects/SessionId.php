@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Session\ValueObjects;
+namespace Kodhe\Session\ValueObjects;
 
 /**
  * SessionId Value Object
  * 
  * Encapsulates session ID with validation
  * 
- * @package Kodhe\Framework\Session\ValueObjects
+ * @package Kodhe\Session\ValueObjects
  */
 class SessionId
 {

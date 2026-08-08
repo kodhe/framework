@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Validation\Factory;
+namespace Kodhe\Validation\Factory;
 
-use Kodhe\Framework\Validation\Contracts\ValidatorInterface;
-use Kodhe\Framework\Validation\Exceptions\RuleNotFoundException;
+use Kodhe\Validation\Contracts\ValidatorInterface;
+use Kodhe\Validation\Exceptions\RuleNotFoundException;
 
 /**
  * Validator Factory
@@ -71,7 +71,7 @@ class ValidatorFactory
         
         // If it's a callable, wrap it
         if (is_callable($validator)) {
-            $instance = new \Kodhe\Framework\Validation\Validators\CallableValidator($validator);
+            $instance = new \Kodhe\Validation\Validators\CallableValidator($validator);
             self::$instances[$cacheKey] = $instance;
             return $instance;
         }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Database\Connection\Drivers\Pdo\Subdrivers\Odbc;
+namespace Kodhe\Database\Connection\Drivers\Pdo\Subdrivers\Odbc;
 
 /**
  * PDO ODBC Forge Class
@@ -11,7 +11,7 @@ namespace Kodhe\Framework\Database\Connection\Drivers\Pdo\Subdrivers\Odbc;
  * @author		EllisLab Dev Team
  * @link		https://codeigniter.com/database/
  */
-class Forge extends \Kodhe\Framework\Database\Connection\Drivers\Pdo\Forge 
+class Forge extends \Kodhe\Database\Connection\Drivers\Pdo\Forge 
 {
 
 	/**

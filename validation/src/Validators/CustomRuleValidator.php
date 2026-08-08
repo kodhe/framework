@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Validation\Validators;
+namespace Kodhe\Validation\Validators;
 
 /**
  * Custom Rule Validator (implements custom RuleInterface)
@@ -10,7 +10,7 @@ namespace Kodhe\Framework\Validation\Validators;
 class CustomRuleValidator extends BaseValidator
 {
     public function __construct(
-        protected \Kodhe\Framework\Validation\Contracts\RuleInterface $rule
+        protected \Kodhe\Validation\Contracts\RuleInterface $rule
     ) {
         $this->name = $rule->getName();
     }

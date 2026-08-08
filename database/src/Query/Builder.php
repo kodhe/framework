@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Database\Query;
+namespace Kodhe\Database\Query;
 
-use Kodhe\Framework\Database\Connection\ConnectionAbstract;
+use Kodhe\Database\Connection\ConnectionAbstract;
 abstract class Builder extends ConnectionAbstract {
 
 	protected $return_delete_sql		= FALSE;

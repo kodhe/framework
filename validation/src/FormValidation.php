@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Validation;
+namespace Kodhe\Validation;
 
 /**
  * Form Validation Class

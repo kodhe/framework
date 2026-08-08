@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kodhe\Http\Routing;
 
-use Kodhe\Framework\Cache\CacheInterface;
+use Kodhe\Cache\CacheInterface;
 
 class RateLimiter
 {

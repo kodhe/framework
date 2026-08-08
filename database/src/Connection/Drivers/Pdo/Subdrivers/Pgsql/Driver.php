@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Database\Connection\Drivers\Pdo\Subdrivers\Pgsql;
+namespace Kodhe\Database\Connection\Drivers\Pdo\Subdrivers\Pgsql;
 
 /**
  * PDO PostgreSQL Database Adapter Class
@@ -17,7 +17,7 @@ namespace Kodhe\Framework\Database\Connection\Drivers\Pdo\Subdrivers\Pgsql;
  * @author		EllisLab Dev Team
  * @link		https://codeigniter.com/user_guide/database/
  */
-class Driver extends \Kodhe\Framework\Database\Connection\Drivers\Pdo\Driver 
+class Driver extends \Kodhe\Database\Connection\Drivers\Pdo\Driver 
 {
 
 	/**

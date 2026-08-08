@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Database\Connection\Drivers\Pdo\Subdrivers\Mysql;
+namespace Kodhe\Database\Connection\Drivers\Pdo\Subdrivers\Mysql;
 
 /**
  * PDO MySQL Database Adapter Class
@@ -19,7 +19,7 @@ namespace Kodhe\Framework\Database\Connection\Drivers\Pdo\Subdrivers\Mysql;
  */
 use PDO;
 
-class Driver extends \Kodhe\Framework\Database\Connection\Drivers\Pdo\Driver 
+class Driver extends \Kodhe\Database\Connection\Drivers\Pdo\Driver 
 {
 
 	/**

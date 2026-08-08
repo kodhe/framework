@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\View;
+namespace Kodhe\View;
 
 use Exception;
 

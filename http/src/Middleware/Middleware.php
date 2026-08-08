@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kodhe\Http\Middleware;
 
 use Kodhe\Framework\Exceptions\BaseException;
-use Kodhe\Framework\Exceptions\Http\HttpException;
+use Kodhe\Http\Exceptions\Http\HttpException;
 use Kodhe\Http\Request;
 use Kodhe\Http\Response;
 use Throwable;

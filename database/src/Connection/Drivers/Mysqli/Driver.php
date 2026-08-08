@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Database\Connection\Drivers\Mysqli;
+namespace Kodhe\Database\Connection\Drivers\Mysqli;
 
-use Kodhe\Framework\Database\Query\Builder;
+use Kodhe\Database\Query\Builder;
 
 class Driver extends Builder 
 {

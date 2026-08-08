@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Database\Migrations\Migration;
+namespace Kodhe\Database\Migrations\Migration;
 
 /**
  * Migration Interface.

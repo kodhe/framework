@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Session\Storage;
+namespace Kodhe\Session\Storage;
 
-use Kodhe\Framework\Session\Contracts\StorageInterface;
+use Kodhe\Session\Contracts\StorageInterface;
 
 /**
  * Null Storage - No-op implementation for testing or disabled sessions
  * 
- * @package Kodhe\Framework\Session\Storage
+ * @package Kodhe\Session\Storage
  */
 class NullStorage implements StorageInterface
 {

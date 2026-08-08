@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Database\Connection;
+namespace Kodhe\Database\Connection;
 
 class ConnectionManager
 {
@@ -127,13 +127,13 @@ class ConnectionManager
 
   private static function load_driver($params){
 
-	$driver = 'Kodhe\Framework\Database\Connection\Drivers\\'.ucwords($params['dbdriver']).'\Driver';
+	$driver = 'Kodhe\Database\Connection\Drivers\\'.ucwords($params['dbdriver']).'\Driver';
   	$DB = new $driver($params);
 
   	// Check for a subdriver
   	if ( ! empty($DB->subdriver))
   	{
-			$driver = 'Kodhe\Framework\Database\Connection\Drivers\\'.ucwords($params['dbdriver']).'\Subdrivers\\'.ucwords($DB->subdriver).'\Driver';
+			$driver = 'Kodhe\Database\Connection\Drivers\\'.ucwords($params['dbdriver']).'\Subdrivers\\'.ucwords($DB->subdriver).'\Driver';
 
 			$DB = new $driver($params);
   	}

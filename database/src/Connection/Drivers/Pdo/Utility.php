@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Database\Connection\Drivers\Pdo;
+namespace Kodhe\Database\Connection\Drivers\Pdo;
 
 /**
  * PDO Utility Class
@@ -15,7 +15,7 @@ namespace Kodhe\Framework\Database\Connection\Drivers\Pdo;
  */
 use PDO;
 
-class Utility extends \Kodhe\Framework\Database\Query\Grammar 
+class Utility extends \Kodhe\Database\Query\Grammar 
 {
 
 	/**

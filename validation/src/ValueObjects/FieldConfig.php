@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Validation\ValueObjects;
+namespace Kodhe\Validation\ValueObjects;
 
 /**
  * Field Configuration Value Object

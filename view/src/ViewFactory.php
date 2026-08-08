@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\View;
+namespace Kodhe\View;
 
 use Exception;
 use Kodhe\Http\Response;
-use Kodhe\Framework\View\Engine\EngineFactory;
+use Kodhe\View\Engine\EngineFactory;
 
 class ViewFactory
 {

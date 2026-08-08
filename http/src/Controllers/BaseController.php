@@ -29,7 +29,7 @@ class BaseController extends Controller
         }
 
         try {
-            if (class_exists(\Kodhe\Framework\View\ViewFactory::class)) {
+            if (class_exists(\Kodhe\View\ViewFactory::class)) {
                 $app->set('theme', app('view'));
             }
         } catch (\Throwable $e) {

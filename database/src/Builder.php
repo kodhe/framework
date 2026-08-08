@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Database;
+namespace Kodhe\Database;
 
 use CI_Model;
 
 /**
  * Query Builder dengan Fluent Interface
- * @package Kodhe\Framework\Database
+ * @package Kodhe\Database
  */
 class Builder
 {

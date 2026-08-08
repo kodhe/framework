@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Session\Contracts;
+namespace Kodhe\Session\Contracts;
 
 /**
  * Storage Interface - Contract for session data storage operations
  * 
- * @package Kodhe\Framework\Session\Contracts
+ * @package Kodhe\Session\Contracts
  */
 interface StorageInterface
 {

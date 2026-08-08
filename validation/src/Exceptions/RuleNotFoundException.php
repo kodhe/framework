@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Validation\Exceptions;
+namespace Kodhe\Validation\Exceptions;
 
 /**
  * Rule Not Found Exception

@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Session\Factory;
+namespace Kodhe\Session\Factory;
 
-use Kodhe\Framework\Session\Contracts\SessionHandlerInterface;
-use Kodhe\Framework\Session\Exceptions\SessionException;
-use Kodhe\Framework\Session\Support\SessionConfig;
+use Kodhe\Session\Contracts\SessionHandlerInterface;
+use Kodhe\Session\Exceptions\SessionException;
+use Kodhe\Session\Support\SessionConfig;
 
 /**
  * Driver Factory - Creates session driver instances
  * 
- * @package Kodhe\Framework\Session\Factory
+ * @package Kodhe\Session\Factory
  */
 class DriverFactory
 {
@@ -19,10 +19,10 @@ class DriverFactory
      * @var array Registered driver mappings
      */
     private static array $drivers = [
-        'files' => \Kodhe\Framework\Session\Drivers\Files::class,
-        'database' => \Kodhe\Framework\Session\Drivers\Database::class,
-        'redis' => \Kodhe\Framework\Session\Drivers\RedisDriver::class,
-        'memcached' => \Kodhe\Framework\Session\Drivers\MemcachedDriver::class,
+        'files' => \Kodhe\Session\Drivers\Files::class,
+        'database' => \Kodhe\Session\Drivers\Database::class,
+        'redis' => \Kodhe\Session\Drivers\RedisDriver::class,
+        'memcached' => \Kodhe\Session\Drivers\MemcachedDriver::class,
     ];
 
     /**

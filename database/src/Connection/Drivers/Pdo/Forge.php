@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Database\Connection\Drivers\Pdo;
+namespace Kodhe\Database\Connection\Drivers\Pdo;
 
 /**
  * PDO Forge Class
@@ -15,7 +15,7 @@ namespace Kodhe\Framework\Database\Connection\Drivers\Pdo;
  */
 use PDO;
 
-class Forge extends \Kodhe\Framework\Database\Migrations\Schema\Blueprint 
+class Forge extends \Kodhe\Database\Migrations\Schema\Blueprint 
 {
 
 	/**

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Validation\Support;
+namespace Kodhe\Validation\Support;
 
 /**
  * Compiled Rules Cache

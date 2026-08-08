@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Database\Connection\Drivers\Sqlite3;
+namespace Kodhe\Database\Connection\Drivers\Sqlite3;
 
 /**
  * SQLite3 Result Class
@@ -13,7 +13,7 @@ namespace Kodhe\Framework\Database\Connection\Drivers\Sqlite3;
  * @author		Andrey Andreev
  * @link		https://codeigniter.com/user_guide/database/
  */
-class Result extends \Kodhe\Framework\Database\Query\Result 
+class Result extends \Kodhe\Database\Query\Result 
 {
 
 	/**

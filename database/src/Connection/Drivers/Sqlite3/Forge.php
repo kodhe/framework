@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Database\Connection\Drivers\Sqlite3;
+namespace Kodhe\Database\Connection\Drivers\Sqlite3;
 
 /**
  * SQLite3 Forge Class
@@ -11,7 +11,7 @@ namespace Kodhe\Framework\Database\Connection\Drivers\Sqlite3;
  * @author	Andrey Andreev
  * @link	https://codeigniter.com/user_guide/database/
  */
-class Forge extends \Kodhe\Framework\Database\Migrations\Schema\Blueprint 
+class Forge extends \Kodhe\Database\Migrations\Schema\Blueprint 
 {
 
 	/**

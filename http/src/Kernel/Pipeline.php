@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kodhe\Http\Kernel;
 
 use Kodhe\Framework\Exceptions\BaseException;
-use Kodhe\Framework\Exceptions\Http\HttpException;
+use Kodhe\Http\Exceptions\Http\HttpException;
 use Kodhe\Http\Middleware\MiddlewareGroup;
 use Kodhe\Http\Middleware\MiddlewareInterface;
 use Kodhe\Http\Middleware\MiddlewareRegistry;

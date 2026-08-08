@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Session\Contracts;
+namespace Kodhe\Session\Contracts;
 
 /**
  * Session Handler Interface - Contract for session storage drivers
  * Extends PHP's SessionHandlerInterface with additional methods
  * 
- * @package Kodhe\Framework\Session\Contracts
+ * @package Kodhe\Session\Contracts
  */
 interface SessionHandlerInterface extends \SessionHandlerInterface
 {

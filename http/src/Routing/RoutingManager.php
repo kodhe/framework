@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kodhe\Http\Routing;
 
 use Kodhe\Framework\Config\Config;
-use Kodhe\Framework\Exceptions\Http\{
+use Kodhe\Http\Exceptions\Http\{
     NotFoundException,
     BadRequestException,
     ForbiddenException

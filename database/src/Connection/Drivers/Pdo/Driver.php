@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Database\Connection\Drivers\Pdo;
+namespace Kodhe\Database\Connection\Drivers\Pdo;
 
 /**
  * PDO Database Adapter Class
@@ -19,7 +19,7 @@ namespace Kodhe\Framework\Database\Connection\Drivers\Pdo;
  */
  use PDO;
 
-class Driver extends \Kodhe\Framework\Database\Query\Builder 
+class Driver extends \Kodhe\Database\Query\Builder 
 {
 
 	/**

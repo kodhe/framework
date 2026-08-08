@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Database\Migrations\Schema;
+namespace Kodhe\Database\Migrations\Schema;
 abstract class Blueprint {
 
 	protected $db;

@@ -1,6 +1,6 @@
 <?php
 
-use Kodhe\Framework\View\ViewFactory;
+use Kodhe\View\ViewFactory;
 
 // =====================
 // TEMPLATE ASSET STATE
@@ -163,7 +163,7 @@ if (!function_exists('set_theme')) {
         
         $state['theme'] = $theme;
         
-        if (isset(app()->template) && app()->template instanceof \Kodhe\Framework\View\ViewFactory) {
+        if (isset(app()->template) && app()->template instanceof \Kodhe\View\ViewFactory) {
             try {
                 if (!app()->template->isThemeEnabled()) {
                     app()->template->enableTheme(true);
@@ -175,7 +175,7 @@ if (!function_exists('set_theme')) {
             }
         } else {
             try {
-                app()->template = new \Kodhe\Framework\View\ViewFactory([
+                app()->template = new \Kodhe\View\ViewFactory([
                     'theme_enabled' => true,
                     'theme_default' => $theme
                 ]);
@@ -248,7 +248,7 @@ if (!function_exists('include_partial')) {
     {
         $partialView = 'partials/' . $partial;
         
-        if (isset(app()->template) && app()->template instanceof \Kodhe\Framework\View\ViewFactory) {
+        if (isset(app()->template) && app()->template instanceof \Kodhe\View\ViewFactory) {
             if ($return) {
                 return app()->template->view($partialView, $data, true);
             }
@@ -270,7 +270,7 @@ if (!function_exists('include_widget')) {
     {
         $widgetView = 'widgets/' . $widget;
         
-        if (isset(app()->template) && app()->template instanceof \Kodhe\Framework\View\ViewFactory) {
+        if (isset(app()->template) && app()->template instanceof \Kodhe\View\ViewFactory) {
             if ($return) {
                 return app()->template->view($widgetView, $params, true);
             }
@@ -302,7 +302,7 @@ if (!function_exists('include_region')) {
             }
         }
         
-        if (isset(app()->template) && app()->template instanceof \Kodhe\Framework\View\ViewFactory) {
+        if (isset(app()->template) && app()->template instanceof \Kodhe\View\ViewFactory) {
             $output = app()->template->view('regions/' . $region, $data, true);
             if ($return) {
                 return $output;
@@ -320,7 +320,7 @@ if (!function_exists('include_section')) {
     {
         $sectionView = 'sections/' . $section;
         
-        if (isset(app()->template) && app()->template instanceof \Kodhe\Framework\View\ViewFactory) {
+        if (isset(app()->template) && app()->template instanceof \Kodhe\View\ViewFactory) {
             if ($return) {
                 return app()->template->view($sectionView, $data, true);
             }
@@ -342,7 +342,7 @@ if (!function_exists('include_element')) {
     {
         $elementView = 'elements/' . $element;
         
-        if (isset(app()->template) && app()->template instanceof \Kodhe\Framework\View\ViewFactory) {
+        if (isset(app()->template) && app()->template instanceof \Kodhe\View\ViewFactory) {
             if ($return) {
                 return app()->template->view($elementView, $data, true);
             }
@@ -364,7 +364,7 @@ if (!function_exists('include_block')) {
     {
         $blockView = 'blocks/' . $block;
         
-        if (isset(app()->template) && app()->template instanceof \Kodhe\Framework\View\ViewFactory) {
+        if (isset(app()->template) && app()->template instanceof \Kodhe\View\ViewFactory) {
             if ($return) {
                 return app()->template->view($blockView, $data, true);
             }
@@ -386,7 +386,7 @@ if (!function_exists('include_module')) {
     {
         $moduleView = 'modules/' . $module;
         
-        if (isset(app()->template) && app()->template instanceof \Kodhe\Framework\View\ViewFactory) {
+        if (isset(app()->template) && app()->template instanceof \Kodhe\View\ViewFactory) {
             if ($return) {
                 return app()->template->view($moduleView, $data, true);
             }
@@ -413,10 +413,10 @@ if (!function_exists('view')) {
         static $template = null;
         static $rendering_layout = false;
         
-        if (isset(app()->template) && app()->template instanceof \Kodhe\Framework\View\ViewFactory) {
+        if (isset(app()->template) && app()->template instanceof \Kodhe\View\ViewFactory) {
             $template = app()->template;
         } elseif ($template === null) {
-            $template = new \Kodhe\Framework\View\ViewFactory($options);
+            $template = new \Kodhe\View\ViewFactory($options);
             app()->template = $template;
         }
         
@@ -500,11 +500,11 @@ if (!function_exists('format_view_path')) {
 if (!function_exists('theme_asset')) {
     function theme_asset($path, $theme = null)
     {
-        if (isset(app()->assets) && app()->assets instanceof \Kodhe\Framework\View\AssetManager) {
+        if (isset(app()->assets) && app()->assets instanceof \Kodhe\View\AssetManager) {
             return app()->assets->theme_asset($path);
         }
         
-        if (isset(app()->template) && app()->template instanceof \Kodhe\Framework\View\ViewFactory) {
+        if (isset(app()->template) && app()->template instanceof \Kodhe\View\ViewFactory) {
             $template = app()->template;
         } else {
             static $template = null;
@@ -524,7 +524,7 @@ if (!function_exists('theme_asset')) {
 if (!function_exists('theme_info')) {
     function theme_info($key = null, $theme = null)
     {
-        if (isset(app()->template) && app()->template instanceof \Kodhe\Framework\View\ViewFactory) {
+        if (isset(app()->template) && app()->template instanceof \Kodhe\View\ViewFactory) {
             $template = app()->template;
         } else {
             static $template = null;
@@ -550,7 +550,7 @@ if (!function_exists('get_active_theme')) {
         }
         
         // 2. Cek dari template instance (theme yang sedang aktif)
-        if (isset(app()->template) && app()->template instanceof \Kodhe\Framework\View\ViewFactory) {
+        if (isset(app()->template) && app()->template instanceof \Kodhe\View\ViewFactory) {
             if (app()->template->isThemeEnabled()) {
                 try {
                     $themeManager = app()->template->theme();
@@ -583,7 +583,7 @@ if (!function_exists('get_active_theme')) {
 if (!function_exists('get_available_themes')) {
     function get_available_themes()
     {
-        if (isset(app()->template) && app()->template instanceof \Kodhe\Framework\View\ViewFactory) {
+        if (isset(app()->template) && app()->template instanceof \Kodhe\View\ViewFactory) {
             return app()->template->getAvailableThemes();
         }
         
@@ -605,7 +605,7 @@ if (!function_exists('set_theme_preview')) {
         $state =& get_template_state();
         $state['theme'] = $theme;
         
-        if (isset(app()->template) && app()->template instanceof \Kodhe\Framework\View\ViewFactory) {
+        if (isset(app()->template) && app()->template instanceof \Kodhe\View\ViewFactory) {
             try {
                 app()->template->setTheme($theme);
             } catch (\Exception $e) {
@@ -628,7 +628,7 @@ if (!function_exists('clear_theme_preview')) {
         $state =& get_template_state();
         $state['theme'] = $defaultTheme;
         
-        if (isset(app()->template) && app()->template instanceof \Kodhe\Framework\View\ViewFactory) {
+        if (isset(app()->template) && app()->template instanceof \Kodhe\View\ViewFactory) {
             try {
                 app()->template->setTheme($defaultTheme);
             } catch (\Exception $e) {
@@ -663,7 +663,7 @@ if (!function_exists('is_admin_theme')) {
 if (!function_exists('theme_view')) {
     function theme_view($view, $data = [], $return = false, $theme = null, $layout = null, $options = [])
     {
-        if (isset(app()->template) && app()->template instanceof \Kodhe\Framework\View\ViewFactory) {
+        if (isset(app()->template) && app()->template instanceof \Kodhe\View\ViewFactory) {
             $template = app()->template;
         } else {
             static $template = null;
@@ -691,7 +691,7 @@ if (!function_exists('theme_view')) {
 if (!function_exists('template_exists')) {
     function template_exists($view)
     {
-        if (isset(app()->template) && app()->template instanceof \Kodhe\Framework\View\ViewFactory) {
+        if (isset(app()->template) && app()->template instanceof \Kodhe\View\ViewFactory) {
             return app()->template->exists($view);
         }
         
@@ -707,7 +707,7 @@ if (!function_exists('template_exists')) {
 if (!function_exists('theme_variant')) {
     function theme_variant()
     {
-        if (isset(app()->template) && app()->template instanceof \Kodhe\Framework\View\ViewFactory) {
+        if (isset(app()->template) && app()->template instanceof \Kodhe\View\ViewFactory) {
             try {
                 return app()->template->getVariant();
             } catch (\Exception $e) {
@@ -728,7 +728,7 @@ if (!function_exists('is_mobile_variant')) {
 if (!function_exists('theme_switch_variant')) {
     function theme_switch_variant($variant)
     {
-        if (isset(app()->template) && app()->template instanceof \Kodhe\Framework\View\ViewFactory) {
+        if (isset(app()->template) && app()->template instanceof \Kodhe\View\ViewFactory) {
             try {
                 app()->template->setVariant($variant);
                 app()->session->set_userdata('theme_variant', $variant);
@@ -744,7 +744,7 @@ if (!function_exists('theme_switch_variant')) {
 if (!function_exists('enable_theme')) {
     function enable_theme($enabled = true, $themeName = null)
     {
-        if (isset(app()->template) && app()->template instanceof \Kodhe\Framework\View\ViewFactory) {
+        if (isset(app()->template) && app()->template instanceof \Kodhe\View\ViewFactory) {
             $template = app()->template;
         } else {
             $config = ['theme_enabled' => $enabled];
@@ -753,7 +753,7 @@ if (!function_exists('enable_theme')) {
                 $config['theme_default'] = $themeName;
             }
             
-            $template = new \Kodhe\Framework\View\ViewFactory($config);
+            $template = new \Kodhe\View\ViewFactory($config);
             app()->template = $template;
         }
         
@@ -783,7 +783,7 @@ if (!function_exists('debug_theme_paths')) {
         echo '<pre>';
         echo "Active Theme (get_active_theme): " . get_active_theme() . "\n";
         
-        if (isset(app()->template) && app()->template instanceof \Kodhe\Framework\View\ViewFactory) {
+        if (isset(app()->template) && app()->template instanceof \Kodhe\View\ViewFactory) {
             echo "Template getTheme(): " . (app()->template->getTheme() ?? 'null') . "\n";
             
             try {

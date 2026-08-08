@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Validation\Filters;
+namespace Kodhe\Validation\Filters;
 
-use Kodhe\Framework\Validation\Contracts\FilterInterface;
+use Kodhe\Validation\Contracts\FilterInterface;
 
 /**
  * Base Filter Class

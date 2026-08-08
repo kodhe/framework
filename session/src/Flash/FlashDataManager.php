@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Session\Flash;
+namespace Kodhe\Session\Flash;
 
 /**
  * Flash Data Manager
  * 
  * Manages flashdata and tempdata lifecycle
  * 
- * @package Kodhe\Framework\Session\Flash
+ * @package Kodhe\Session\Flash
  */
 class FlashDataManager
 {

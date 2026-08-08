@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Session\Support;
+namespace Kodhe\Session\Support;
 
 /**
  * Session Configuration Handler
  * 
  * Handles session configuration with defaults and validation
  * 
- * @package Kodhe\Framework\Session\Support
+ * @package Kodhe\Session\Support
  */
 class SessionConfig
 {

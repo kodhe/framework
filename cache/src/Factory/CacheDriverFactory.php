@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Cache\Factory;
+namespace Kodhe\Cache\Factory;
 
-use Kodhe\Framework\Cache\Contracts\CacheDriverInterface;
-use Kodhe\Framework\Cache\Drivers\File;
-use Kodhe\Framework\Cache\Drivers\Apc;
-use Kodhe\Framework\Cache\Drivers\Dummy;
-use Kodhe\Framework\Cache\Drivers\Memcached;
-use Kodhe\Framework\Cache\Drivers\Redis;
-use Kodhe\Framework\Cache\Drivers\Wincache;
+use Kodhe\Cache\Contracts\CacheDriverInterface;
+use Kodhe\Cache\Drivers\File;
+use Kodhe\Cache\Drivers\Apc;
+use Kodhe\Cache\Drivers\Dummy;
+use Kodhe\Cache\Drivers\Memcached;
+use Kodhe\Cache\Drivers\Redis;
+use Kodhe\Cache\Drivers\Wincache;
 use InvalidArgumentException;
 
 /**

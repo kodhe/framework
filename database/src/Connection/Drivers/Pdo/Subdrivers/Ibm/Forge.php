@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Database\Connection\Drivers\Pdo\Subdrivers\Ibm;
+namespace Kodhe\Database\Connection\Drivers\Pdo\Subdrivers\Ibm;
 
 /**
  * PDO IBM DB2 Forge Class
@@ -11,7 +11,7 @@ namespace Kodhe\Framework\Database\Connection\Drivers\Pdo\Subdrivers\Ibm;
  * @author		EllisLab Dev Team
  * @link		https://codeigniter.com/user_guide/database/
  */
-class Forge extends \Kodhe\Framework\Database\Connection\Drivers\Pdo\Forge 
+class Forge extends \Kodhe\Database\Connection\Drivers\Pdo\Forge 
 {
 
 	/**

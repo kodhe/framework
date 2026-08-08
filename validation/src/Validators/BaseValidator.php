@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Validation\Validators;
+namespace Kodhe\Validation\Validators;
 
-use Kodhe\Framework\Validation\Contracts\ValidatorInterface;
+use Kodhe\Validation\Contracts\ValidatorInterface;
 
 /**
  * Base Validator Class

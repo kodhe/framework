@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Session;
+namespace Kodhe\Session;
 
-use Kodhe\Framework\Session\Contracts\SessionHandlerInterface;
-use Kodhe\Framework\Session\Contracts\SessionInterface;
-use Kodhe\Framework\Session\Contracts\StorageInterface;
-use Kodhe\Framework\Session\Exceptions\SessionException;
-use Kodhe\Framework\Session\Factory\DriverFactory;
-use Kodhe\Framework\Session\Flash\FlashDataManager;
-use Kodhe\Framework\Session\Storage\SessionStorage;
-use Kodhe\Framework\Session\Support\CookieManager;
-use Kodhe\Framework\Session\Support\SessionConfig;
-use Kodhe\Framework\Session\Support\SessionIdGenerator;
-use Kodhe\Framework\Session\ValueObjects\SessionId;
+use Kodhe\Session\Contracts\SessionHandlerInterface;
+use Kodhe\Session\Contracts\SessionInterface;
+use Kodhe\Session\Contracts\StorageInterface;
+use Kodhe\Session\Exceptions\SessionException;
+use Kodhe\Session\Factory\DriverFactory;
+use Kodhe\Session\Flash\FlashDataManager;
+use Kodhe\Session\Storage\SessionStorage;
+use Kodhe\Session\Support\CookieManager;
+use Kodhe\Session\Support\SessionConfig;
+use Kodhe\Session\Support\SessionIdGenerator;
+use Kodhe\Session\ValueObjects\SessionId;
 
 /**
  * CodeIgniter Session Class - Refactored Modular Version
@@ -22,7 +22,7 @@ use Kodhe\Framework\Session\ValueObjects\SessionId;
  * Maintains 100% backward compatibility with CI3 API while using
  * modern design patterns internally.
  * 
- * @package Kodhe\Framework\Session
+ * @package Kodhe\Session
  */
 class Session implements SessionInterface
 {

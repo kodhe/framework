@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Validation\Validators;
+namespace Kodhe\Validation\Validators;
 
 /**
  * Integer Validator

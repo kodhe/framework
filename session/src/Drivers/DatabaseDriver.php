@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Session\Drivers;
+namespace Kodhe\Session\Drivers;
 
 use Exception;
 use Kodhe\Framework\Database\Query\Builder;
-use Kodhe\Framework\Session\Driver;
-use Kodhe\Framework\Session\HandlerInterface;
+use Kodhe\Session\Driver;
+use Kodhe\Session\HandlerInterface;
 
 /**
  * CodeIgniter Session Database Driver

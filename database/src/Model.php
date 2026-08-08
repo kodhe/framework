@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Database;
+namespace Kodhe\Database;
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 use Exception;
 use Closure;
 
-use Kodhe\Framework\Database\ORM\LegacyModel;
+use Kodhe\Database\ORM\LegacyModel;
 
 /**
  * ORM Model Modern untuk CodeIgniter 3
- * @package Kodhe\Framework\Database
+ * @package Kodhe\Database
  */
 class Model extends LegacyModel
 {

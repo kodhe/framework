@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Validation\Messages;
+namespace Kodhe\Validation\Messages;
 
 /**
  * Error Message Manager

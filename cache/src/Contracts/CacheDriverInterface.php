@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Cache\Contracts;
+namespace Kodhe\Cache\Contracts;
 
 /**
  * Cache Driver Interface (PSR-16 inspired)

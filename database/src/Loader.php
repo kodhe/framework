@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Database;
+namespace Kodhe\Database;
 
-use Kodhe\Framework\Database\Connection\ConnectionManager;
+use Kodhe\Database\Connection\ConnectionManager;
 
 class Loader
 {
@@ -49,12 +49,12 @@ class Loader
     public static function dbutil(?Builder $db = null, $return = false)
     {
         if (!is_object($db) || !($db instanceof Builder)) {
-            class_exists('Kodhe\Framework\Database\Query\Builder', false) || self::database();
+            class_exists('Kodhe\Database\Query\Builder', false) || self::database();
             $db = &kodhe()->db;
         }
 
         $driver = ucwords($db->dbdriver ?? '');
-        $className = 'Kodhe\Framework\Database\Connection\Drivers\\' . $driver . '\Utility';
+        $className = 'Kodhe\Database\Connection\Drivers\\' . $driver . '\Utility';
 
         if (!class_exists($className)) {
             throw new \RuntimeException("Database utility class not found: {$className}");
@@ -82,7 +82,7 @@ class Loader
     public static function dbforge(?Builder $db = null, $return = false)
     {
         if (!is_object($db) || !($db instanceof Builder)) {
-            class_exists('Kodhe\Framework\Database\Query\Builder', false) || self::database();
+            class_exists('Kodhe\Database\Query\Builder', false) || self::database();
             $db = &kodhe()->db;
         }
 
@@ -90,9 +90,9 @@ class Loader
         
         if (!empty($db->subdriver)) {
             $subdriver = ucwords($db->subdriver);
-            $className = 'Kodhe\Framework\Database\Connection\Drivers\\' . $driver . '\Subdrivers\\' . $subdriver . '\Forge';
+            $className = 'Kodhe\Database\Connection\Drivers\\' . $driver . '\Subdrivers\\' . $subdriver . '\Forge';
         } else {
-            $className = 'Kodhe\Framework\Database\Connection\Drivers\\' . $driver . '\Forge';
+            $className = 'Kodhe\Database\Connection\Drivers\\' . $driver . '\Forge';
         }
 
         if (!class_exists($className)) {

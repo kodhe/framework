@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Session\Support;
+namespace Kodhe\Session\Support;
 
 /**
  * Session ID Generator
  * 
  * Generates secure random session IDs
  * 
- * @package Kodhe\Framework\Session\Support
+ * @package Kodhe\Session\Support
  */
 class SessionIdGenerator
 {

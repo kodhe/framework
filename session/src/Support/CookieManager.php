@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Session\Support;
+namespace Kodhe\Session\Support;
 
 /**
  * Cookie Manager for Session
  * 
  * Handles session cookie operations securely
  * 
- * @package Kodhe\Framework\Session\Support
+ * @package Kodhe\Session\Support
  */
 class CookieManager
 {

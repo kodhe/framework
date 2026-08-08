@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Session;
+namespace Kodhe\Session;
 
 interface HandlerInterface
 {

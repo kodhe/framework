@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Session\Exceptions;
+namespace Kodhe\Session\Exceptions;
 
 /**
  * Base Session Exception
  * 
- * @package Kodhe\Framework\Session\Exceptions
+ * @package Kodhe\Session\Exceptions
  */
 class SessionException extends \RuntimeException
 {

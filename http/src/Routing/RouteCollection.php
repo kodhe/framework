@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Kodhe\Http\Routing;
 
-use Kodhe\Framework\Exceptions\Http\BadRequestException;
+use Kodhe\Http\Exceptions\Http\BadRequestException;
 use Kodhe\Http\Request;
 
 class RouteCollection

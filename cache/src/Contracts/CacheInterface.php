@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Cache\Contracts;
+namespace Kodhe\Cache\Contracts;
 
 /**
  * Main Cache Interface for CodeIgniter 3

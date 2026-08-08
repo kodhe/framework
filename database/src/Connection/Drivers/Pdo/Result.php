@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Database\Connection\Drivers\Pdo;
+namespace Kodhe\Database\Connection\Drivers\Pdo;
 
 /**
  * PDO Result Class
@@ -17,7 +17,7 @@ namespace Kodhe\Framework\Database\Connection\Drivers\Pdo;
  */
 use PDO;
 
-class Result extends \Kodhe\Framework\Database\Query\Result 
+class Result extends \Kodhe\Database\Query\Result 
 {
 
 	/**

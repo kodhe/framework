@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Database\Connection;
+namespace Kodhe\Database\Connection;
 abstract class ConnectionAbstract {
 
 	public $dsn;
@@ -301,7 +301,7 @@ abstract class ConnectionAbstract {
 
 	public function load_rdriver()
 	{
-		$driver = 'Kodhe\Framework\Database\Connection\Drivers\\'.ucwords($this->dbdriver).'\Result';
+		$driver = 'Kodhe\Database\Connection\Drivers\\'.ucwords($this->dbdriver).'\Result';
 
 		return $driver;
 	}

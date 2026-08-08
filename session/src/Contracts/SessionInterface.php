@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Session\Contracts;
+namespace Kodhe\Session\Contracts;
 
 /**
  * Session Interface - Main session management contract
  * 
- * @package Kodhe\Framework\Session\Contracts
+ * @package Kodhe\Session\Contracts
  */
 interface SessionInterface
 {

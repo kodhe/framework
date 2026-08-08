@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Session;
+namespace Kodhe\Session;
 
-use Kodhe\Framework\Session\Contracts\SessionHandlerInterface;
+use Kodhe\Session\Contracts\SessionHandlerInterface;
 
 /**
  * CodeIgniter Session Driver Class

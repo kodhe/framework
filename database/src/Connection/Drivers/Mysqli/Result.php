@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Database\Connection\Drivers\Mysqli;
+namespace Kodhe\Database\Connection\Drivers\Mysqli;
 
-use Kodhe\Framework\Database\Query\Result as QueryResult;
+use Kodhe\Database\Query\Result as QueryResult;
 
 class Result extends QueryResult 
 {

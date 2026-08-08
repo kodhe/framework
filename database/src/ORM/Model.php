@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Kodhe\Framework\Database\ORM;
+namespace Kodhe\Database\ORM;
 
 use Exception;
 

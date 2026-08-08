@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Kodhe\Cache\Drivers;
 
 use Kodhe\Driver\Driver as Driver;
-use Kodhe\Framework\Cache\Contracts\CacheDriverInterface;
+use Kodhe\Cache\Contracts\CacheDriverInterface;
 
 /**
  * CodeIgniter Wincache Caching Class
