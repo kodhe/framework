@@ -1,4 +1,59 @@
-```markdown
-# Test runner
-phpunit.xml
+```
+# Dependencies
+vendor/
+
+# Logs and temp files
+*.log
+*.tmp
+
+# Environment
+.env
+.env.local
+*.env.*
+
+# Editor/IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Tests
+.phpunit.result.cache
+
+# Coverage
+coverage/
+htmlcov/
+*.coverage
+
+# Build artifacts
+dist/
+build/
+*.phar
+
+# Cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Composer/Packagist
+composer.lock
+vendor/composer/
+composer.phar
+
+# PHPUnit
+.phpunit.result.cache
+
+# Other common ignores
+*.bak
+*.orig
+*.rej
+*~
+\#*\#
 ```
