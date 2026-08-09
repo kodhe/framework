@@ -198,10 +198,10 @@ class LegacyRouter
                     $this->set_method($_GET[$_f]);
                 }
 
-                $this->uri->rsegments = array(
+                $this->uri->_set_rsegments(array(
                     1 => $this->class,
                     2 => $this->method
-                );
+                ));
             }
             else
             {
@@ -306,10 +306,10 @@ class LegacyRouter
         $this->set_method($method);
 
         // Assign routed segments, index starting from 1
-        $this->uri->rsegments = array(
+        $this->uri->_set_rsegments(array(
             1 => $class,
             2 => $method
-        );
+        ));
 
         log_message('debug', 'Default controller set: ' . $class . '::' . $method . '()');
     }
@@ -347,7 +347,7 @@ class LegacyRouter
      */
     protected function _parse_routes()
     {
-        $uri = implode('/', $this->uri->segments);
+        $uri = implode('/', $this->uri->segment_array());
 
         $http_verb = $this->getHttpMethod();
 
@@ -387,7 +387,7 @@ class LegacyRouter
             }
         }
 
-        $this->_set_request(array_values($this->uri->segments));
+        $this->_set_request(array_values($this->uri->segment_array()));
     }
 
     /**
@@ -430,7 +430,7 @@ class LegacyRouter
         }
 
         // Save segments for later use
-        $this->uri->rsegments = $segments;
+        $this->uri->_set_rsegments($segments);
     }
 
 
@@ -539,9 +539,11 @@ class LegacyRouter
         $uri = $request->getUri()->getQuery();
         $uri = trim($uri, '/');
         
-        // Simulate legacy routing by setting up URI
+        // Simulate legacy routing by setting up URI using public method
+        // Since _set_uri_string is protected, we need to use reflection or create a new URI instance
+        $this->uri = new URI();
+        // Force set the uri_string via the public property (which is still public in legacy URI class)
         $this->uri->uri_string = $uri;
-        $this->uri->segments = explode('/', $uri);
         
         // Reset
         $this->class = '';
@@ -572,7 +574,7 @@ class LegacyRouter
             'class' => $this->class,
             'method' => $this->method,
             'directory' => $this->directory,
-            'params' => $this->uri->rsegments ?? [],
+            'params' => $this->uri->rsegment_array() ?? [],
             'type' => 'legacy',
             'source' => 'legacy_router'
         ];

@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=0);
+declare(strict_types=1);
 
 namespace Kodhe\Framework\Database\Connection;
 abstract class ConnectionAbstract {
@@ -473,6 +473,10 @@ abstract class ConnectionAbstract {
 			if (is_array($escaped_value))
 			{
 				$escaped_value = '('.implode(',', $escaped_value).')';
+			}
+			else
+			{
+				$escaped_value = (string) $escaped_value;
 			}
 			$sql = substr_replace($sql, $escaped_value, $matches[0][$c][1], $ml);
 		}

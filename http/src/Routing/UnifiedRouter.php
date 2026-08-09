@@ -540,8 +540,8 @@ class UnifiedRouter
             }
             
             $segments = [];
-            if (!empty($this->uri->rsegments)) {
-                $source = $this->uri->rsegments;
+            if (!empty($this->uri->rsegment_array())) {
+                $source = $this->uri->rsegment_array();
                 $startIndex = (count($source) > 2) ? 2 : 1;
                 $segments = array_slice($source, $startIndex);
                 
@@ -839,10 +839,10 @@ class UnifiedRouter
                     $this->set_method($_GET[$_f]);
                 }
 
-                $this->uri->rsegments = array(
+                $this->uri->_set_rsegments(array(
                     1 => $this->class,
                     2 => $this->method
-                );
+                ));
             }
             else
             {
@@ -947,17 +947,17 @@ class UnifiedRouter
         $this->set_method($method);
 
         // Assign routed segments, index starting from 1
-        $this->uri->rsegments = array(
+        $this->uri->_set_rsegments(array(
             1 => $class,
             2 => $method
-        );
+        ));
 
         log_message('debug', 'Default controller set: ' . $class . '::' . $method . '()');
     }
     
     protected function _parse_routes()
     {
-        $uri = implode('/', $this->uri->segments);
+        $uri = implode('/', $this->uri->segment_array());
 
         $http_verb = isset($_SERVER['REQUEST_METHOD']) ? strtolower($_SERVER['REQUEST_METHOD']) : 'cli';
 
@@ -996,7 +996,7 @@ class UnifiedRouter
             }
         }
 
-        $this->_set_request(array_values($this->uri->segments));
+        $this->_set_request(array_values($this->uri->segment_array()));
     }
     
     protected function _set_request(array $segments = [])
@@ -1119,7 +1119,7 @@ class UnifiedRouter
         $this->set_class($segments[0]);
         $this->set_method($segments[1] ?? 'index');
         
-        $this->uri->rsegments = $this->prepareRsegments($segments);
+        $this->uri->_set_rsegments($this->prepareRsegments($segments));
     }
     
     protected function prepareRsegments(array $segments): array
@@ -1161,7 +1161,7 @@ class UnifiedRouter
         $this->set_class($controllerClass);
         $this->set_method($method);
         
-        $this->uri->rsegments = [
+        $rsegments = [
             1 => $controllerClass,
             2 => $method
         ];
@@ -1170,9 +1170,11 @@ class UnifiedRouter
         if (!empty($params)) {
             $index = 3;
             foreach ($params as $param) {
-                $this->uri->rsegments[$index++] = $param;
+                $rsegments[$index++] = $param;
             }
         }
+        
+        $this->uri->_set_rsegments($rsegments);
         
         $this->located = 1;
     }
@@ -1578,8 +1580,9 @@ class UnifiedRouter
         }
         
         // Priority 3: Coba dari URI segments
-        if (empty($this->module) && !empty($this->uri->segments[0])) {
-            $firstSegment = $this->uri->segments[0];
+        $segmentArray = $this->uri->segment_array();
+        if (empty($this->module) && !empty($segmentArray[0])) {
+            $firstSegment = $segmentArray[0];
             if (Modules::moduleExists($firstSegment)) {
                 $this->module = $firstSegment;
             }
@@ -1758,8 +1761,9 @@ class UnifiedRouter
         }
         
         $segments = [];
-        if (!empty($this->uri->rsegments)) {
-            $source = $this->uri->rsegments;
+        $rsegments = $this->uri->rsegment_array();
+        if (!empty($rsegments)) {
+            $source = $rsegments;
             $startIndex = (count($source) > 2) ? 2 : 1;
             $segments = array_slice($source, $startIndex);
             
