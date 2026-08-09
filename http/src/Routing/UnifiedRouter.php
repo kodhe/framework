@@ -957,7 +957,7 @@ class UnifiedRouter
     
     protected function _parse_routes()
     {
-        $uri = implode('/', $this->uri->segments);
+        $uri = implode('/', $this->uri->segment_array());
 
         $http_verb = isset($_SERVER['REQUEST_METHOD']) ? strtolower($_SERVER['REQUEST_METHOD']) : 'cli';
 
@@ -996,7 +996,7 @@ class UnifiedRouter
             }
         }
 
-        $this->_set_request(array_values($this->uri->segments));
+        $this->_set_request(array_values($this->uri->segment_array()));
     }
     
     protected function _set_request(array $segments = [])
@@ -1580,8 +1580,9 @@ class UnifiedRouter
         }
         
         // Priority 3: Coba dari URI segments
-        if (empty($this->module) && !empty($this->uri->segments[0])) {
-            $firstSegment = $this->uri->segments[0];
+        $segmentArray = $this->uri->segment_array();
+        if (empty($this->module) && !empty($segmentArray[0])) {
+            $firstSegment = $segmentArray[0];
             if (Modules::moduleExists($firstSegment)) {
                 $this->module = $firstSegment;
             }

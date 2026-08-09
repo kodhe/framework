@@ -198,10 +198,10 @@ class LegacyRouter
                     $this->set_method($_GET[$_f]);
                 }
 
-                $this->uri->rsegments = array(
+                $this->uri->_set_rsegments(array(
                     1 => $this->class,
                     2 => $this->method
-                );
+                ));
             }
             else
             {
@@ -306,10 +306,10 @@ class LegacyRouter
         $this->set_method($method);
 
         // Assign routed segments, index starting from 1
-        $this->uri->rsegments = array(
+        $this->uri->_set_rsegments(array(
             1 => $class,
             2 => $method
-        );
+        ));
 
         log_message('debug', 'Default controller set: ' . $class . '::' . $method . '()');
     }
@@ -430,7 +430,7 @@ class LegacyRouter
         }
 
         // Save segments for later use
-        $this->uri->rsegments = $segments;
+        $this->uri->_set_rsegments($segments);
     }
 
 
@@ -571,7 +571,7 @@ class LegacyRouter
             'class' => $this->class,
             'method' => $this->method,
             'directory' => $this->directory,
-            'params' => $this->uri->rsegments ?? [],
+            'params' => $this->uri->rsegment_array() ?? [],
             'type' => 'legacy',
             'source' => 'legacy_router'
         ];
