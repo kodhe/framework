@@ -1,37 +1,35 @@
 ```
-# Dependencies
-vendor/
-
-# Logs and temp files
-*.log
-*.tmp
-
-# Environment
-.env
-.env.local
-*.env.*
-
-# Editor/IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Build artifacts
-dist/
-build/
-*.o
-*.obj
-*.out
-
-# Cache directories
-.cache/
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-
-# OS generated files
-.DS_Store
-Thumbs.db
+# Documentation build artifacts
+doc/_workspace_README.md
+doc/agent_README.md
+doc/cache_README.md
+doc/calendar_README.md
+doc/cart_README.md
+doc/database_README.md
+doc/database_src_ORM_README.md
+doc/driver_README.md
+doc/email_README.md
+doc/encrypt_README.md
+doc/encryption_README.md
+doc/framework_README.md
+doc/framework_src_Console_README.md
+doc/framework_src_Foundation_Service_README.md
+doc/ftp_README.md
+doc/http_README.md
+doc/image_README.md
+doc/javascript_README.md
+doc/migration_README.md
+doc/pagination_README.md
+doc/parser_README.md
+doc/profiler_README.md
+doc/table_README.md
+doc/test_README.md
+doc/trackback_README.md
+doc/typography_README.md
+doc/upload_README.md
+doc/validation_README.md
+doc/view_README.md
+doc/xmlrpc_README.md
+doc/xmlrpcs_README.md
+doc/zip_README.md
 ```
