@@ -15,7 +15,7 @@ class Result extends QueryResult
 		{
 			return $this->num_rows;
 		}
-		elseif ( ! $this->result_id)
+		elseif ( ! $this->result_id || ! ($this->result_id instanceof \mysqli_result))
 		{
 			return 0;
 		}
@@ -25,7 +25,7 @@ class Result extends QueryResult
 
 	public function num_fields()
 	{
-		if ( ! $this->result_id)
+		if ( ! $this->result_id || ! ($this->result_id instanceof \mysqli_result))
 		{
 			return 0;
 		}
@@ -34,7 +34,7 @@ class Result extends QueryResult
 
 	public function list_fields()
 	{
-		if ( ! $this->result_id)
+		if ( ! $this->result_id || ! ($this->result_id instanceof \mysqli_result))
 		{
 			return array();
 		}
@@ -50,7 +50,7 @@ class Result extends QueryResult
 
 	public function field_data()
 	{
-		if ( ! $this->result_id)
+		if ( ! $this->result_id || ! ($this->result_id instanceof \mysqli_result))
 		{
 			return array();
 		}
@@ -114,7 +114,7 @@ class Result extends QueryResult
 
 	public function data_seek($n = 0)
 	{
-		if ( ! $this->result_id)
+		if ( ! $this->result_id || ! ($this->result_id instanceof \mysqli_result))
 		{
 			return FALSE;
 		}
@@ -123,7 +123,7 @@ class Result extends QueryResult
 
 	protected function _fetch_assoc()
 	{
-		if ( ! $this->result_id)
+		if ( ! $this->result_id || ! ($this->result_id instanceof \mysqli_result))
 		{
 			return NULL;
 		}
@@ -132,7 +132,7 @@ class Result extends QueryResult
 
 	protected function _fetch_object($class_name = 'stdClass')
 	{
-		if ( ! $this->result_id)
+		if ( ! $this->result_id || ! ($this->result_id instanceof \mysqli_result))
 		{
 			return NULL;
 		}
