@@ -81,12 +81,7 @@
       "framework/src/Support/Helpers.php",
       "http/src/helpers/url.php",
       "http/src/helpers/routing.php",
-      "cache/src/compat.php",
       "session/src/helpers.php",
-      "session/src/compat.php",
-      "email/src/compat.php",
-      "agent/src/compat.php",
-      "upload/src/compat.php",
       "view/src/helpers/template.php",
       "view/src/helpers/template_asset.php",
       "validation/src/helpers/form.php"

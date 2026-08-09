@@ -17,8 +17,7 @@
       "Kodhe\\Framework\\Session\\Drivers\\": "src/Drivers/"
     },
     "files": [
-      "src/helpers.php",
-      "src/compat.php"
+      "src/helpers.php"
     ]
   }
 }
