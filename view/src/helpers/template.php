@@ -38,12 +38,18 @@ function get_template_assets()
 {
     $state =& get_template_state();
     
+    // Pastikan title selalu ada, bahkan jika kosong
+    if (empty($state['assets']['header']['title'])) {
+        $state['assets']['header']['title'] = '';
+    }
+    
     return [
         'template' => [
             'assets' => $state['assets'],
             'platform' => $state['platform'],
             'theme' => get_active_theme()
-        ]
+        ],
+        'title' => $state['assets']['header']['title']
     ];
 }
 
