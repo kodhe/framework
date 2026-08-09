@@ -18,8 +18,6 @@
       "Kodhe\\Framework\\Cache\\": "src/",
       "Kodhe\\Framework\\Cache\\Drivers\\": "src/Drivers/"
     },
-    "files": [
-      "src/compat.php"
-    ]
+    "files": []
   }
 }

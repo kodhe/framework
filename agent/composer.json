@@ -21,9 +21,7 @@
     "psr-4": {
       "Kodhe\\Framework\\Agent\\": "src/"
     },
-    "files": [
-      "src/compat.php"
-    ]
+    "files": []
   },
   "autoload-dev": {
     "psr-4": {
