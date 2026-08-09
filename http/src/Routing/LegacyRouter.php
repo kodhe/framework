@@ -347,7 +347,7 @@ class LegacyRouter
      */
     protected function _parse_routes()
     {
-        $uri = implode('/', $this->uri->segments);
+        $uri = implode('/', $this->uri->segment_array());
 
         $http_verb = $this->getHttpMethod();
 
@@ -387,7 +387,7 @@ class LegacyRouter
             }
         }
 
-        $this->_set_request(array_values($this->uri->segments));
+        $this->_set_request(array_values($this->uri->segment_array()));
     }
 
     /**
@@ -539,9 +539,8 @@ class LegacyRouter
         $uri = $request->getUri()->getQuery();
         $uri = trim($uri, '/');
         
-        // Simulate legacy routing by setting up URI
-        $this->uri->uri_string = $uri;
-        $this->uri->segments = explode('/', $uri);
+        // Simulate legacy routing by setting up URI using proper method
+        $this->uri->_set_uri_string($uri);
         
         // Reset
         $this->class = '';

@@ -540,8 +540,8 @@ class UnifiedRouter
             }
             
             $segments = [];
-            if (!empty($this->uri->rsegments)) {
-                $source = $this->uri->rsegments;
+            if (!empty($this->uri->rsegment_array())) {
+                $source = $this->uri->rsegment_array();
                 $startIndex = (count($source) > 2) ? 2 : 1;
                 $segments = array_slice($source, $startIndex);
                 
