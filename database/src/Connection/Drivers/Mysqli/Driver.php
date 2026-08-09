@@ -9,22 +9,22 @@ use Kodhe\Framework\Database\Query\Builder;
 class Driver extends Builder 
 {
 
-	public $dbdriver = 'mysqli';
-	public $compress = FALSE;
-	public $delete_hack = TRUE;
-	public $stricton;
+	protected $dbdriver = 'mysqli';
+	protected $compress = FALSE;
+	protected $delete_hack = TRUE;
+	protected $stricton;
 	protected $_escape_char = '`';
 	protected $_mysqli;
 	
 	/**
 	 * @var float Query execution time in seconds
 	 */
-	public $query_time = 0;
+	protected $query_time = 0;
 	
 	/**
 	 * @var float Query execution time in milliseconds
 	 */
-	public $query_time_ms = 0;
+	protected $query_time_ms = 0;
 	
 	/**
 	 * @var float Start time for current query
@@ -34,12 +34,12 @@ class Driver extends Builder
 	/**
 	 * @var array Query log with execution times
 	 */
-	public $query_log = array();
+	protected $query_log = array();
 	
 	/**
 	 * @var bool Enable query logging
 	 */
-	public $enable_query_log = false;
+	protected $enable_query_log = false;
 
 	public function db_connect($persistent = FALSE)
 	{

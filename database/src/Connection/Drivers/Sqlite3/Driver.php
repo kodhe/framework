@@ -25,7 +25,7 @@ class Driver extends \Kodhe\Framework\Database\Query\Builder
 	 *
 	 * @var	string
 	 */
-	public $dbdriver = 'sqlite3';
+	protected $dbdriver = 'sqlite3';
 
 	// --------------------------------------------------------------------
 
@@ -39,12 +39,12 @@ class Driver extends \Kodhe\Framework\Database\Query\Builder
 	/**
 	 * @var float Query execution time in seconds
 	 */
-	public $query_time = 0;
+	protected $query_time = 0;
 	
 	/**
 	 * @var float Query execution time in milliseconds
 	 */
-	public $query_time_ms = 0;
+	protected $query_time_ms = 0;
 	
 	/**
 	 * @var float Start time for current query
@@ -54,12 +54,12 @@ class Driver extends \Kodhe\Framework\Database\Query\Builder
 	/**
 	 * @var array Query log with execution times
 	 */
-	public $query_log = array();
+	protected $query_log = array();
 	
 	/**
 	 * @var bool Enable query logging
 	 */
-	public $enable_query_log = false;
+	protected $enable_query_log = false;
 
 	// --------------------------------------------------------------------
 

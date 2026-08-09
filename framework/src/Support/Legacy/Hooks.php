@@ -8,7 +8,7 @@ class Hooks
 	 *
 	 * @var	bool
 	 */
-	public $enabled = FALSE;
+	protected $enabled = FALSE;
 
 	/**
 	 * List of all hooks set in config/hooks.php

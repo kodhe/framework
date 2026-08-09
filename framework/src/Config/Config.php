@@ -23,21 +23,21 @@ class Config implements \ArrayAccess, ConfigInterface
      * 
      * @var array
      */
-    public $config = [];
+    protected $config = [];
 
     /**
      * List of loaded configuration files
      * 
      * @var array
      */
-    public $is_loaded = [];
+    protected $is_loaded = [];
 
     /**
      * Configuration file paths to search
      * 
      * @var array
      */
-    public $_config_paths = [APPPATH];
+    protected $_config_paths = [APPPATH];
 
     /**
      * Active loader instance
