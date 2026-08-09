@@ -7,14 +7,14 @@ namespace Kodhe\Framework\Database\Query;
 class Result
 {
 
-	public $conn_id;
-	public $result_id;
-	public $result_array			= array();
-	public $result_object			= array();
-	public $custom_result_object		= array();
-	public $current_row			= 0;
-	public $num_rows;
-	public $row_data;
+	protected $conn_id;
+	protected $result_id;
+	protected $result_array			= array();
+	protected $result_object			= array();
+	protected $custom_result_object		= array();
+	protected $current_row			= 0;
+	protected $num_rows;
+	protected $row_data;
 
 	public function __construct(&$driver_object)
 	{

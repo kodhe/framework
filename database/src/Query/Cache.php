@@ -7,8 +7,8 @@ namespace Kodhe\Framework\Database\Query;
 class Cache
 {
 
-	public $CI;
-	public $db;
+	protected $CI;
+	protected $db;
 
 	public function __construct(&$db)
 	{

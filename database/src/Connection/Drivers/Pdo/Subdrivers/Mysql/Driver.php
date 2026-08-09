@@ -27,7 +27,7 @@ class Driver extends \Kodhe\Framework\Database\Connection\Drivers\Pdo\Driver
 	 *
 	 * @var	string
 	 */
-	public $subdriver = 'mysql';
+	protected $subdriver = 'mysql';
 
 	/**
 	 * Compression flag
