@@ -8,7 +8,7 @@ class Security
 	 *
 	 * @var	array
 	 */
-	public $filename_bad_chars =	array(
+	protected $filename_bad_chars =	array(
 		'../', '<!--', '-->', '<', '>',
 		"'", '"', '&', '$', '#',
 		'{', '}', '[', ']', '=',
@@ -34,7 +34,7 @@ class Security
 	 *
 	 * @var	string
 	 */
-	public $charset = 'UTF-8';
+	protected $charset = 'UTF-8';
 
 	/**
 	 * XSS Hash
@@ -539,7 +539,7 @@ class Security
 		{
 			$rand = $this->get_random_bytes(16);
 			$this->_xss_hash = ($rand === FALSE)
-				? md5(uniqid(mt_rand(), TRUE))
+				? hash('sha256', uniqid(mt_rand(), TRUE))
 				: bin2hex($rand);
 		}
 
@@ -1029,7 +1029,7 @@ class Security
 
 			$rand = $this->get_random_bytes(16);
 			$this->_csrf_hash = ($rand === FALSE)
-				? md5(uniqid(mt_rand(), TRUE))
+				? hash('sha256', uniqid(mt_rand(), TRUE))
 				: bin2hex($rand);
 		}
 

@@ -992,7 +992,7 @@ class LegacyLoader
 		
 		// Extract and cache variables
 		empty($_ci_vars) OR $this->_ci_cached_vars = array_merge($this->_ci_cached_vars, $_ci_vars);
-		extract($this->_ci_cached_vars);
+		extract($this->_ci_cached_vars, EXTR_SKIP);
 
 		/*
 		 * Buffer the output
@@ -1012,7 +1012,12 @@ class LegacyLoader
 		// to standard PHP echo statements.
 		if ( ! is_php('5.4') && ! ini_get('short_open_tag') && config_item('rewrite_short_tags') === TRUE)
 		{
-			echo eval('?>'.preg_replace('/;*\s*\?>/', '; ?>', str_replace('<?=', '<?php echo ', file_get_contents($_ci_path))));
+			// Using include with temporary file instead of eval for security
+			$_ci_content = preg_replace('/;*\s*\?>/', '; ?>', str_replace('<?=', '<?php echo ', file_get_contents($_ci_path)));
+			$_ci_temp_file = tempnam(sys_get_temp_dir(), 'ci_view_');
+			file_put_contents($_ci_temp_file, '<?php ' . $_ci_content);
+			include($_ci_temp_file);
+			unlink($_ci_temp_file);
 		}
 		else
 		{

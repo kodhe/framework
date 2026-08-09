@@ -8,28 +8,28 @@ class Output
 	 *
 	 * @var	string
 	 */
-	public $final_output;
+	protected $final_output;
 
 	/**
 	 * Cache expiration time
 	 *
 	 * @var	int
 	 */
-	public $cache_expiration = 0;
+	protected $cache_expiration = 0;
 
 	/**
 	 * List of server headers
 	 *
 	 * @var	array
 	 */
-	public $headers = array();
+	protected $headers = array();
 
 	/**
 	 * List of mime types
 	 *
 	 * @var	array
 	 */
-	public $mimes =	array();
+	protected $mimes =	array();
 
 	/**
 	 * Mime-type for the current page
@@ -43,7 +43,7 @@ class Output
 	 *
 	 * @var	bool
 	 */
-	public $enable_profiler = FALSE;
+	protected $enable_profiler = FALSE;
 
 	/**
 	 * php.ini zlib.output_compression flag
@@ -73,7 +73,7 @@ class Output
 	 *
 	 * @var	bool
 	 */
-	public $parse_exec_vars = TRUE;
+	protected $parse_exec_vars = TRUE;
 
 	/**
 	 * mbstring.func_overload flag
@@ -528,7 +528,7 @@ class Output
 			}
 		}
 
-		$cache_path .= md5($uri);
+		$cache_path .= hash('sha256', $uri);
 
 		if ( ! $fp = @fopen($cache_path, 'w+b'))
 		{
@@ -622,7 +622,7 @@ class Output
 			}
 		}
 
-		$filepath = $cache_path.md5($uri);
+		$filepath = $cache_path.hash('sha256', $uri);
 
 		if ( ! file_exists($filepath) OR ! $fp = @fopen($filepath, 'rb'))
 		{
@@ -642,7 +642,10 @@ class Output
 			return FALSE;
 		}
 
-		$cache_info = unserialize($match[1]);
+		$cache_info = @unserialize($match[1], ['allowed_classes' => false]);
+		if ($cache_info === false && ! is_array($cache_info)) {
+			return FALSE;
+		}
 		$expire = $cache_info['expire'];
 
 		$last_modified = filemtime($filepath);
@@ -711,7 +714,7 @@ class Output
 			}
 		}
 
-		$cache_path .= md5($CI->config->item('base_url').$CI->config->item('index_page').ltrim($uri, '/'));
+		$cache_path .= hash('sha256', $CI->config->item('base_url').$CI->config->item('index_page').ltrim($uri, '/'));
 
 		if ( ! @unlink($cache_path))
 		{

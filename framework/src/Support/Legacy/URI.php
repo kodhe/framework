@@ -8,7 +8,7 @@ class URI
 	 *
 	 * @var	array
 	 */
-	public $keyval = array();
+	protected $keyval = array();
 
 	/**
 	 * Current URI string
@@ -24,7 +24,7 @@ class URI
 	 *
 	 * @var	array
 	 */
-	public $segments = array();
+	protected $segments = array();
 
 	/**
 	 * List of routed URI segments
@@ -33,7 +33,7 @@ class URI
 	 *
 	 * @var	array
 	 */
-	public $rsegments = array();
+	protected $rsegments = array();
 
 	/**
 	 * Permitted URI chars
@@ -44,7 +44,7 @@ class URI
 	 */
 	protected $_permitted_uri_chars;
 
-	public $config;
+	protected $config;
 	
 	/**
 	 * Class constructor
@@ -548,6 +548,19 @@ class URI
 	public function rsegment_array()
 	{
 		return $this->rsegments;
+	}
+	
+	// --------------------------------------------------------------------
+	
+	/**
+	 * Set routed URI segments
+	 *
+	 * @param	array	$segments
+	 * @return	void
+	 */
+	public function _set_rsegments(array $segments)
+	{
+		$this->rsegments = $segments;
 	}
 
 	// --------------------------------------------------------------------
