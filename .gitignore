@@ -1,1 +1,46 @@
-Nothing should be ignored in this case, as the modified files are only PHP source code files (.php) which are legitimate source files and not build artifacts, dependencies, or temporary files.
+# Compiled and build artifacts
+*.pyc
+__pycache__/
+*.o
+*.obj
+*.class
+*.exe
+*.dll
+*.so
+*.a
+*.out
+
+# Dependencies
+node_modules/
+venv/
+.venv/
+.env
+.env.local
+.env.*
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+*.swo
+
+# Editors
+.vscode/
+.idea/
+
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
+# Distribution / Build
+dist/
+build/
+target/
+.mypy_cache/
+.pytest_cache/
+.gradle/
+
+# System
+.DS_Store
+Thumbs.db
