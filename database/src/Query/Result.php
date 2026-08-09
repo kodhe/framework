@@ -18,8 +18,8 @@ class Result
 
 	public function __construct(&$driver_object)
 	{
-		$this->conn_id = $driver_object->conn_id;
-		$this->result_id = $driver_object->result_id;
+		$this->conn_id = $driver_object->getConnectionId();
+		$this->result_id = $driver_object->getResultId($driver_object->getConnectionId());
 	}
 
 	// --------------------------------------------------------------------
