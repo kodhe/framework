@@ -184,11 +184,6 @@ class PaginationConfig
         return $new;
     }
     
-    public function getTag(string $name, string $default = ''): string
-    {
-        return $this->tags[$name] ?? $default;
-    }
-    
     public function getAllTags(): array
     {
         return $this->tags;
