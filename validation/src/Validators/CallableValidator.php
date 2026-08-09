@@ -12,13 +12,17 @@ class CallableValidator extends BaseValidator
     protected string $name = 'callback';
     protected string $message = 'The {field} field does not pass validation';
     
+    /** @var callable */
+    protected $callback;
+    
     public function __construct(
-        protected callable $callback,
+        $callback,
         ?string $name = null
     ) {
         if ($name !== null) {
             $this->name = $name;
         }
+        $this->callback = $callback;
     }
     
     public function validate(mixed $value): bool

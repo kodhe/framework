@@ -15,7 +15,8 @@ class HttpTransport implements TransportInterface
 {
     private int $timeout;
     private string $userAgent;
-    private ?resource $lastConnection = null;
+    /** @var resource|null */
+    private $lastConnection = null;
     private string $lastHost = '';
 
     public function __construct(?TrackbackConfig $config = null)
@@ -104,8 +105,9 @@ class HttpTransport implements TransportInterface
 
     /**
      * Get or create socket connection.
+     * @return resource|false
      */
-    private function getConnection(string $host, int $port): resource|false
+    private function getConnection(string $host, int $port)
     {
         // Reuse connection if same host
         if ($this->lastConnection !== null && $this->lastHost === $host) {
@@ -160,8 +162,9 @@ class HttpTransport implements TransportInterface
 
     /**
      * Read response from socket.
+     * @param resource $fp
      */
-    private function readResponse(resource $fp): string
+    private function readResponse($fp): string
     {
         $response = '';
         
