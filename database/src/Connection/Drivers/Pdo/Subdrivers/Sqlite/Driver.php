@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=0);
+declare(strict_types=1);
 
 namespace Kodhe\Framework\Database\Connection\Drivers\Pdo\Subdrivers\Sqlite;
 
@@ -26,7 +26,7 @@ class Driver extends \Kodhe\Framework\Database\Connection\Drivers\Pdo\Driver
 	 *
 	 * @var	string
 	 */
-	protected $subdriver = 'sqlite';
+	public $subdriver = 'sqlite';
 
 	// --------------------------------------------------------------------
 

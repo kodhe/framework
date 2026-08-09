@@ -1,25 +1,25 @@
 <?php
 
-declare(strict_types=0);
+declare(strict_types=1);
 
 namespace Kodhe\Framework\Database\Query;
 
 class Result
 {
 
-	protected $conn_id;
-	protected $result_id;
-	protected $result_array			= array();
-	protected $result_object			= array();
-	protected $custom_result_object		= array();
-	protected $current_row			= 0;
-	protected $num_rows;
-	protected $row_data;
+	public $conn_id;
+	public $result_id;
+	public $result_array			= array();
+	public $result_object			= array();
+	public $custom_result_object		= array();
+	public $current_row			= 0;
+	public $num_rows;
+	public $row_data;
 
 	public function __construct(&$driver_object)
 	{
-		$this->conn_id = $driver_object->getConnectionId();
-		$this->result_id = $driver_object->getResultId($driver_object->getConnectionId());
+		$this->conn_id = $driver_object->conn_id;
+		$this->result_id = $driver_object->result_id;
 	}
 
 	// --------------------------------------------------------------------

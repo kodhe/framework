@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=0);
+declare(strict_types=1);
 
 namespace Kodhe\Framework\Database\Connection\Drivers\Mysqli;
 
@@ -11,33 +11,18 @@ class Result extends QueryResult
 
 	public function num_rows()
 	{
-		if (is_int($this->num_rows))
-		{
-			return $this->num_rows;
-		}
-		elseif ( ! $this->result_id || ! ($this->result_id instanceof \mysqli_result))
-		{
-			return 0;
-		}
-
-		return $this->num_rows = $this->result_id->num_rows;
+		return is_int($this->num_rows)
+			? $this->num_rows
+			: $this->num_rows = $this->result_id->num_rows;
 	}
 
 	public function num_fields()
 	{
-		if ( ! $this->result_id || ! ($this->result_id instanceof \mysqli_result))
-		{
-			return 0;
-		}
 		return $this->result_id->field_count;
 	}
 
 	public function list_fields()
 	{
-		if ( ! $this->result_id || ! ($this->result_id instanceof \mysqli_result))
-		{
-			return array();
-		}
 		$field_names = array();
 		$this->result_id->field_seek(0);
 		while ($field = $this->result_id->fetch_field())
@@ -50,10 +35,6 @@ class Result extends QueryResult
 
 	public function field_data()
 	{
-		if ( ! $this->result_id || ! ($this->result_id instanceof \mysqli_result))
-		{
-			return array();
-		}
 		$retval = array();
 		$field_data = $this->result_id->fetch_fields();
 		for ($i = 0, $c = count($field_data); $i < $c; $i++)
@@ -114,28 +95,16 @@ class Result extends QueryResult
 
 	public function data_seek($n = 0)
 	{
-		if ( ! $this->result_id || ! ($this->result_id instanceof \mysqli_result))
-		{
-			return FALSE;
-		}
 		return $this->result_id->data_seek($n);
 	}
 
 	protected function _fetch_assoc()
 	{
-		if ( ! $this->result_id || ! ($this->result_id instanceof \mysqli_result))
-		{
-			return NULL;
-		}
 		return $this->result_id->fetch_assoc();
 	}
 
 	protected function _fetch_object($class_name = 'stdClass')
 	{
-		if ( ! $this->result_id || ! ($this->result_id instanceof \mysqli_result))
-		{
-			return NULL;
-		}
 		return $this->result_id->fetch_object($class_name);
 	}
 

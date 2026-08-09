@@ -1,14 +1,14 @@
 <?php
 
-declare(strict_types=0);
+declare(strict_types=1);
 
 namespace Kodhe\Framework\Database\Query;
 
 class Cache
 {
 
-	protected $CI;
-	protected $db;
+	public $CI;
+	public $db;
 
 	public function __construct(&$db)
 	{
@@ -67,8 +67,7 @@ class Cache
 			return FALSE;
 		}
 
-		// Use unserialize with allowed_classes option for security
-		return @unserialize($cachedata, ['allowed_classes' => false]);
+		return unserialize($cachedata);
 	}
 
 	public function write($sql, $object)

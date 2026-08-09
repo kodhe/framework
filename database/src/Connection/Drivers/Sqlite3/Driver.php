@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=0);
+declare(strict_types=1);
 
 namespace Kodhe\Framework\Database\Connection\Drivers\Sqlite3;
 
@@ -25,7 +25,7 @@ class Driver extends \Kodhe\Framework\Database\Query\Builder
 	 *
 	 * @var	string
 	 */
-	protected $dbdriver = 'sqlite3';
+	public $dbdriver = 'sqlite3';
 
 	// --------------------------------------------------------------------
 
@@ -39,12 +39,12 @@ class Driver extends \Kodhe\Framework\Database\Query\Builder
 	/**
 	 * @var float Query execution time in seconds
 	 */
-	protected $query_time = 0;
+	public $query_time = 0;
 	
 	/**
 	 * @var float Query execution time in milliseconds
 	 */
-	protected $query_time_ms = 0;
+	public $query_time_ms = 0;
 	
 	/**
 	 * @var float Start time for current query
@@ -54,33 +54,12 @@ class Driver extends \Kodhe\Framework\Database\Query\Builder
 	/**
 	 * @var array Query log with execution times
 	 */
-	protected $query_log = array();
+	public $query_log = array();
 	
 	/**
 	 * @var bool Enable query logging
 	 */
-	protected $enable_query_log = false;
-
-	/**
-	 * Get connection ID
-	 * 
-	 * @return mixed
-	 */
-	public function getConnectionId()
-	{
-		return $this->db_connect();
-	}
-
-	/**
-	 * Get result ID from query
-	 * 
-	 * @param mixed $result Query result
-	 * @return mixed
-	 */
-	public function getResultId($result)
-	{
-		return $result;
-	}
+	public $enable_query_log = false;
 
 	// --------------------------------------------------------------------
 
@@ -143,8 +122,8 @@ class Driver extends \Kodhe\Framework\Database\Query\Builder
 		
 		// Execute query
 		$result = $this->is_write_type($sql)
-			? $this->getConnectionId()->exec($sql)
-			: $this->getConnectionId()->query($sql);
+			? $this->conn_id->exec($sql)
+			: $this->conn_id->query($sql);
 		
 		// Calculate execution time
 		$end_time = microtime(true);
@@ -174,7 +153,7 @@ class Driver extends \Kodhe\Framework\Database\Query\Builder
 	 */
 	protected function _trans_begin()
 	{
-		return $this->getConnectionId()->exec('BEGIN TRANSACTION');
+		return $this->conn_id->exec('BEGIN TRANSACTION');
 	}
 
 	// --------------------------------------------------------------------
@@ -186,7 +165,7 @@ class Driver extends \Kodhe\Framework\Database\Query\Builder
 	 */
 	protected function _trans_commit()
 	{
-		return $this->getConnectionId()->exec('END TRANSACTION');
+		return $this->conn_id->exec('END TRANSACTION');
 	}
 
 	// --------------------------------------------------------------------
@@ -198,7 +177,7 @@ class Driver extends \Kodhe\Framework\Database\Query\Builder
 	 */
 	protected function _trans_rollback()
 	{
-		return $this->getConnectionId()->exec('ROLLBACK');
+		return $this->conn_id->exec('ROLLBACK');
 	}
 
 	// --------------------------------------------------------------------
@@ -211,7 +190,7 @@ class Driver extends \Kodhe\Framework\Database\Query\Builder
 	 */
 	protected function _escape_str($str)
 	{
-		return $this->getConnectionId()->escapeString($str);
+		return $this->conn_id->escapeString($str);
 	}
 
 	// --------------------------------------------------------------------
@@ -223,7 +202,7 @@ class Driver extends \Kodhe\Framework\Database\Query\Builder
 	 */
 	public function affected_rows()
 	{
-		return $this->getConnectionId()->changes();
+		return $this->conn_id->changes();
 	}
 
 	// --------------------------------------------------------------------
@@ -235,7 +214,7 @@ class Driver extends \Kodhe\Framework\Database\Query\Builder
 	 */
 	public function insert_id()
 	{
-		return $this->getConnectionId()->lastInsertRowID();
+		return $this->conn_id->lastInsertRowID();
 	}
 
 	// --------------------------------------------------------------------
@@ -327,7 +306,7 @@ class Driver extends \Kodhe\Framework\Database\Query\Builder
 	 */
 	public function error()
 	{
-		return array('code' => $this->getConnectionId()->lastErrorCode(), 'message' => $this->getConnectionId()->lastErrorMsg());
+		return array('code' => $this->conn_id->lastErrorCode(), 'message' => $this->conn_id->lastErrorMsg());
 	}
 
 	// --------------------------------------------------------------------
@@ -374,7 +353,7 @@ class Driver extends \Kodhe\Framework\Database\Query\Builder
 	 */
 	protected function _close()
 	{
-		$this->getConnectionId()->close();
+		$this->conn_id->close();
 	}
 
 	// ========================================================================

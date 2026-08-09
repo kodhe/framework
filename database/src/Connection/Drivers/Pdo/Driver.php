@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=0);
+declare(strict_types=1);
 
 namespace Kodhe\Framework\Database\Connection\Drivers\Pdo;
 
@@ -27,26 +27,26 @@ class Driver extends \Kodhe\Framework\Database\Query\Builder
 	 *
 	 * @var	string
 	 */
-	protected $dbdriver = 'pdo';
+	public $dbdriver = 'pdo';
 
 	/**
 	 * PDO Options
 	 *
 	 * @var	array
 	 */
-	protected $options = array();
-	protected $stricton;
-	protected $compress;
+	public $options = array();
+	public $stricton;
+	public $compress;
 	
 	/**
 	 * @var float Query execution time in seconds
 	 */
-	protected $query_time = 0;
+	public $query_time = 0;
 	
 	/**
 	 * @var float Query execution time in milliseconds
 	 */
-	protected $query_time_ms = 0;
+	public $query_time_ms = 0;
 	
 	/**
 	 * @var float Start time for current query
@@ -56,12 +56,12 @@ class Driver extends \Kodhe\Framework\Database\Query\Builder
 	/**
 	 * @var array Query log with execution times
 	 */
-	protected $query_log = array();
+	public $query_log = array();
 	
 	/**
 	 * @var bool Enable query logging
 	 */
-	protected $enable_query_log = false;
+	public $enable_query_log = false;
 
 	// --------------------------------------------------------------------
 
