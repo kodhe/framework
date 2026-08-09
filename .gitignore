@@ -4,7 +4,6 @@
 __pycache__/
 *.o
 *.obj
-*.class
 *.exe
 *.dll
 *.so
@@ -12,41 +11,49 @@ __pycache__/
 *.out
 
 # Dependencies
-.venv/
-venv/
+vendor/
 node_modules/
-dist/
-build/
-target/
-.gradle/
-.mypy_cache/
-.pytest_cache/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # Logs and temp files
 *.log
 *.tmp
 *.swp
 *.swo
+*.bak
+*.cache
 
 # Environment
 .env
 .env.local
 .env.*
+.env.local.*
 
 # Editors
 .vscode/
 .idea/
+*.swp
+*.swo
+*~
 
-# System files
+# OS generated files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 
-# Coverage
+# Build and distribution
+dist/
+build/
+target/
 coverage/
 htmlcov/
 .coverage
-
-# Compressed files
 *.zip
 *.gz
 *.tar
@@ -69,4 +76,21 @@ htmlcov/
 *.tar.bz2
 *.tar.xz
 *.tar.zst
+
+# PHP specific
+*.phar
+*.pid
+
+# Cache and temporary files
+.cache/
+.tmp/
+temp/
+
+# Testing
+.phpunit.result.cache
+.php_cs.cache
+
+# Framework specific
+storage/
+bootstrap/cache/
 ```

@@ -25,7 +25,7 @@ class Driver extends \Kodhe\Framework\Database\Connection\Drivers\Pdo\Driver
 	 *
 	 * @var	string
 	 */
-	public $subdriver = '4d';
+	protected $subdriver = '4d';
 
 	/**
 	 * Identifier escape character

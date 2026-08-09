@@ -14,14 +14,14 @@ class Language
 	 *
 	 * @var	array
 	 */
-	public $language =	array();
+	protected $language =	array();
 
 	/**
 	 * List of loaded language files
 	 *
 	 * @var	array
 	 */
-	public $is_loaded =	array();
+	protected $is_loaded =	array();
 
 	/**
 	 * Class constructor

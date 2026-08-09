@@ -8,28 +8,28 @@ class Output
 	 *
 	 * @var	string
 	 */
-	public $final_output;
+	protected $final_output;
 
 	/**
 	 * Cache expiration time
 	 *
 	 * @var	int
 	 */
-	public $cache_expiration = 0;
+	protected $cache_expiration = 0;
 
 	/**
 	 * List of server headers
 	 *
 	 * @var	array
 	 */
-	public $headers = array();
+	protected $headers = array();
 
 	/**
 	 * List of mime types
 	 *
 	 * @var	array
 	 */
-	public $mimes =	array();
+	protected $mimes =	array();
 
 	/**
 	 * Mime-type for the current page
@@ -43,7 +43,7 @@ class Output
 	 *
 	 * @var	bool
 	 */
-	public $enable_profiler = FALSE;
+	protected $enable_profiler = FALSE;
 
 	/**
 	 * php.ini zlib.output_compression flag
@@ -73,7 +73,7 @@ class Output
 	 *
 	 * @var	bool
 	 */
-	public $parse_exec_vars = TRUE;
+	protected $parse_exec_vars = TRUE;
 
 	/**
 	 * mbstring.func_overload flag
