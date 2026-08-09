@@ -92,11 +92,11 @@ if ( ! function_exists('do_hash'))
 	 * @param	string	$type = 'sha1'
 	 * @return	string
 	 */
-	function do_hash($str, $type = 'sha1')
+	function do_hash($str, $type = 'sha256')
 	{
 		if ( ! in_array(strtolower($type), hash_algos()))
 		{
-			$type = 'md5';
+			$type = 'sha256';
 		}
 
 		return hash($type, $str);

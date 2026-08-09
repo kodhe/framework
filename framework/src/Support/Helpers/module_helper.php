@@ -156,7 +156,7 @@ if (!function_exists('module_view')) {
             show_error("Module view not found: {$viewPath}");
         }
         
-        extract($data);
+        extract($data, EXTR_SKIP);
         if ($return) {
             ob_start();
             include($fullPath);
