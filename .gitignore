@@ -1,5 +1,87 @@
 ```
-vendor/
-composer.lock
+# Cache and test results
 .phpunit.cache/
+
+# Dependency management
+composer.lock
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.local
+*.env.*
+
+# Editor/IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.tmp
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Coverage reports
+coverage/
+htmlcov/
+.coverage
+
+# PHP specific
+*.php~
+*.bak
+*.orig
+*.rej
+*.log
+*.cache
+.svn/
+CVS/
+
+# Tests
+.phpunit/
+test-results/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Session
+sess_*
+
+# Uploads
+uploads/
+files/
+
+# Cache directories
+cache/
+tmp/
+temp/
+
+# Build artifacts
+dist/
+build/
+target/
+
+# Dependencies
+vendor/
+node_modules/
+
+# Backup files
+*~
+*.backup
+*.bak
+
+# IDE specific
+nbproject/
+.settings/
+
+# Web server
+.htaccess
+.webserver-config.php
+
+# Documentation
+docs/_build/
 ```
