@@ -11,8 +11,6 @@
     "psr-4": {
       "Kodhe\\Framework\\Upload\\": "src/"
     },
-    "files": [
-      "src/compat.php"
-    ]
+    "files": []
   }
 }
