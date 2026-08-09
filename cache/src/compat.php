@@ -6,3 +6,8 @@
 if (!class_exists('CI_Cache', false) && class_exists('Kodhe\Framework\Cache\Cache', true)) {
     class_alias('Kodhe\Framework\Cache\Cache', 'CI_Cache');
 }
+
+// Also provide lowercase variant for case-sensitive systems (Linux)
+if (!class_exists('CI_cache', false) && class_exists('Kodhe\Framework\Cache\Cache', true)) {
+    class_alias('Kodhe\Framework\Cache\Cache', 'CI_cache');
+}

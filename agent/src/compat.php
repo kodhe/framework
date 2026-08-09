@@ -8,11 +8,16 @@
  */
 
 // Create CI3-style class alias if not already defined
-if (!class_exists('CI_User_agent', false) && class_exists('Kodhe\Framework\Agent\\Agent', true)) {
-    class_alias('Kodhe\Framework\Agent\\Agent', 'CI_User_agent');
+if (!class_exists('CI_User_agent', false) && class_exists('Kodhe\Framework\Agent\Agent', true)) {
+    class_alias('Kodhe\Framework\Agent\Agent', 'CI_User_agent');
+}
+
+// Also provide lowercase variant for case-sensitive systems (Linux)
+if (!class_exists('CI_user_agent', false) && class_exists('Kodhe\Framework\Agent\Agent', true)) {
+    class_alias('Kodhe\Framework\Agent\Agent', 'CI_user_agent');
 }
 
 // Also provide legacy UserAgent class alias for backward compatibility
-if (!class_exists('Kodhe\\Framework\\Agent\\UserAgent', false) && class_exists('Kodhe\Framework\Agent\\Agent', true)) {
-    class_alias('Kodhe\Framework\Agent\\Agent', 'Kodhe\\Framework\\Agent\\UserAgent');
+if (!class_exists('Kodhe\\Framework\\Agent\\UserAgent', false) && class_exists('Kodhe\Framework\Agent\Agent', true)) {
+    class_alias('Kodhe\Framework\Agent\Agent', 'Kodhe\\Framework\\Agent\\UserAgent');
 }
