@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=0);
+declare(strict_types=1);
 
 namespace Kodhe\Framework\Console;
 
@@ -10,14 +10,16 @@ namespace Kodhe\Framework\Console;
 class Output implements OutputInterface
 {
     protected int $verbosity = self::VERBOSITY_NORMAL;
-    protected resource $stream;
+    
+    /** @var resource */
+    protected $stream;
 
     /**
      * Constructor
      * 
      * @param resource|null $stream Output stream (defaults to STDOUT)
      */
-    public function __construct(?resource $stream = null)
+    public function __construct($stream = null)
     {
         $this->stream = $stream ?? fopen('php://stdout', 'w');
     }
@@ -282,8 +284,10 @@ class Output implements OutputInterface
 
     /**
      * Get the output stream
+     * 
+     * @return resource
      */
-    public function getStream(): resource
+    public function getStream()
     {
         return $this->stream;
     }

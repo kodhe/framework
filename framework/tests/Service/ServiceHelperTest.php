@@ -237,14 +237,20 @@ class ServiceHelperTest extends TestCase
 
     private function setupGlobalMock($mockApp): void
     {
-        // Setup global kodhe() helper mock
-        if (!function_exists('Kodhe\Framework\Tests\Service\kodhe')) {
-            function kodhe($param = null) use ($mockApp) {
-                if ($param === 'App') {
-                    return $mockApp;
-                }
-                return $mockApp;
-            }
+        // Setup global kodhe() helper mock using a static variable approach
+        static $mockAppStored = null;
+        
+        if ($mockAppStored === null) {
+            $mockAppStored = $mockApp;
         }
+        
+        // Store mock in a test-accessible way
+        $GLOBALS['kodhe_mock_app'] = $mockAppStored;
+    }
+    
+    public function tearDown(): void
+    {
+        parent::tearDown();
+        unset($GLOBALS['kodhe_mock_app']);
     }
 }
