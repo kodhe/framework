@@ -528,7 +528,7 @@ class Output
 			}
 		}
 
-		$cache_path .= md5($uri);
+		$cache_path .= hash('sha256', $uri);
 
 		if ( ! $fp = @fopen($cache_path, 'w+b'))
 		{
@@ -622,7 +622,7 @@ class Output
 			}
 		}
 
-		$filepath = $cache_path.md5($uri);
+		$filepath = $cache_path.hash('sha256', $uri);
 
 		if ( ! file_exists($filepath) OR ! $fp = @fopen($filepath, 'rb'))
 		{
@@ -642,7 +642,10 @@ class Output
 			return FALSE;
 		}
 
-		$cache_info = unserialize($match[1]);
+		$cache_info = @unserialize($match[1], ['allowed_classes' => false]);
+		if ($cache_info === false && ! is_array($cache_info)) {
+			return FALSE;
+		}
 		$expire = $cache_info['expire'];
 
 		$last_modified = filemtime($filepath);
@@ -711,7 +714,7 @@ class Output
 			}
 		}
 
-		$cache_path .= md5($CI->config->item('base_url').$CI->config->item('index_page').ltrim($uri, '/'));
+		$cache_path .= hash('sha256', $CI->config->item('base_url').$CI->config->item('index_page').ltrim($uri, '/'));
 
 		if ( ! @unlink($cache_path))
 		{
