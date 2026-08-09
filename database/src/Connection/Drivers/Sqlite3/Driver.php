@@ -61,6 +61,27 @@ class Driver extends \Kodhe\Framework\Database\Query\Builder
 	 */
 	protected $enable_query_log = false;
 
+	/**
+	 * Get connection ID
+	 * 
+	 * @return mixed
+	 */
+	public function getConnectionId()
+	{
+		return $this->db_connect();
+	}
+
+	/**
+	 * Get result ID from query
+	 * 
+	 * @param mixed $result Query result
+	 * @return mixed
+	 */
+	public function getResultId($result)
+	{
+		return $result;
+	}
+
 	// --------------------------------------------------------------------
 
 	/**
@@ -122,8 +143,8 @@ class Driver extends \Kodhe\Framework\Database\Query\Builder
 		
 		// Execute query
 		$result = $this->is_write_type($sql)
-			? $this->conn_id->exec($sql)
-			: $this->conn_id->query($sql);
+			? $this->getConnectionId()->exec($sql)
+			: $this->getConnectionId()->query($sql);
 		
 		// Calculate execution time
 		$end_time = microtime(true);
@@ -153,7 +174,7 @@ class Driver extends \Kodhe\Framework\Database\Query\Builder
 	 */
 	protected function _trans_begin()
 	{
-		return $this->conn_id->exec('BEGIN TRANSACTION');
+		return $this->getConnectionId()->exec('BEGIN TRANSACTION');
 	}
 
 	// --------------------------------------------------------------------
@@ -165,7 +186,7 @@ class Driver extends \Kodhe\Framework\Database\Query\Builder
 	 */
 	protected function _trans_commit()
 	{
-		return $this->conn_id->exec('END TRANSACTION');
+		return $this->getConnectionId()->exec('END TRANSACTION');
 	}
 
 	// --------------------------------------------------------------------
@@ -177,7 +198,7 @@ class Driver extends \Kodhe\Framework\Database\Query\Builder
 	 */
 	protected function _trans_rollback()
 	{
-		return $this->conn_id->exec('ROLLBACK');
+		return $this->getConnectionId()->exec('ROLLBACK');
 	}
 
 	// --------------------------------------------------------------------
@@ -190,7 +211,7 @@ class Driver extends \Kodhe\Framework\Database\Query\Builder
 	 */
 	protected function _escape_str($str)
 	{
-		return $this->conn_id->escapeString($str);
+		return $this->getConnectionId()->escapeString($str);
 	}
 
 	// --------------------------------------------------------------------
@@ -202,7 +223,7 @@ class Driver extends \Kodhe\Framework\Database\Query\Builder
 	 */
 	public function affected_rows()
 	{
-		return $this->conn_id->changes();
+		return $this->getConnectionId()->changes();
 	}
 
 	// --------------------------------------------------------------------
@@ -214,7 +235,7 @@ class Driver extends \Kodhe\Framework\Database\Query\Builder
 	 */
 	public function insert_id()
 	{
-		return $this->conn_id->lastInsertRowID();
+		return $this->getConnectionId()->lastInsertRowID();
 	}
 
 	// --------------------------------------------------------------------
@@ -306,7 +327,7 @@ class Driver extends \Kodhe\Framework\Database\Query\Builder
 	 */
 	public function error()
 	{
-		return array('code' => $this->conn_id->lastErrorCode(), 'message' => $this->conn_id->lastErrorMsg());
+		return array('code' => $this->getConnectionId()->lastErrorCode(), 'message' => $this->getConnectionId()->lastErrorMsg());
 	}
 
 	// --------------------------------------------------------------------
@@ -353,7 +374,7 @@ class Driver extends \Kodhe\Framework\Database\Query\Builder
 	 */
 	protected function _close()
 	{
-		$this->conn_id->close();
+		$this->getConnectionId()->close();
 	}
 
 	// ========================================================================
