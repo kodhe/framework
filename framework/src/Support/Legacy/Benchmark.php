@@ -8,7 +8,7 @@ class Benchmark
 	 *
 	 * @var	array
 	 */
-	public $marker = array();
+	protected $marker = array();
 
 	/**
 	 * Set a benchmark marker

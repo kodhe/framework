@@ -8,14 +8,14 @@ class Exceptions
 	 *
 	 * @var	int
 	 */
-	public $ob_level;
+	protected $ob_level;
 
 	/**
 	 * List of available error levels
 	 *
 	 * @var	array
 	 */
-	public $levels = array(
+	protected $levels = array(
 		E_ERROR			=>	'Error',
 		E_WARNING		=>	'Warning',
 		E_PARSE			=>	'Parsing Error',

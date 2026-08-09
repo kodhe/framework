@@ -25,7 +25,7 @@ class Driver extends \Kodhe\Framework\Database\Connection\Drivers\Pdo\Driver
 	 *
 	 * @var	string
 	 */
-	public $subdriver = 'pgsql';
+	protected $subdriver = 'pgsql';
 
 	/**
 	 * Database schema

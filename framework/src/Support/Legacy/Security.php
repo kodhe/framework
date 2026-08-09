@@ -8,7 +8,7 @@ class Security
 	 *
 	 * @var	array
 	 */
-	public $filename_bad_chars =	array(
+	protected $filename_bad_chars =	array(
 		'../', '<!--', '-->', '<', '>',
 		"'", '"', '&', '$', '#',
 		'{', '}', '[', ']', '=',
@@ -34,7 +34,7 @@ class Security
 	 *
 	 * @var	string
 	 */
-	public $charset = 'UTF-8';
+	protected $charset = 'UTF-8';
 
 	/**
 	 * XSS Hash
