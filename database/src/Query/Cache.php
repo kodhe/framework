@@ -67,7 +67,8 @@ class Cache
 			return FALSE;
 		}
 
-		return unserialize($cachedata);
+		// Use unserialize with allowed_classes option for security
+		return @unserialize($cachedata, ['allowed_classes' => false]);
 	}
 
 	public function write($sql, $object)
