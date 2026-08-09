@@ -839,10 +839,10 @@ class UnifiedRouter
                     $this->set_method($_GET[$_f]);
                 }
 
-                $this->uri->rsegments = array(
+                $this->uri->_set_rsegments(array(
                     1 => $this->class,
                     2 => $this->method
-                );
+                ));
             }
             else
             {
@@ -947,10 +947,10 @@ class UnifiedRouter
         $this->set_method($method);
 
         // Assign routed segments, index starting from 1
-        $this->uri->rsegments = array(
+        $this->uri->_set_rsegments(array(
             1 => $class,
             2 => $method
-        );
+        ));
 
         log_message('debug', 'Default controller set: ' . $class . '::' . $method . '()');
     }
@@ -1119,7 +1119,7 @@ class UnifiedRouter
         $this->set_class($segments[0]);
         $this->set_method($segments[1] ?? 'index');
         
-        $this->uri->rsegments = $this->prepareRsegments($segments);
+        $this->uri->_set_rsegments($this->prepareRsegments($segments));
     }
     
     protected function prepareRsegments(array $segments): array
@@ -1161,7 +1161,7 @@ class UnifiedRouter
         $this->set_class($controllerClass);
         $this->set_method($method);
         
-        $this->uri->rsegments = [
+        $rsegments = [
             1 => $controllerClass,
             2 => $method
         ];
@@ -1170,9 +1170,11 @@ class UnifiedRouter
         if (!empty($params)) {
             $index = 3;
             foreach ($params as $param) {
-                $this->uri->rsegments[$index++] = $param;
+                $rsegments[$index++] = $param;
             }
         }
+        
+        $this->uri->_set_rsegments($rsegments);
         
         $this->located = 1;
     }
@@ -1758,8 +1760,9 @@ class UnifiedRouter
         }
         
         $segments = [];
-        if (!empty($this->uri->rsegments)) {
-            $source = $this->uri->rsegments;
+        $rsegments = $this->uri->rsegment_array();
+        if (!empty($rsegments)) {
+            $source = $rsegments;
             $startIndex = (count($source) > 2) ? 2 : 1;
             $segments = array_slice($source, $startIndex);
             
