@@ -228,10 +228,10 @@ if ( ! function_exists('random_string'))
 				return substr(str_shuffle(str_repeat($pool, ceil($len / strlen($pool)))), 0, $len);
 			case 'unique': // todo: remove in 3.1+
 			case 'md5':
-				return md5(uniqid(mt_rand()));
+				return hash('sha256', uniqid(mt_rand()));
 			case 'encrypt': // todo: remove in 3.1+
 			case 'sha1':
-				return sha1(uniqid(mt_rand(), TRUE));
+				return hash('sha256', uniqid(mt_rand(), TRUE));
 		}
 	}
 }
