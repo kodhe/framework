@@ -549,6 +549,19 @@ class URI
 	{
 		return $this->rsegments;
 	}
+	
+	// --------------------------------------------------------------------
+	
+	/**
+	 * Set routed URI segments
+	 *
+	 * @param	array	$segments
+	 * @return	void
+	 */
+	public function _set_rsegments(array $segments)
+	{
+		$this->rsegments = $segments;
+	}
 
 	// --------------------------------------------------------------------
 

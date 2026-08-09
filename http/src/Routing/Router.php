@@ -362,7 +362,7 @@ class Router extends LegacyRouter
         $this->set_class($segments[0]);
         $this->set_method($segments[1] ?? 'index');
         
-        $this->uri->rsegments = $this->prepareRsegments($segments);
+        $this->uri->_set_rsegments($this->prepareRsegments($segments));
     }
 
     protected function prepareRsegments(array $segments): array
@@ -533,7 +533,7 @@ class Router extends LegacyRouter
         $this->set_class($controllerClass);
         $this->set_method($method);
         
-        $this->uri->rsegments = [
+        $rsegments = [
             1 => $controllerClass,
             2 => $method
         ];
@@ -542,9 +542,11 @@ class Router extends LegacyRouter
         if (!empty($params)) {
             $index = 3;
             foreach ($params as $param) {
-                $this->uri->rsegments[$index++] = $param;
+                $rsegments[$index++] = $param;
             }
         }
+        
+        $this->uri->_set_rsegments($rsegments);
         
         $this->located = 1;
     }
@@ -902,8 +904,9 @@ class Router extends LegacyRouter
         }
         
         $segments = [];
-        if (!empty($this->uri->rsegments)) {
-            $source = $this->uri->rsegments;
+        $rsegments = $this->uri->rsegment_array();
+        if (!empty($rsegments)) {
+            $source = $rsegments;
             $startIndex = (count($source) > 2) ? 2 : 1;
             $segments = array_slice($source, $startIndex);
             
