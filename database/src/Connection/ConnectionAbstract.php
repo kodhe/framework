@@ -474,6 +474,10 @@ abstract class ConnectionAbstract {
 			{
 				$escaped_value = '('.implode(',', $escaped_value).')';
 			}
+			else
+			{
+				$escaped_value = (string) $escaped_value;
+			}
 			$sql = substr_replace($sql, $escaped_value, $matches[0][$c][1], $ml);
 		}
 		while ($c !== 0);
