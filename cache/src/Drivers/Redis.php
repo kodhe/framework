@@ -132,7 +132,8 @@ class Redis extends Driver implements CacheDriverInterface
 
 		if ($value !== FALSE && $this->_redis->sIsMember('_ci_redis_serialized', $key))
 		{
-			return unserialize($value);
+			// Use unserialize with allowed_classes option for security
+			return @unserialize($value, ['allowed_classes' => false]);
 		}
 
 		return $value;
@@ -302,19 +303,6 @@ class Redis extends Driver implements CacheDriverInterface
 		}
 
 		return FALSE;
-	}
-
-	// ------------------------------------------------------------------------
-
-	/**
-	 * Clean cache
-	 *
-	 * @return	bool
-	 * @see		Redis::flushDB()
-	 */
-	public function clean(): bool
-	{
-		return $this->_redis->flushDB();
 	}
 
 	// ------------------------------------------------------------------------
