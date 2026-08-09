@@ -11,7 +11,7 @@
   },
   "autoload": {
     "psr-4": {
-      "Kodhe\\Framework\\Parser\\": "src/"
+      "Kodhe\\Framework\\Parser\\": ""
     }
   },
   "autoload-dev": {
