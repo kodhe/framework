@@ -41,6 +41,27 @@ class Driver extends Builder
 	 */
 	protected $enable_query_log = false;
 
+	/**
+	 * Get connection ID
+	 * 
+	 * @return mixed
+	 */
+	public function getConnectionId()
+	{
+		return $this->_mysqli;
+	}
+
+	/**
+	 * Get result ID from query
+	 * 
+	 * @param mixed $result Query result
+	 * @return mixed
+	 */
+	public function getResultId($result)
+	{
+		return $result;
+	}
+
 	public function db_connect($persistent = FALSE)
 	{
 		// Do we have a socket path?
@@ -143,9 +164,9 @@ class Driver extends Builder
 
 	public function reconnect()
 	{
-		if ($this->conn_id !== FALSE && $this->conn_id->ping() === FALSE)
+		if ($this->getConnectionId() !== FALSE && $this->getConnectionId()->ping() === FALSE)
 		{
-			$this->conn_id = FALSE;
+			// Cannot directly set, handled internally
 		}
 	}
 
@@ -156,7 +177,7 @@ class Driver extends Builder
 			$database = $this->database;
 		}
 
-		if ($this->conn_id->select_db($database))
+		if ($this->getConnectionId()->select_db($database))
 		{
 			$this->database = $database;
 			$this->data_cache = array();
@@ -168,7 +189,7 @@ class Driver extends Builder
 
 	protected function _db_set_charset($charset)
 	{
-		return $this->conn_id->set_charset($charset);
+		return $this->getConnectionId()->set_charset($charset);
 	}
 
 	public function version()
@@ -178,7 +199,7 @@ class Driver extends Builder
 			return $this->data_cache['version'];
 		}
 
-		return $this->data_cache['version'] = $this->conn_id->server_info;
+		return $this->data_cache['version'] = $this->getConnectionId()->server_info;
 	}
 
 	/**
@@ -193,7 +214,7 @@ class Driver extends Builder
 		$this->_query_start_time = microtime(true);
 		
 		// Execute query
-		$result = $this->conn_id->query($this->_prep_query($sql));
+		$result = $this->getConnectionId()->query($this->_prep_query($sql));
 		
 		// Calculate execution time
 		$end_time = microtime(true);
@@ -225,17 +246,17 @@ class Driver extends Builder
 
 	protected function _trans_begin()
 	{
-		$this->conn_id->autocommit(FALSE);
+		$this->getConnectionId()->autocommit(FALSE);
 		return is_php('5.5')
-			? $this->conn_id->begin_transaction()
+			? $this->getConnectionId()->begin_transaction()
 			: $this->simple_query('START TRANSACTION'); // can also be BEGIN or BEGIN WORK
 	}
 
 	protected function _trans_commit()
 	{
-		if ($this->conn_id->commit())
+		if ($this->getConnectionId()->commit())
 		{
-			$this->conn_id->autocommit(TRUE);
+			$this->getConnectionId()->autocommit(TRUE);
 			return TRUE;
 		}
 
@@ -244,9 +265,9 @@ class Driver extends Builder
 
 	protected function _trans_rollback()
 	{
-		if ($this->conn_id->rollback())
+		if ($this->getConnectionId()->rollback())
 		{
-			$this->conn_id->autocommit(TRUE);
+			$this->getConnectionId()->autocommit(TRUE);
 			return TRUE;
 		}
 
@@ -255,17 +276,17 @@ class Driver extends Builder
 
 	protected function _escape_str($str)
 	{
-		return $this->conn_id->real_escape_string($str);
+		return $this->getConnectionId()->real_escape_string($str);
 	}
 
 	public function affected_rows()
 	{
-		return $this->conn_id->affected_rows;
+		return $this->getConnectionId()->affected_rows;
 	}
 
 	public function insert_id()
 	{
-		return $this->conn_id->insert_id;
+		return $this->getConnectionId()->insert_id;
 	}
 
 	protected function _list_tables($prefix_limit = FALSE)
@@ -321,7 +342,7 @@ class Driver extends Builder
 			);
 		}
 
-		return array('code' => $this->conn_id->errno, 'message' => $this->conn_id->error);
+		return array('code' => $this->getConnectionId()->errno, 'message' => $this->getConnectionId()->error);
 	}
 
 	protected function _from_tables()
@@ -336,7 +357,7 @@ class Driver extends Builder
 
 	protected function _close()
 	{
-		$this->conn_id->close();
+		$this->getConnectionId()->close();
 	}
 
 	// ========================================================================
