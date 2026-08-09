@@ -539,8 +539,11 @@ class LegacyRouter
         $uri = $request->getUri()->getQuery();
         $uri = trim($uri, '/');
         
-        // Simulate legacy routing by setting up URI using proper method
-        $this->uri->_set_uri_string($uri);
+        // Simulate legacy routing by setting up URI using public method
+        // Since _set_uri_string is protected, we need to use reflection or create a new URI instance
+        $this->uri = new URI();
+        // Force set the uri_string via the public property (which is still public in legacy URI class)
+        $this->uri->uri_string = $uri;
         
         // Reset
         $this->class = '';
