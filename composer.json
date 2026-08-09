@@ -58,7 +58,7 @@
       "Kodhe\\Framework\\Upload\\": "upload/src/",
       "Kodhe\\Framework\\Image\\": "image/src/",
       "Kodhe\\Framework\\Pagination\\": "pagination/src/",
-      "Kodhe\\Framework\\Parser\\": "parser/src/",
+      "Kodhe\\Framework\\Parser\\": "parser/",
       "Kodhe\\Framework\\Profiler\\": "profiler/src/",
       "Kodhe\\Framework\\Migration\\": "migration/src/",
       "Kodhe\\Framework\\Cart\\": "cart/src/",
