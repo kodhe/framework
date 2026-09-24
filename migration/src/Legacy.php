@@ -207,6 +207,7 @@ class Legacy
 		//
 		// See https://github.com/bcit-ci/CodeIgniter/issues/4539
 		$pending = array();
+		$previous = NULL; // Inisialisasi eksplisit; dipakai cek gap sequential di bawah.
 		foreach ($migrations as $number => $file)
 		{
 			// Ignore versions out of our range.
