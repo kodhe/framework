@@ -568,17 +568,25 @@ class LegacyRouter
     /**
      * Get routing info (LEGACY)
      */
-    public function getRouting(): ?array
-    {
-        return [
-            'class' => $this->class,
-            'method' => $this->method,
-            'directory' => $this->directory,
-            'params' => $this->uri->rsegment_array() ?? [],
-            'type' => 'legacy',
-            'source' => 'legacy_router'
-        ];
-    }
+public function getRouting(): ?array
+{
+    $rsegments = $this->uri->rsegment_array() ?? [];
+
+    // rsegments legacy berisi:
+    // [controller, method, param1, param2, ...]
+    // Controller dan method sudah dipisahkan ke class/method.
+    // Yang dikirim ke ControllerExecutor hanya parameter method.
+    $params = array_slice($rsegments, 2);
+
+    return [
+        'class' => $this->class,
+        'method' => $this->method,
+        'directory' => $this->directory,
+        'params' => $params,
+        'type' => 'legacy',
+        'source' => 'legacy_router'
+    ];
+}
 
     /**
      * Check if route exists for current request (LEGACY)
