@@ -16,7 +16,7 @@ use Kodhe\Framework\Typography\Exceptions/TypographyException;
 /**
  * Typography Class
  *
- * @package         CodeIgniter
+ * @package         Kodhe\Framework\Typography
  * @subpackage      Libraries
  * @category        Helpers
  * @author          EllisLab Dev Team
