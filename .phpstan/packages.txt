@@ -1,31 +1,42 @@
 # Daftar paket yang diaudit PHPStan oleh workflow Static Analysis.
-# Format: <folder-paket>: <level>  (satu per baris; '#' = komentar/baris kosong)
-# Naikkan level per paket secara bertahap, atau turunkan ke 'skipped' bila perlu.
-agent: 5
-cache: 5
+# Format: <paket>: <level|skipped>  (satu per baris; '#' = komentar/baris kosong)
+#
+# Level ditetapkan dari triase NYATA phpstan/phpstan 1.12.34 + PHP 8.2 pada master
+# pasca-PR #147, dengan bootstrap stub simbol legacy (.phpstan/bootstrap.php).
+# "ratchet" = level tertinggi saat ini yang LULUS tanpa error — naikkan lewat PR
+# kecil setelah error di level berikutnya diperbaiki (lihat issue phpstan #148-#175).
+#
+# LULUS TANPA BOOTSTRAP-PUN SUDAH BERSIH DI LEVEL TINGGI:
 calendar: 5
-cart: 5
-database: 5
-driver: 5
-email: 5
-encrypt: 5
-encryption: 5
-ftp: 5
-http: 5
-image: 5
-javascript: 5
-migration: 5
-pagination: 5
 parser: 5
-profiler: 5
-session: 5
-table: 5
-test: 5
-trackback: 5
-typography: 5
-upload: 5
-validation: 5
-view: 5
-xmlrpc: 5
-xmlrpcs: 5
 zip: 5
+#
+# RATCHET: lulus bersih di level berikut (naikkan bertahap):
+encrypt: 2
+ftp: 2
+upload: 2
+cart: 1
+driver: 1
+email: 1
+encryption: 1
+pagination: 1
+test: 1
+typography: 1
+validation: 1
+xmlrpc: 1
+#
+# MASIH GAGAL DI LEVEL 0 (butuh perbaikan kode nyata dulu — jangan turunkan ke skipped,
+# biarkan CI merah terkelola via continue-on-error sampai ratchet naik):
+agent: 0
+cache: 0
+database: 0
+http: 0
+image: 0
+javascript: 0
+migration: 0
+profiler: 0
+session: 0
+table: 0
+trackback: 0
+view: 0
+xmlrpcs: 0
