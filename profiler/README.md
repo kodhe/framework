@@ -1,54 +1,101 @@
+# Kodhe Profiler
 
-## File Test `test_profiler.php`
+Package profiling hasil refaktor library `Profiler` CodeIgniter 3, dengan namespace `Kodhe\Framework\Profiler`. Menyisipkan panel debug di bagian bawah halaman HTML (atau keluaran plain-text) yang menampilkan benchmark, query database, memory usage, URI, GET/POST, config, session, dan HTTP headers. Arsitekturnya dimodularisasi menjadi **collector** per seksi dan **renderer** (HTML/Text).
+
+## Instalasi
+
+```bash
+composer require kodhe/profiler
+```
+
+Persyaratan: PHP >= 8.1. Tidak ada dependensi eksternal wajib.
+
+## Quick Start
 
 ```php
 <?php
 
-require_once __DIR__ . '/vendor/autoload.php';
+declare(strict_types=1);
 
-use Kodhe\Library\Profiler\Profiler;
+require __DIR__ . '/vendor/autoload.php';
 
-echo "<!DOCTYPE html>\n<html>\n<head>\n<title>Profiler Test</title>\n</head>\n<body>\n";
-echo "<h1>Kodhe Profiler Test</h1>\n";
+use Kodhe\Framework\Profiler\Profiler;
 
-// Set some test data
-$_GET['test'] = 'Hello World';
-$_GET['page'] = 1;
-$_POST['username'] = 'john_doe';
-$_POST['action'] = 'save';
+$profiler = new Profiler();
 
-// Test 1: All sections
-echo "<h2>Test 1: All Sections Enabled</h2>\n";
-$profiler1 = new Profiler();
-$output1 = $profiler1->run();
-echo $output1;
+echo $pageHtml . $profiler->run();
+// Panel debug dirender di akhir output halaman
+```
 
-// Test 2: Only benchmarks
-echo "<h2>Test 2: Only Benchmarks</h2>\n";
-$profiler2 = new Profiler();
-$profiler2->disableAll();
-$profiler2->set_sections(['benchmarks' => true]);
-$output2 = $profiler2->run();
-echo $output2;
+## Konfigurasi & Seleksi Seksi
 
-// Test 3: Custom sections
-echo "<h2>Test 3: GET, POST, Memory, URI</h2>\n";
-$profiler3 = new Profiler();
-$profiler3->disableAll();
-$profiler3->set_sections([
-    'get' => true,
-    'post' => true,
-    'memory_usage' => true,
-    'uri_string' => true
+Seksi dikontrol lewat array konfigurasi `sections` atau API eksplisit:
+
+```php
+$profiler = new Profiler([
+    'sections' => [
+        'benchmarks'   => true,
+        'memory_usage' => true,
+        'get'          => true,
+        'post'         => false,
+    ],
 ]);
-$output3 = $profiler3->run();
-echo $output3;
 
-// Test 4: No sections (empty state)
-echo "<h2>Test 4: No Sections Enabled</h2>\n";
-$profiler4 = new Profiler();
-$profiler4->disableAll();
-$output4 = $profiler4->run();
-echo $output4;
+// Atau runtime:
+$profiler->disableSection('database');
+$profiler->enableSection('config');
+var_dump($profiler->isSectionEnabled('uri')); // bool
+```
 
-echo "\n</body>\n</html>";
+| Seksi | Collector | Keterangan |
+|---|---|---|
+| `benchmarks` | BenchmarkCollector | Mark/named benchmark waktu eksekusi |
+| `queries` / `database` | DatabaseCollector | Query + waktu dari DB driver |
+| `memory_usage` | MemoryCollector | Peak memory |
+| `uri_segment` / `uri` | UriCollector | Segmen URI request |
+| `get` / `post` | — | Isi `$_GET` / `$_POST` |
+| `config` | ConfigCollector | Item konfigurasi |
+| `session_data` | SessionCollector | Isi session |
+| `http_headers` | HttpHeadersCollector | Request/response headers |
+
+Daftar lengkap bisa dilihat via `$profiler->getAvailableSections()`.
+
+## Renderer
+
+Dua renderer bawaan tersedia di `src/Renderers/`:
+
+- `HtmlRenderer` — tabel debug ala CI3 (default untuk output HTML).
+- `TextRenderer` — cocok untuk CLI/log.
+
+Collector kustom bisa didaftarkan langsung:
+
+```php
+use Kodhe\Framework\Profiler\Collectors\MyCustomCollector;
+
+$profiler->addCollector('my_metrics', new MyCustomCollector());
+```
+
+## Struktur Direktori
+
+```
+src/
+├── Profiler.php                  # Kelas utama (API kompatibel CI3)
+├── Contracts/                    # ProfilerInterface, CollectorInterface
+├── Collectors/                   # Benchmark, Database, Memory, Uri, Config,
+│                                 # Session, Controller, HttpHeaders
+├── Renderers/                    # HtmlRenderer, TextRenderer
+├── Factory/                      # CollectorFactory, RendererFactory
+├── Support/
+├── ValueObjects/                 # ProfileData, ProfileSection
+└── language/profiler_lang.php
+```
+
+## Catatan Migrasi dari Namespace Lama
+
+Dokumentasi/test lama memakai `Kodhe\Library\Profiler\Profiler` dan metode `disableAll()`. Pada versi Composer modern gunakan:
+
+```php
+use Kodhe\Framework\Profiler\Profiler;
+```
+
+Untuk menonaktifkan semua seksi, kirim konfigurasi `'sections' => []` atau panggil `disableSection()` per seksi. PSR-4 mapping `Kodhe\Framework\Profiler\` → `profiler/src/` dideklarasikan di `profiler/composer.json`.
