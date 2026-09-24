@@ -64,7 +64,9 @@ Struktur folder aplikasi CI3 (`application/config`, `controllers`, `models`,
 > dan sistem router ganda (modern + legacy) yang perilakunya berbeda dari CI3.
 > Ini adalah isu nyata saat migrasi bertahap; seluruh pemetaannya beserta
 > strategi koeksistensi ada di
-> **[Struktur Folder & Router](folder-structure-and-routing.md)**.
+> **[Struktur Folder & Router](folder-structure-and-routing.md)**, dan standar
+> penulisan tiap komponen (controller/model/library/view) beserta konversi
+> per-file ada di **[Komponen Aplikasi Standar](app-components.md)**.
 
 ## 3. Bootstrap aplikasi
 
