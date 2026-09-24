@@ -1,0 +1,61 @@
+name: Static Analysis
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+
+jobs:
+  # Matriks per-paket; level tiap paket diatur di .phpstan/packages.txt.
+  # Tandai paket bermasalah dengan "skipped" di manifest tanpa mematikan CI paket lain.
+  phpstan:
+    name: PHPStan (${{ matrix.package }})
+    runs-on: ubuntu-latest
+    continue-on-error: false
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - agent
+          - cache
+          - calendar
+          - cart
+          - database
+          - driver
+          - email
+          - encrypt
+          - encryption
+          - ftp
+          - http
+          - image
+          - javascript
+          - migration
+          - pagination
+          - parser
+          - profiler
+          - session
+          - table
+          - test
+          - trackback
+          - typography
+          - upload
+          - validation
+          - view
+          - xmlrpc
+          - xmlrpcs
+          - zip
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP 8.2 (openssl, mbstring, intl, gd, zip)
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: openssl, mbstring, intl, gd, zip, json
+          coverage: none
+
+      - name: Install dependencies (dev; termasuk phpstan/phpstan ^1.10)
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Run PHPStan untuk ${{ matrix.package }}
+        run: bash scripts/phpstan-package.sh "${{ matrix.package }}"
