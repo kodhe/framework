@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace Kodhe\Framework\Session\Drivers;
 
 use Kodhe\Framework\Session\Driver;
-use Kodhe\Framework\Session\HandlerInterface;
 use Memcached;
 
 /**
  * CodeIgniter Session Memcached Driver
  */
-class MemcachedDriver extends Driver implements SessionHandlerInterface
+class MemcachedDriver extends Driver
 {
     /**
      * Memcached instance
