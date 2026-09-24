@@ -1,2 +1,12 @@
 # Composer dependencies
 vendor/
+
+# IDEs and Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
