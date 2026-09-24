@@ -138,7 +138,7 @@ class CartTotals extends CartSummary
      */
     public function calculateTax(): self
     {
-        $this->tax = $this->getSubtotal() * ($this->taxRate / 100);
+        $this->tax = $this->subtotal * ($this->taxRate / 100);
         return $this;
     }
 
