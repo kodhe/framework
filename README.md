@@ -2,6 +2,11 @@
 
 Setiap package berdiri sendiri. Install hanya yang dibutuhkan.
 
+## Dokumentasi Pengembangan Aplikasi
+
+Panduan lengkap ala CodeIgniter 3 user guide ada di folder **[user_guide/](user_guide/README.md)**
+(konsep arsitektur, instalasi, migrasi namespace, troubleshooting, dan referensi per library).
+
 ## Standar yang Diterapkan
 
 - **PSR-4** — Autoload & struktur namespace
