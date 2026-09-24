@@ -1481,7 +1481,7 @@ class LegacyLoader
 
 		foreach (array_keys($vars) as $key)
 		{
-			if (strncmp($key, '_ci_', 4) === 0)
+			if (strncmp((string) $key, '_ci_', 4) === 0)
 			{
 				unset($vars[$key]);
 			}
