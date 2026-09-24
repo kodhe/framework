@@ -19,6 +19,9 @@ class HttpTransport implements TransportInterface
     private $lastConnection = null;
     private string $lastHost = '';
 
+    /**
+     * @param TrackbackConfig|null $config Timeout and User-Agent are taken from this config (fresh defaults when null)
+     */
     public function __construct(?TrackbackConfig $config = null)
     {
         $config = $config ?? new TrackbackConfig();
@@ -28,6 +31,11 @@ class HttpTransport implements TransportInterface
 
     /**
      * Send a trackback request to the specified URL.
+     *
+     * @param string $url  Trackback endpoint URL
+     * @param string $data URL-encoded POST body (tb_id is prepended when derivable from $url)
+     * @return array{success:bool,body:string,error:string|null} success is TRUE only when the response contains <error>0</error>
+     * @throws TransportException On invalid URL or connection/write failure
      */
     public function send(string $url, string $data): array
     {
@@ -87,6 +95,9 @@ class HttpTransport implements TransportInterface
 
     /**
      * Set connection timeout in seconds.
+     *
+     * @param int $seconds Values below 1 are clamped to 1
+     * @return self Fluent setter
      */
     public function setTimeout(int $seconds): self
     {
@@ -96,6 +107,9 @@ class HttpTransport implements TransportInterface
 
     /**
      * Set user agent string.
+     *
+     * @param string $userAgent Value sent in the User-Agent header
+     * @return self Fluent setter
      */
     public function setUserAgent(string $userAgent): self
     {
