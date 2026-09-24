@@ -1,5 +1,9 @@
 # Migrasi Namespace (CI3 → Kodhe Framework)
 
+> Halaman ini adalah **peta referensi nama**. Untuk prosedur migrasi lengkap
+> langkah demi langkah (instalasi, bootstrap, config, checklist verifikasi,
+> rollback), lihat [Migrasi dari CodeIgniter 3](migrating-from-ci3.md).
+
 Ada tiga generasi namespace. Kode aplikasi modern cukup mengenal yang ketiga.
 
 | Generasi | Contoh | Status |
