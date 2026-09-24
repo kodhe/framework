@@ -124,3 +124,31 @@ if (!class_exists('CI_Model')) {
     {
     }
 }
+
+if (!function_exists('highlight_code')) {
+    /**
+     * Stub helper CI3 (system/helpers/text_helper.php) — dipakai Profiler untuk
+     * menyorot SQL. Saat runtime dipasok framework; stub ini hanya untuk analisis statis.
+     */
+    function highlight_code($str)
+    {
+        return (string) $str;
+    }
+}
+
+if (!extension_loaded('redis') && !class_exists('Redis')) {
+    /** Stub kelas Redis php-redis (session driver) untuk analisis statis. */
+    class Redis
+    {
+    }
+}
+
+if (!extension_loaded('memcached') && !class_exists('Memcached')) {
+    /** Stub kelas Memcached php-memcached (session driver) untuk analisis statis. */
+    class Memcached
+    {
+        public const OPT_BINARY_PROTOCOL = 5;
+        public const RES_SUCCESS = 0;
+        public const RES_NOTFOUND = 16;
+    }
+}

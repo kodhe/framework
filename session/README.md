@@ -110,6 +110,15 @@ CREATE TABLE `ci_sessions` (
 );
 ```
 
+> **Wajib!** Jika tabel belum dibuat — atau nama kolom berbeda dari skema di atas —
+> driver akan melempar `Exception` dengan pesan jelas saat request pertama
+> ("Session table ... is missing the required column 'data'"), bukan error
+> `Unknown column 'data' in 'SELECT'` yang membingungkan. Untuk migrasi dari
+> skema CI3 lama yang memakai kolom `lastactivity`, kolom expiry otomatis
+> dideteksi saat garbage collection; namun kolom `id`, `ip_address`, dan
+> `data` tetap wajib ada. Alternatif cepat untuk development: gunakan
+> `'sess_driver' => 'files'`.
+
 ## Konfigurasi (key umum)
 
 | Opsi | Tipe | Default | Keterangan |
