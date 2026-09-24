@@ -28,13 +28,6 @@ class LegacyRouter
      */
     protected $currentRoute = [];
 
-    /**
-     * @var bool Whether an explicit route from routes.php matched the URI.
-     *           Used by getRouting() to expose routed params (with $1/$2
-     *           substitutions) instead of raw request segments.
-     */
-    protected $routeMatched = false;
-
     
     public function __construct($routing = null)
     {
@@ -98,13 +91,6 @@ class LegacyRouter
                 $this->translate_uri_dashes = $route['translate_uri_dashes'];
             }
             
-            // Publish 404_override ke global config sebelum reserved keys dibuang,
-            // agar RoutingManager::get404Override() dapat menemukannya (CI3 behavior)
-            if (isset($route['404_override']) && $route['404_override'] !== ''
-                && isset($GLOBALS['CFG']) && is_object($GLOBALS['CFG'])) {
-                $GLOBALS['CFG']->set_item('404_override', $route['404_override']);
-            }
-
             // Remove reserved keys
             unset($route['default_controller'], $route['translate_uri_dashes']);
             
@@ -361,61 +347,29 @@ class LegacyRouter
      */
     protected function _parse_routes()
     {
-        // PERBAIKAN: gunakan uri_string mentah (bukan implode(segment_array()))
-        // agar regex bawaan seperti .* dan karakter ber-spasi tetap utuh.
-        $uri = trim((string) $this->uri->uri_string, '/');
+        $uri = implode('/', $this->uri->segment_array());
 
-        // PERBAIKAN: parseRoutes() sudah memilih target sesuai HTTP verb saat
-        // load, sehingga entri '$route['x']['GET']' tersimpan sebagai string.
-        // Loop lama me-continue semua entri array -> route berbasis method
-        // tidak pernah match dan SEMUA request jatuh ke 404.
-        $candidates = array();
+        $http_verb = $this->getHttpMethod();
+
         foreach ($this->routes as $key => $val)
         {
-            // Skip reserved keys — BUKAN pola regex! (mis. '404_override'
-            // akan salah cocok dengan pola '(:any)_override')
-            if ($key === 'default_controller' || $key === '404_override' || $key === 'translate_uri_dashes')
-            {
-                continue;
-            }
-
+            // Handle array route with HTTP method (LEGACY)
             if (is_array($val))
             {
                 $val = array_change_key_case($val, CASE_LOWER);
-                if ( ! isset($val[$this->getHttpMethod()]))
+                if (isset($val[$http_verb]))
                 {
-                    continue;
+                    $val = $val[$http_verb];
                 }
-                $val = $val[$this->getHttpMethod()];
-            }
-
-            if ( ! is_string($val) OR $val === '')
-            {
-                if ( ! is_callable($val))
+                else
                 {
                     continue;
                 }
             }
 
-            $candidates[$key] = $val;
-        }
+            $key = str_replace(array(':any', ':num'), array('[^/]+', '[0-9]+'), $key);
 
-        // PERBAIKAN: cek route dengan key PERSIS lebih dulu (perilaku CI3).
-        // Tanpa ini, pola serakah seperti '(:any)' dapat mengalahkan entri statis
-        // seperti 'home' karena urutan definisi di routes.php.
-        if (isset($candidates[$uri]))
-        {
-            $this->routeMatched = TRUE;
-            $this->_set_request(explode('/', $candidates[$uri]));
-            return;
-        }
-
-        foreach ($candidates as $key => $val)
-        {
-            // PERBAIKAN: escape delimiter '#' agar pattern tidak pecah.
-            $pattern = str_replace(array(':any', ':num'), array('[^/]+', '[0-9]+'), (string) $key);
-
-            if (@preg_match('#^'.$pattern.'$#', $uri, $matches) === 1)
+            if (preg_match('#^'.$key.'$#', $uri, $matches))
             {
                 if ( ! is_string($val) && is_callable($val))
                 {
@@ -425,32 +379,8 @@ class LegacyRouter
                 }
                 elseif (strpos($val, '$') !== FALSE && strpos($key, '(') !== FALSE)
                 {
-                    // PERBAIKAN: batasi hanya ke group yang DIRUJUK di target
-                    // ($1..$9), meniru perilaku CI3 terhadap route cacat seperti
-                    // 'home_controller/any/$1/$2' untuk pola satu-segmen
-                    // '(:any)': tanpa batas ini, preg_replace menyisipkan
-                    // seluruh isi $matches (termasuk URI penuh) sehingga
-                    // method controller menerima argumen yang salah.
-                    $maxRef = 0;
-                    if (preg_match_all('/\\\\([1-9])/', $val, $refs))
-                    {
-                        $maxRef = (int) max($refs[1]);
-                    }
-
-                    $replacements = array_map('strval', array_slice($matches, 1, $maxRef));
-
-                    if ($replacements !== array())
-                    {
-                        $val = str_replace(
-                            array_map(function ($i) { return '$'.$i; }, range(1, count($replacements))),
-                            $replacements,
-                            $val
-                        );
-                    }
+                    $val = preg_replace('#^'.$key.'$#', $val, $uri);
                 }
-
-                // Tandai route eksplisit cocok -> getRouting() pakai hasil substitusi $1/$2
-                $this->routeMatched = TRUE;
 
                 $this->_set_request(explode('/', $val));
                 return;
@@ -605,67 +535,20 @@ class LegacyRouter
      */
     public function matchRequest(Request $request): ?array
     {
-        // Legacy router uses _set_routing instead of request matching.
-        // PERBAIKAN: gunakan PATH dari URI, bukan query string. Pada setup
-        // .htaccess "RewriteRule ^(.*)$ index.php?/$1", path asli ada di
-        // REQUEST_URI/getPath(); getQuery() sering kosong sehingga router
-        // jatuh ke default controller dan segmen URI mentah ikut terbawa
-        // sebagai parameter method (mis. any($slug) menerima 'home_controller').
-        $uri = '';
-
-        try {
-            $reqUri = $request->getUri();
-            if (is_object($reqUri) && method_exists($reqUri, 'getPath')) {
-                $uri = (string) $reqUri->getPath();
-            } elseif (is_string($reqUri)) {
-                $parts = parse_url($reqUri);
-                $uri = $parts['path'] ?? '';
-            }
-        } catch (\Throwable $e) {
-            $uri = '';
-        }
-
-        if (trim($uri, '/') === '') {
-            // Fallback: parse dari REQUEST_URI / QUERY_STRING
-            $serverUri = $_SERVER['REQUEST_URI'] ?? '';
-            if ($serverUri !== '') {
-                $path = parse_url($serverUri, PHP_URL_PATH) ?: '';
-                $path = preg_replace('#(^|/)index\.php$#', '', $path);
-                $uri = trim($path, '/');
-                if ($uri === '' && !empty($_SERVER['QUERY_STRING'])) {
-                    // Pola "index.php?/segment" -> query string dimulai dengan '/'
-                    $qs = ltrim($_SERVER['QUERY_STRING'], '/');
-                    // Buang pasangan D/C/M/F/S bila enable_query_strings
-                    if (strpos($qs, '=') !== false) {
-                        parse_str($qs, $qarr);
-                        foreach (array('D','C','M','F','S') as $k) { unset($qarr[$k]); }
-                        $uri = trim(implode('/', array_filter($qarr)), '/');
-                    } else {
-                        $uri = trim($qs, '/');
-                    }
-                }
-            }
-        }
-
+        // Legacy router uses _set_routing instead of request matching
+        $uri = $request->getUri()->getQuery();
         $uri = trim($uri, '/');
         
-        // Simulate legacy routing: buat URI baru lalu isi segments secara
-        // proper lewat _set_uri_string (protected) via reflection agar
-        // segment_array()/uri_string konsisten dengan perilaku CI3.
+        // Simulate legacy routing by setting up URI using public method
+        // Since _set_uri_string is protected, we need to use reflection or create a new URI instance
         $this->uri = new URI();
-        try {
-            $ref = new \ReflectionMethod($this->uri, '_set_uri_string');
-            $ref->setAccessible(true);
-            $ref->invoke($this->uri, $uri);
-        } catch (\Throwable $e) {
-            $this->uri->uri_string = $uri;
-        }
+        // Force set the uri_string via the public property (which is still public in legacy URI class)
+        $this->uri->uri_string = $uri;
         
         // Reset
         $this->class = '';
         $this->method = 'index';
         $this->directory = '';
-        $this->routeMatched = FALSE;
         
         // Parse routing
         $this->_set_routing();
@@ -685,38 +568,25 @@ class LegacyRouter
     /**
      * Get routing info (LEGACY)
      */
-    public function getRouting(): ?array
-    {
-        // PERBAIKAN: rsegments selalu ber-index mulai dari 1 (konvensi CI3),
-        // dengan segmen 1 = class dan 2 = method. Sebelumnya rsegment_array()
-        // utuh dikembalikan sehingga nama controller/method ikut terbawa
-        // sebagai argumen method controller (mis. $slug = 'home_controller').
-        $rsegments = $this->uri->rsegment_array() ?? [];
+public function getRouting(): ?array
+{
+    $rsegments = $this->uri->rsegment_array() ?? [];
 
-        if ($this->routeMatched)
-        {
-            // Route eksplisit dari routes.php cocok: class & method sudah
-            // diset dari hasil substitusi $1/$2 oleh _set_request(), jadi
-            // parameter method adalah routed-segmen ke-3 dst.
-            $params = array_slice(array_values($rsegments), 2);
-        }
-        else
-        {
-            // Auto-routing (tidak ada route yang cocok): lewati segmen
-            // class & method dari URI permintaan.
-            $segments = $this->uri->segment_array() ?? [];
-            $params = count($segments) > 2 ? array_slice(array_values($segments), 2) : [];
-        }
+    // rsegments legacy berisi:
+    // [controller, method, param1, param2, ...]
+    // Controller dan method sudah dipisahkan ke class/method.
+    // Yang dikirim ke ControllerExecutor hanya parameter method.
+    $params = array_slice($rsegments, 2);
 
-        return [
-            'class' => $this->class,
-            'method' => $this->method,
-            'directory' => $this->directory,
-            'params' => $params,
-            'type' => 'legacy',
-            'source' => 'legacy_router'
-        ];
-    }
+    return [
+        'class' => $this->class,
+        'method' => $this->method,
+        'directory' => $this->directory,
+        'params' => $params,
+        'type' => 'legacy',
+        'source' => 'legacy_router'
+    ];
+}
 
     /**
      * Check if route exists for current request (LEGACY)

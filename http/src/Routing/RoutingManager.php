@@ -380,7 +380,7 @@ class RoutingManager
     protected function getRequestUri(Request $request): string
     {
         $uri = $request->getUri();
-
+        
         if ($uri instanceof \Kodhe\Framework\Http\Uri) {
             $path = $uri->getPath();
         } elseif (is_string($uri)) {
@@ -389,30 +389,7 @@ class RoutingManager
         } else {
             $path = '/';
         }
-
-        // PERBAIKAN: pada rewrite "RewriteRule ^(.*)$ index.php?/$1", path
-        // request masih berisi "/index.php" (segmen asli berpindah ke query
-        // string). Tanpa pembersihan ini, cache key dan analyzeUri() melihat
-        // 'index.php' sebagai segmen controller -> 404 untuk SEMUA request.
-        $script = $_SERVER['SCRIPT_NAME'] ?? '';
-        if ($script !== '' && strpos($path, $script) === 0) {
-            $path = substr($path, strlen($script));
-        } elseif (preg_match('#(^|/)index\.php(/|$)#', $path)) {
-            $path = preg_replace('#(^|/)index\.php#', '$1', $path, 1);
-        }
-
-        // Fallback pola "index.php?/segment": URI ada di query string
-        if (trim($path, '/') === '' && !empty($_SERVER['QUERY_STRING'])) {
-            $qs = ltrim((string) $_SERVER['QUERY_STRING'], '/');
-            if (strpos($qs, '=') === false) {
-                $path = $qs;
-            } else {
-                parse_str($qs, $qarr);
-                foreach (array('D', 'C', 'M', 'F', 'S') as $k) { unset($qarr[$k]); }
-                $path = trim(implode('/', array_filter($qarr)), '/');
-            }
-        }
-
+        
         // Normalize path
         $path = trim($path, '/');
         return $path === '' ? '/' : '/' . $path;
@@ -464,14 +441,11 @@ class RoutingManager
                     'query_params' => $request->get()
                 ];
             }
-        } catch (\Throwable $e) {
-            // PERBAIKAN: tangkap Throwable (bukan hanya Exception) dan catat
-            // pesan + stack trace, supaya kegagalan route legacy tidak lagi
-            // berubah menjadi 404 hening tanpa jejak di log.
-            log_message('error', 'Legacy routing error: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
+        } catch (\Exception $e) {
+            log_message('error', 'Legacy routing error: ' . $e->getMessage());
             // Continue to other methods
         }
-    }
+     }
 
     /**
      * Analyze URI for routing
