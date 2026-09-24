@@ -361,29 +361,61 @@ class LegacyRouter
      */
     protected function _parse_routes()
     {
-        $uri = implode('/', $this->uri->segment_array());
+        // PERBAIKAN: gunakan uri_string mentah (bukan implode(segment_array()))
+        // agar regex bawaan seperti .* dan karakter ber-spasi tetap utuh.
+        $uri = trim((string) $this->uri->uri_string, '/');
 
-        $http_verb = $this->getHttpMethod();
-
+        // PERBAIKAN: parseRoutes() sudah memilih target sesuai HTTP verb saat
+        // load, sehingga entri '$route['x']['GET']' tersimpan sebagai string.
+        // Loop lama me-continue semua entri array -> route berbasis method
+        // tidak pernah match dan SEMUA request jatuh ke 404.
+        $candidates = array();
         foreach ($this->routes as $key => $val)
         {
-            // Handle array route with HTTP method (LEGACY)
+            // Skip reserved keys — BUKAN pola regex! (mis. '404_override'
+            // akan salah cocok dengan pola '(:any)_override')
+            if ($key === 'default_controller' || $key === '404_override' || $key === 'translate_uri_dashes')
+            {
+                continue;
+            }
+
             if (is_array($val))
             {
                 $val = array_change_key_case($val, CASE_LOWER);
-                if (isset($val[$http_verb]))
+                if ( ! isset($val[$this->getHttpMethod()]))
                 {
-                    $val = $val[$http_verb];
+                    continue;
                 }
-                else
+                $val = $val[$this->getHttpMethod()];
+            }
+
+            if ( ! is_string($val) OR $val === '')
+            {
+                if ( ! is_callable($val))
                 {
                     continue;
                 }
             }
 
-            $key = str_replace(array(':any', ':num'), array('[^/]+', '[0-9]+'), $key);
+            $candidates[$key] = $val;
+        }
 
-            if (preg_match('#^'.$key.'$#', $uri, $matches))
+        // PERBAIKAN: cek route dengan key PERSIS lebih dulu (perilaku CI3).
+        // Tanpa ini, pola serakah seperti '(:any)' dapat mengalahkan entri statis
+        // seperti 'home' karena urutan definisi di routes.php.
+        if (isset($candidates[$uri]))
+        {
+            $this->routeMatched = TRUE;
+            $this->_set_request(explode('/', $candidates[$uri]));
+            return;
+        }
+
+        foreach ($candidates as $key => $val)
+        {
+            // PERBAIKAN: escape delimiter '#' agar pattern tidak pecah.
+            $pattern = str_replace(array(':any', ':num'), array('[^/]+', '[0-9]+'), (string) $key);
+
+            if (@preg_match('#^'.$pattern.'$#', $uri, $matches) === 1)
             {
                 if ( ! is_string($val) && is_callable($val))
                 {
@@ -393,7 +425,28 @@ class LegacyRouter
                 }
                 elseif (strpos($val, '$') !== FALSE && strpos($key, '(') !== FALSE)
                 {
-                    $val = preg_replace('#^'.$key.'$#', $val, $uri);
+                    // PERBAIKAN: batasi hanya ke group yang DIRUJUK di target
+                    // ($1..$9), meniru perilaku CI3 terhadap route cacat seperti
+                    // 'home_controller/any/$1/$2' untuk pola satu-segmen
+                    // '(:any)': tanpa batas ini, preg_replace menyisipkan
+                    // seluruh isi $matches (termasuk URI penuh) sehingga
+                    // method controller menerima argumen yang salah.
+                    $maxRef = 0;
+                    if (preg_match_all('/\\\\([1-9])/', $val, $refs))
+                    {
+                        $maxRef = (int) max($refs[1]);
+                    }
+
+                    $replacements = array_map('strval', array_slice($matches, 1, $maxRef));
+
+                    if ($replacements !== array())
+                    {
+                        $val = str_replace(
+                            array_map(function ($i) { return '$'.$i; }, range(1, count($replacements))),
+                            $replacements,
+                            $val
+                        );
+                    }
                 }
 
                 // Tandai route eksplisit cocok -> getRouting() pakai hasil substitusi $1/$2
