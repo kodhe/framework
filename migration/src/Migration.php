@@ -27,7 +27,7 @@ namespace Kodhe\Framework\Migration;
  * :        function down() {}
  * :    }
  *
- * @package Bonfire\Modules\Migrations\Libraries\Migrations
+ * @package Kodhe\Framework\Migration
  * @author  Mat'as Montes
  * @author  Phil Sturgeon http://philsturgeon.co.uk/
  * @author  Spicer Matthews <spicer@cloudmanic.com> Cloudmanic Labs, LLC http://www.cloudmanic.com/
@@ -86,6 +86,9 @@ class Migration
     /**
      * Initialize the library with the configuration settings.
      *
+     * @param array{migrations_path?: string} $params Optional. Recognized keys:
+     *                       'migrations_path' — absolute path to the core
+     *                       migrations folder (defaults to APPPATH.'Migration').
      * @return void
      */
     public function __construct($params = array())
@@ -265,7 +268,9 @@ class Migration
      * Get the schema version from the cache. If a database query is required, cache
      * the result.
      *
-     * @param string $type The type for which the version is requested.
+     * @param string $type      The type for which the version is requested.
+     * @param bool   $getLatest If true, returns the latest available migration
+     *                          version instead of the currently applied one.
      *
      * @return int The version.
      */
