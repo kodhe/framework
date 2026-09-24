@@ -6,7 +6,6 @@ namespace Kodhe\Framework\Image\Factory;
 
 use Kodhe\Framework\Image\Contracts\ImageDriverInterface;
 use Kodhe\Framework\Image\Drivers\GdDriver;
-use Kodhe\Framework\Image\Drivers\ImagickDriver;
 use Kodhe\Framework\Image\Support\ImageMetadataCache;
 use RuntimeException;
 
@@ -29,7 +28,10 @@ class DriverFactory
     private static $driverMap = [
         'gd' => GdDriver::class,
         'gd2' => GdDriver::class,
-        'imagemagick' => ImagickDriver::class,
+        // Driver ImageMagick direncanakan tapi belum diimplementasikan
+        // (image/src/Drivers/ImagickDriver.php tidak ada) — disamakan dengan
+        // 'netpbm': null -> make() melempar RuntimeException yang jelas.
+        'imagemagick' => null,
         'netpbm' => null, // Not yet implemented
     ];
 

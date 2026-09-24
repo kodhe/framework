@@ -7,12 +7,11 @@ namespace Kodhe\Framework\Session\Drivers;
 use Exception;
 use Kodhe\Framework\Database\Query\Builder;
 use Kodhe\Framework\Session\Driver;
-use Kodhe\Framework\Session\HandlerInterface;
 
 /**
  * CodeIgniter Session Database Driver
  */
-class DatabaseDriver extends Driver implements SessionHandlerInterface
+class DatabaseDriver extends Driver
 {
     /**
      * DB object

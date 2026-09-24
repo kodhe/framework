@@ -256,6 +256,17 @@ class ImageLib
 	 */
 	public $dest_folder		= '';
 
+
+	/**
+	 * Destination image filename
+	 *
+	 * Diisi oleh initialize(); sebelumnya tidak dideklarasikan sehingga memicu
+	 * warning Undefined property saat runtime dan error PHPStan level 0.
+	 *
+	 * @var string
+	 */
+	public $dest_image             		 = '';
+
 	/**
 	 * Image mime-type
 	 *
