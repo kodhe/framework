@@ -1,98 +1,121 @@
+# Kodhe Calendar
 
-## File Test `test_calendar.php`
+Package kalender hasil refaktor library `Calendar` CodeIgniter 3, dengan namespace `Kodhe\Framework\Calendar`. Menghasilkan tampilan kalender bulanan (HTML tabel atau JSON), mendukung navigasi prev/next, nama hari/bulan pendek/panjang, mulai Minggu/Senin, menampilkan hari bulan lain, serta menyisipkan tautan event per tanggal.
+
+## Instalasi
+
+```bash
+composer require kodhe/calendar
+```
+
+Persyaratan: PHP >= 8.1. Tidak ada dependensi eksternal.
+
+## Quick Start
 
 ```php
 <?php
 
-require_once __DIR__ . '/vendor/autoload.php';
+declare(strict_types=1);
 
-use Kodhe\Library\Calendar\Calendar;
+require __DIR__ . '/vendor/autoload.php';
 
-echo "<!DOCTYPE html>\n<html>\n<head>\n";
-echo "<title>Calendar Test</title>\n";
-echo "<style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    h2 { color: #333; margin-top: 30px; }
-    table { border-collapse: collapse; margin-bottom: 20px; }
-    th { background: #f5f5f5; padding: 8px; text-align: center; }
-    td { padding: 8px; text-align: center; border: 1px solid #ddd; }
-    td:hover { background: #f0f0f0; }
-</style>\n";
-echo "</head>\n<body>\n";
+use Kodhe\Framework\Calendar\Calendar;
 
-// Test 1: Basic calendar
-echo "<h2>Test 1: Basic Calendar (Current Month)</h2>\n";
-$cal1 = new Calendar();
-echo $cal1->generate();
+$calendar = new Calendar();
 
-// Test 2: Specific month
-echo "<h2>Test 2: January 2024</h2>\n";
-$cal2 = new Calendar();
-echo $cal2->generate(2024, 1);
+echo $calendar->generate(2024, 1);
+// <table class="calendar"> ... </table>
+```
 
-// Test 3: With navigation
-echo "<h2>Test 3: Calendar with Prev/Next Links</h2>\n";
-$cal3 = new Calendar([
+Dengan navigasi dan data event (tanggal => URL):
+
+```php
+$calendar = new Calendar([
     'show_next_prev' => true,
-    'next_prev_url' => '/calendar/',
+    'next_prev_url'  => '/calendar/',
 ]);
-echo $cal3->generate(2024, 1);
 
-// Test 4: Start on Monday, show other days
-echo "<h2>Test 4: Start Monday + Show Other Days</h2>\n";
-$cal4 = new Calendar([
-    'start_day' => 'monday',
-    'show_other_days' => true,
-]);
-echo $cal4->generate(2024, 1);
-
-// Test 5: With data (event links)
-echo "<h2>Test 5: Calendar with Event Links</h2>\n";
 $data = [
-    1 => '/events/new-year',
+    1  => '/events/new-year',
     15 => '/events/meeting',
     25 => '/events/workshop',
 ];
-$cal5 = new Calendar();
-echo $cal5->generate(2024, 1, $data);
 
-// Test 6: Short month names, short day names
-echo "<h2>Test 6: Short Names + Sunday Start</h2>\n";
-$cal6 = new Calendar([
-    'month_type' => 'short',
-    'day_type' => 'short',
-    'start_day' => 'sunday',
+echo $calendar->generate(2024, 1, $data);
+```
+
+## Konfigurasi
+
+Array konfigurasi diterima lewat konstruktor atau bersifat idempoten per instance:
+
+| Kunci | Tipe | Default | Keterangan |
+|---|---|---|---|
+| `start_day` | string | `sunday` | Hari pertama minggu: `sunday` / `monday` |
+| `month_type` | string | `long` | Nama bulan: `long` (January) atau `abr` (Jan) |
+| `day_type` | string | `abr` | Nama hari: `long` atau `abr` |
+| `locale` | string | `en` | Locale untuk nama hari/bulan |
+| `template` | array\|null | `null` | Template CSS kustom (`default_template()` sebagai basis) |
+| `show_next_prev` | bool | `false` | Tampilkan tautan bulan sebelumnya/berikutnya |
+| `next_prev_url` | string | `''` | URL dasar untuk tautan navigasi |
+| `show_other_days` | bool | `false` | Tampilkan tanggal dari bulan sebelum/sesudah |
+| `local_time` | int\|null | `null` | Timestamp acuan "sekarang" (null = waktu sistem) |
+
+Contoh kalender yang dimulai hari Senin dengan nama pendek:
+
+```php
+$calendar = new Calendar([
+    'start_day'       => 'monday',
+    'show_other_days' => true,
+    'month_type'      => 'abr',
 ]);
-echo $cal6->generate(2024, 3);
 
-// Test 7: Edge case - December to January navigation
-echo "<h2>Test 7: December 2024 (with navigation)</h2>\n";
-$cal7 = new Calendar([
-    'show_next_prev' => true,
-    'next_prev_url' => '/calendar/',
-]);
-echo $cal7->generate(2024, 12);
+echo $calendar->generate(2024, 1);
+```
 
-// Test 8: Template customization
-echo "<h2>Test 8: Custom Template</h2>\n";
-$custom_template = '
-{table_open}<table class="custom-cal">{/table_open}
-{heading_row_start}<tr>{/heading_row_start}
-{heading_title_cell}<th colspan="{colspan}" style="background:#333;color:white;">{heading}</th>{/heading_title_cell}
-{heading_row_end}</tr>{/heading_row_end}
-{week_row_start}<tr style="background:#eee;">{/week_row_start}
-{week_day_cell}<td><strong>{week_day}</strong></td>{/week_day_cell}
-{week_row_end}</tr>{/week_row_end}
-{cal_row_start}<tr>{/cal_row_start}
-{cal_cell_start}<td>{/cal_cell_start}
-{cal_cell_content}<a href="{content}">{day}</a>{/cal_cell_content}
-{cal_cell_no_content}{day}{/cal_cell_no_content}
-{cal_cell_blank}&nbsp;{/cal_cell_blank}
-{cal_cell_end}</td>{/cal_cell_end}
-{cal_row_end}</tr>{/cal_row_end}
-{table_close}</table>{/table_close}
-';
-$cal8 = new Calendar(['template' => $custom_template]);
-echo $cal8->generate(2024, 1, $data);
+## Metode Utama
 
-echo "\n</body>\n</html>";
+### `generate(int|string $year = '', int|string $month = '', array $data = []): string`
+
+Membangun HTML kalender untuk bulan/tahun tertentu. Parameter kosong berarti bulan/tahun berjalan. `$data` memetakan nomor tanggal ke URL event (`[15 => '/event']`); nilai non-array pada tanggal juga dirender apa adanya.
+
+### `asJson(int|string $year = '', int|string $month = '', array $data = []): string`
+
+Hasil kalender dalam bentuk JSON — berguna untuk kalender dinamis di sisi frontend.
+
+### `setRenderer(CalendarRendererInterface $renderer): self`
+
+Mengganti renderer secara runtime (mis. renderer kustom untuk markup Tailwind).
+
+### Helper utilitas (kompatibel CI3 + varian camelCase)
+
+```php
+$calendar->get_month_name(1);        // "January"  (alias: getMonthName)
+$calendar->get_day_names('abr');     // ['Sunday','Monday',...] short (alias: getDayNames)
+$calendar->adjust_date(12, 2024);    // [1, 2025]  (alias: adjustDate)
+$calendar->get_total_days(2, 2024);  // 29         (alias: getTotalDays)
+$calendar->get_last_day(2, 2024);    // 4 (indeks hari) (alias: getLastDay)
+$calendar->get_total_weeks(2, 2024); // 5          (alias: getTotalWeeks)
+```
+
+## Struktur Direktori
+
+```
+src/
+├── Calendar.php                  # Kelas utama (API kompatibel CI3)
+├── Contracts/                    # CalendarInterface, CalendarRendererInterface
+├── Generators/MonthGenerator.php # Logika pembentukan sel kalender
+├── Renderers/                    # HtmlTableRenderer, JsonRenderer
+├── Traits/                       # ConfigurableTrait, SingletonTrait
+├── ValueObjects/                 # CalendarDate, CalendarEvent
+└── helpers.php                   # days_in_month() dsb.
+```
+
+## Catatan Migrasi dari Namespace Lama
+
+Versi dokumentasi/test lama memakai `Kodhe\Library\Calendar\Calendar`. Untuk instalasi Composer modern, gunakan:
+
+```php
+use Kodhe\Framework\Calendar\Calendar;
+```
+
+PSR-4 mapping `Kodhe\Framework\Calendar\` → `calendar/src/` dideklarasikan di `calendar/composer.json`.
