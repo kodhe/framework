@@ -15,6 +15,9 @@ class TrackbackParser implements ParserInterface
 {
     private TrackbackConfig $config;
 
+    /**
+     * @param TrackbackConfig|null $config Parser configuration (defaults to a fresh TrackbackConfig)
+     */
     public function __construct(?TrackbackConfig $config = null)
     {
         $this->config = $config ?? new TrackbackConfig();
@@ -22,6 +25,10 @@ class TrackbackParser implements ParserInterface
 
     /**
      * Parse incoming trackback request data.
+     *
+     * @param array<string,mixed> $data Raw request fields; requires url, title, blog_name, excerpt
+     * @return array{url:string,title:string,excerpt:string,blog_name:string,charset:string} Sanitized fields
+     * @throws ParseException When a required field is missing or the payload exceeds the configured maximum size
      */
     public function parseRequest(array $data): array
     {
@@ -52,6 +59,9 @@ class TrackbackParser implements ParserInterface
 
     /**
      * Parse trackback response XML.
+     *
+     * @param string $response Raw XML response body from the receiving blog
+     * @return array{success:bool,error_code:int,message:string} Parsed result; success is TRUE only when <error> is 0
      */
     public function parseResponse(string $response): array
     {
@@ -83,6 +93,9 @@ class TrackbackParser implements ParserInterface
 
     /**
      * Extract URLs from a string (comma or space separated).
+     *
+     * @param string $urls One or more URLs separated by commas and/or whitespace
+     * @return list<string> Unique, non-empty URLs in order of appearance
      */
     public function extractUrls(string $urls): array
     {
@@ -105,6 +118,9 @@ class TrackbackParser implements ParserInterface
 
     /**
      * Build trackback POST data from array.
+     *
+     * @param array<string,mixed> $data Recognized keys: url, title, blog_name, excerpt, charset, tb_id
+     * @return string URL-encoded query string (RFC 3986); tb_id is placed first when present
      */
     public function buildPostData(array $data): string
     {
@@ -128,6 +144,9 @@ class TrackbackParser implements ParserInterface
 
     /**
      * Convert XML special characters to entities.
+     *
+     * @param string $str Input text; existing numeric/named entities are preserved
+     * @return string Text with &, <, >, ", ' and - replaced by their entity forms
      */
     public function convertXml(string $str): string
     {
@@ -150,6 +169,11 @@ class TrackbackParser implements ParserInterface
 
     /**
      * Limit characters preserving words.
+     *
+     * @param string $str     Input text (whitespace runs are collapsed before counting)
+     * @param int    $n       Maximum length in bytes before the end character is appended
+     * @param string $endChar Suffix appended when truncation occurs (default: horizontal ellipsis entity)
+     * @return string The original text if short enough, otherwise truncated at the word boundary nearest $n
      */
     public function limitCharacters(string $str, int $n = 500, string $endChar = '&#8230;'): string
     {
@@ -176,6 +200,9 @@ class TrackbackParser implements ParserInterface
 
     /**
      * Convert high ASCII to entities.
+     *
+     * @param string $str UTF-8 input text
+     * @return string Text with every multi-byte (high ASCII) character replaced by its &#N; numeric entity
      */
     public function convertAscii(string $str): string
     {
@@ -212,6 +239,9 @@ class TrackbackParser implements ParserInterface
 
     /**
      * Extract trackback ID from URL.
+     *
+     * @param string $url Trackback target URL (with or without query string)
+     * @return string|false The trailing numeric/parsed ID, or FALSE when no ID can be extracted
      */
     public function getTrackbackId(string $url): string|false
     {
