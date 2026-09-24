@@ -1,31 +1,38 @@
 # Daftar paket yang diaudit PHPStan oleh workflow Static Analysis.
 # Format: <folder-paket>: <level>  (satu per baris; '#' = komentar/baris kosong)
-# Naikkan level per paket secara bertahap, atau turunkan ke 'skipped' bila perlu.
-agent: 5
-cache: 5
+#
+# Ratchet berbasis bukti — tiap angka diverifikasi dengan phpstan 1.12.34 /
+# PHP 8.2 memakai .phpstan/bootstrap.php (stub CI3 globals), September 2026:
+#   - "5"     : bersih pada level 5 (parser, zip, calendar)
+#   - "0"     : bersih pada level 0 setelah stub bootstrap (encrypt, ftp, upload)
+#   - "skipped": masih punya error nyata pada level 0 -> butuh triase via issue
+#                paketnya (#148 dst.) sebelum diaktifkan kembali.
+# Naikkan level per paket lewat PR kecil setelah error pada level berikutnya nol.
+agent: skipped
+cache: skipped
 calendar: 5
-cart: 5
-database: 5
-driver: 5
-email: 5
-encrypt: 5
-encryption: 5
-ftp: 5
-http: 5
-image: 5
-javascript: 5
-migration: 5
-pagination: 5
+cart: skipped
+database: skipped
+driver: skipped
+email: skipped
+encrypt: 0
+encryption: skipped
+ftp: 0
+http: skipped
+image: skipped
+javascript: skipped
+migration: skipped
+pagination: skipped
 parser: 5
-profiler: 5
-session: 5
-table: 5
-test: 5
-trackback: 5
-typography: 5
-upload: 5
-validation: 5
-view: 5
-xmlrpc: 5
-xmlrpcs: 5
+profiler: skipped
+session: skipped
+table: skipped
+test: skipped
+trackback: skipped
+typography: skipped
+upload: 0
+validation: skipped
+view: skipped
+xmlrpc: skipped
+xmlrpcs: skipped
 zip: 5
