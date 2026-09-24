@@ -5,14 +5,13 @@ declare(strict_types=1);
 namespace Kodhe\Framework\Session\Drivers;
 
 use Kodhe\Framework\Session\Driver;
-use Kodhe\Framework\Session\HandlerInterface;
 use Redis;
 use RedisException;
 
 /**
  * CodeIgniter Session Redis Driver
  */
-class RedisDriver extends Driver implements SessionHandlerInterface
+class RedisDriver extends Driver
 {
     /**
      * Redis instance

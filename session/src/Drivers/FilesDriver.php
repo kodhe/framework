@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Kodhe\Framework\Session\Drivers;
 
 use Kodhe\Framework\Session\Driver;
-use Kodhe\Framework\Session\HandlerInterface;
 
 /**
  * CodeIgniter Session Files Driver
@@ -16,7 +15,7 @@ use Kodhe\Framework\Session\HandlerInterface;
  * @author	Andrey Andreev
  * @link	https://codeigniter.com/user_guide/libraries/sessions.html
  */
-class FilesDriver extends Driver implements SessionHandlerInterface
+class FilesDriver extends Driver
 {
     /**
      * Save path

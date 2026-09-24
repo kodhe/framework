@@ -21,13 +21,13 @@ encrypt: 0
 encryption: 1
 ftp: 0
 http: skipped
-image: skipped
+image: 0
 javascript: skipped
 migration: 0
 pagination: 2
 parser: 5
-profiler: skipped
-session: skipped
+profiler: 0
+session: 0
 table: 1
 test: skipped
 trackback: skipped

@@ -19,8 +19,8 @@ class DriverFactory
      * @var array Registered driver mappings
      */
     private static array $drivers = [
-        'files' => \Kodhe\Framework\Session\Drivers\Files::class,
-        'database' => \Kodhe\Framework\Session\Drivers\Database::class,
+        'files' => \Kodhe\Framework\Session\Drivers\FilesDriver::class,
+        'database' => \Kodhe\Framework\Session\Drivers\DatabaseDriver::class,
         'redis' => \Kodhe\Framework\Session\Drivers\RedisDriver::class,
         'memcached' => \Kodhe\Framework\Session\Drivers\MemcachedDriver::class,
     ];
