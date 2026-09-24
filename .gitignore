@@ -1,12 +1,5 @@
-# Composer dependencies
-vendor/
-
-# IDEs and Editors
+/vendor/
+/composer.lock
 .idea/
 .vscode/
-*.swp
-*.swo
-
-# OS generated files
-.DS_Store
-Thumbs.db
+*.log
