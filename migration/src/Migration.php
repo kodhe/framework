@@ -146,12 +146,14 @@ class Migration
      *
      * @param string $sql A string with one or more SQL commands to be run.
      *
-     * @return void
+     * @return bool TRUE on success, FALSE when a query failed. Sebelumnya
+     *              berdocblock @return void padahal pemanggil memeriksa
+     *              `=== false` -> sukses ambigu; kini eksplisit.
      */
     public function doSqlMigration($sql = '')
     {
         if (empty($sql)) {
-            return;
+            return true;
         }
 
         // Split the sql into usable commands on ';'
@@ -163,6 +165,8 @@ class Migration
                 }
             }
         }
+
+        return true;
     }
 
     /**
@@ -564,9 +568,13 @@ class Migration
                 return APPPATH . 'db/migrations/';
 
             // If it is not a core migration or application migration, it should
-            // be the name of a module.
+            // be the name of a module. Catatan: kelas Kodhe\Framework\*Modules\*
+            // tidak ada di framework ini -> panggilan lama ke Modules::path()
+            // selalu fatal; jadikan error eksplisit yang bisa ditangani caller.
             default:
-                return Modules::path(substr($type, 0, -1), 'migrations') . '/';
+                throw new \RuntimeException(
+                    "Module migrations are not supported in this framework (unknown module type: '{$type}')."
+                );
         }
     }
 
@@ -700,7 +708,13 @@ class Migration
      */
     private function updateVersion($version, $type = '')
     {
-        logit("[Migrations] Schema {$type} updated to: {$version}");
+        // Fungsi global logit() tidak ada di framework ini (sisa port Bonfire)
+        // -> panggilan lama fatal. Gunakan error_log bila tersedia.
+        if (function_exists('logit')) {
+            logit("[Migrations] Schema {$type} updated to: {$version}");
+        } else {
+            error_log("[Migrations] Schema {$type} updated to: {$version}");
+        }
 
         // default to core
         $type = empty($type) ? self::CORE_MIGRATIONS : $type;
