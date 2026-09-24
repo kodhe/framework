@@ -59,6 +59,13 @@ composer require kodhe/validation kodhe/session kodhe/http
 Struktur folder aplikasi CI3 (`application/config`, `controllers`, `models`,
 `views`, `migrations`) **tidak berubah** — kernel membacunya apa adanya.
 
+> ⚠️ Tetapi perhatikan: Kodhe juga punya **konvensi struktur sendiri** untuk kode
+> baru — folder PascalCase tanpa underscore (`app/Controllers/`, `app/Models/`)
+> dan sistem router ganda (modern + legacy) yang perilakunya berbeda dari CI3.
+> Ini adalah isu nyata saat migrasi bertahap; seluruh pemetaannya beserta
+> strategi koeksistensi ada di
+> **[Struktur Folder & Router](folder-structure-and-routing.md)**.
+
 ## 3. Bootstrap aplikasi
 
 Ganti bootstrap pada `index.php`. CI3:
