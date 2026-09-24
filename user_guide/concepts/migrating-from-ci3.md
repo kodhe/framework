@@ -170,8 +170,10 @@ Jalankan berurutan; tiap langkah harus hijau sebelum lanjut:
 - [ ] Kirim email via SMTP test
 - [ ] `form_validation` pada form tersulit (rules custom callback)
 - [ ] Migration `latest()` / `version()` pada DB staging
-- [ ] Enkripsi: dekripsi data lama → enkripsi ulang → verifikasi
+- [ ] Enkripsi: dekripsi data lama → enkripsi ulang → verifikasi (lihat `Encrypt::migrate()` di [Keamanan](security.md) §5)
+- [ ] CSRF: form POST dengan token valid lolos; token salah menghasilkan 403
 - [ ] Suite tes regresi / smoke-test manual end-to-end
+- [ ] Audit keamanan akhir: jalankan checklist pra-produksi di [Keamanan](security.md) §10
 
 Error yang paling sering muncul pada tahap ini sudah terdokumentasi beserta
 solusinya di [troubleshooting](../general/troubleshooting.md).
