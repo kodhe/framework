@@ -1,1 +1,3 @@
-(empty)
+vendor/
+.phpstan/.phpstan-cache/
+composer.lock
