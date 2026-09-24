@@ -440,8 +440,15 @@ class Encryption implements EncryptionInterface
         // Because aliases
         if ($key === 'mode') {
             return array_search($this->_mode, $this->_modes['openssl'], true);
-        } elseif (in_array($key, ['cipher', 'driver', 'drivers', 'digests'], true)) {
+        } elseif (in_array($key, ['cipher', 'digests'], true)) {
+            // Properti dinamis yang memang ada di kelas ini.
             return $this->{'_' . $key};
+        } elseif ($key === 'driver') {
+            // Aliases legacy CI3: properti $_driver/$_drivers dihapus saat migrasi
+            // ke handler OpenSSL -> kembalikan null eksplisit (bukan undefined).
+            return null;
+        } elseif ($key === 'drivers') {
+            return [];
         }
 
         return null;
