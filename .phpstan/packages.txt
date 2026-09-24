@@ -4,6 +4,8 @@
 # Ratchet berbasis bukti — tiap angka diverifikasi dengan phpstan 1.12.34 /
 # PHP 8.2 memakai .phpstan/bootstrap.php (stub CI3 globals), September 2026:
 #   - "5"     : bersih pada level 5 (parser, zip, calendar)
+#   - "1"     : bersih pada level 1 setelah perbaikan bug PR-10 (validation, xmlrpc,
+#                table, driver, encryption, cart)
 #   - "0"     : bersih pada level 0 setelah stub bootstrap (encrypt, ftp, upload)
 #   - "skipped": masih punya error nyata pada level 0 -> butuh triase via issue
 #                paketnya (#148 dst.) sebelum diaktifkan kembali.
@@ -11,12 +13,12 @@
 agent: skipped
 cache: skipped
 calendar: 5
-cart: skipped
+cart: 1
 database: skipped
-driver: skipped
+driver: 1
 email: skipped
 encrypt: 0
-encryption: skipped
+encryption: 1
 ftp: 0
 http: skipped
 image: skipped
@@ -26,13 +28,13 @@ pagination: skipped
 parser: 5
 profiler: skipped
 session: skipped
-table: skipped
+table: 1
 test: skipped
 trackback: skipped
 typography: skipped
 upload: 0
-validation: skipped
+validation: 1
 view: skipped
-xmlrpc: skipped
+xmlrpc: 1
 xmlrpcs: skipped
 zip: 5

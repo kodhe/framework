@@ -100,6 +100,24 @@ if (!class_exists('CI_Controller')) {
     }
 }
 
+if (!class_exists('CI_DB_result')) {
+    /**
+     * Stub hasil query CodeIgniter 3 untuk analisis statis (table/src memakai
+     * instanceof CI_DB_result; kelas nyata dipasok DB driver CI saat runtime).
+     */
+    class CI_DB_result implements IteratorAggregate
+    {
+        /** @return \Traversable */
+        public function getIterator(): \Traversable { return new \ArrayIterator([]); }
+
+        /** @return array<int, object> */
+        public function result_array() { return []; }
+
+        /** @return int */
+        public function num_rows() { return 0; }
+    }
+}
+
 if (!class_exists('CI_Model')) {
     /** @see stub-only */
     class CI_Model

@@ -43,7 +43,9 @@ class KeyGenerator
         }
 
         // Last resort: mcrypt (deprecated but for backward compatibility)
-        if (defined('MCRYPT_DEV_URANDOM')) {
+        // Ekstensi mcrypt sudah dihapus sejak PHP 7.2 — cek function_exists()
+        // juga agar tidak dianalisis/dieksekusi saat ekstensi tidak terpasang.
+        if (defined('MCRYPT_DEV_URANDOM') && function_exists('mcrypt_create_iv')) {
             return mcrypt_create_iv($length, MCRYPT_DEV_URANDOM);
         }
 

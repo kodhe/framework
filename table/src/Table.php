@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Kodhe\Framework\Table;
 
+// CI_DB_result dipasok oleh lingkungan CodeIgniter 3 saat runtime; untuk analisis
+// statis, stub .phpstan/bootstrap.php menyediakan kelas ini.
+use CI_DB_result;
 use Kodhe\Framework\Table\Contracts\TableInterface;
 use Kodhe\Framework\Table\Contracts\RendererInterface;
 use Kodhe\Framework\Table\Builder\HeaderBuilder;
@@ -275,7 +278,7 @@ class Table implements TableInterface
 		// The table data can optionally be passed to this function
 		// either as a database result object or an array
 		if (!empty($table_data)) {
-			if ($table_data instanceof \CI_DB_result) {
+			if ($table_data instanceof CI_DB_result) {
 				$this->_set_from_db_result($table_data);
 			} elseif (is_array($table_data)) {
 				$this->_set_from_array($table_data);
