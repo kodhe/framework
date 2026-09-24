@@ -14,14 +14,56 @@ class Output implements OutputInterface
     /** @var resource */
     protected $stream;
 
+    protected bool $decorated;
+
     /**
      * Constructor
      * 
-     * @param resource|null $stream Output stream (defaults to STDOUT)
+     * @param resource|null $stream    Output stream (defaults to STDOUT)
+     * @param bool|null     $decorated Force ANSI colors on/off. When null it is
+     *                                 auto-detected: enabled only when the stream
+     *                                 is a TTY and KODHE_NO_COLOR is not set.
      */
-    public function __construct($stream = null)
+    public function __construct($stream = null, ?bool $decorated = null)
     {
         $this->stream = $stream ?? fopen('php://stdout', 'w');
+        $this->decorated = $decorated ?? ($this->hasColorSupport() && !self::envFlag('KODHE_NO_COLOR'));
+    }
+
+    /**
+     * Whether the output stream supports ANSI colors.
+     */
+    public function hasColorSupport(): bool
+    {
+        if (!is_resource($this->stream)) {
+            return false;
+        }
+
+        if (getenv('TERM') === 'dumb') {
+            return false;
+        }
+
+        return function_exists('stream_isatty') && @stream_isatty($this->stream);
+    }
+
+    /**
+     * Check whether an environment flag is truthy ("1", "true", "yes", "on").
+     */
+    protected static function envFlag(string $name): bool
+    {
+        $value = getenv($name);
+
+        return $value !== false && in_array(strtolower($value), ['1', 'true', 'yes', 'on'], true);
+    }
+
+    /**
+     * Enable or disable ANSI decoration explicitly.
+     */
+    public function setDecorated(bool $decorated): self
+    {
+        $this->decorated = $decorated;
+
+        return $this;
     }
 
     /**
@@ -33,7 +75,7 @@ class Output implements OutputInterface
             $message .= PHP_EOL;
         }
         
-        fwrite($this->stream, $message);
+        fwrite($this->stream, Formatter::format($message, $this->decorated));
     }
 
     /**
