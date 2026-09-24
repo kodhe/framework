@@ -438,7 +438,9 @@ class Email implements EmailInterface
      */
     public function printDebugger(array $include = ['headers', 'subject', 'body']): string
     {
-        return $this->getDebugMessage();
+        // DebugTrait menyediakan getDebugString(); sebelumnya memanggil
+        // getDebugMessage() yang tidak pernah ada -> fatal error saat dipanggil.
+        return $this->getDebugString();
     }
 
     /**
