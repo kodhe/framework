@@ -168,10 +168,20 @@ class Pagination
             $this
         );
 
+        // Builder tidak membaca konteks saat konstruksi; konfigurasi disuntik
+        // via setConfig() (sebelumnya `new X($this)` -> ArgumentCountError).
         if ($this->page_query_string === true) {
-            $this->urlBuilder = new Url\QueryStringUrlBuilder($this);
+            $builder = new Url\QueryStringUrlBuilder();
+            $builder->setConfig(['query_string_segment' => (string) $this->query_string_segment]);
+            $this->urlBuilder = $builder;
         } else {
-            $this->urlBuilder = new Url\SegmentUrlBuilder($this);
+            $builder = new Url\SegmentUrlBuilder();
+            $builder->setConfig([
+                'prefix'     => (string) $this->prefix,
+                'suffix'     => (string) $this->suffix,
+                'uri_segment' => $this->uri_segment,
+            ]);
+            $this->urlBuilder = $builder;
         }
     }
 
@@ -224,7 +234,7 @@ class Pagination
         }
 
         $links = $this->buildLinks($totalPages);
-        $html = $this->renderer->render($links, $this);
+        $html = $this->renderer->render($links);
 
         if ($this->enable_cache) {
             $this->cache->set($cacheKey, $html);
