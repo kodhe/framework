@@ -42,9 +42,16 @@ fi
 tmpconf="$(mktemp "${TMPDIR:-/tmp}/phpstan-${pkg}.XXXXXX.neon")"
 trap 'rm -f "$tmpconf"' EXIT
 
+bootstrap=""
+if [ -f "$root/.phpstan/bootstrap.php" ]; then
+    bootstrap="
+    bootstrapFiles:
+        - ${root}/.phpstan/bootstrap.php"
+fi
+
 cat > "$tmpconf" <<EOF
 parameters:
-    level: ${level}
+    level: ${level}${bootstrap}
     paths:
         - ${root}/${pkg}/src
 EOF

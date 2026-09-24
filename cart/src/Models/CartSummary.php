@@ -16,32 +16,32 @@ class CartSummary
     /**
      * @var int Total number of items
      */
-    private int $totalItems;
+    protected int $totalItems;
 
     /**
      * @var float Subtotal before tax, discounts, and shipping
      */
-    private float $subtotal;
+    protected float $subtotal;
 
     /**
      * @var float Tax amount
      */
-    private float $tax;
+    protected float $tax;
 
     /**
      * @var float Discount amount
      */
-    private float $discount;
+    protected float $discount;
 
     /**
      * @var float Shipping cost
      */
-    private float $shipping;
+    protected float $shipping;
 
     /**
      * @var float Grand total
      */
-    private float $total;
+    protected float $total;
 
     /**
      * Constructor
