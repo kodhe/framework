@@ -19,6 +19,7 @@ di setiap sub-folder.
 | [app-components](concepts/app-components.md) | **Standar komponen aplikasi Kodhe**: controller (`App\Controllers`), model (`Kodhe\Framework\Database\Model`), library & view/template multi-engine — plus cara migrasi tiap komponen dari CI3 |
 | [migrasi-dari-ci3](concepts/migrating-from-ci3.md) | **Panduan langkah demi langkah memindahkan aplikasi CI3** (strategi, bootstrap, config, checklist verifikasi, rollback) |
 | [struktur-folder-routing](concepts/folder-structure-and-routing.md) | ⚠️ Perbedaan struktur folder Kodhe (`Controllers/`, tanpa `_`) vs CI3, router ganda modern+legacy, strategi koeksistensi |
+| [cli-console](concepts/cli-console.md) | Console CLI modern (`Console::getInstance()`, base `Command`, `make:*`) + migrasi job cron `is_cli()` CI3 |
 | [namespace-migrasi](concepts/namespaces-migration.md) | Peta lengkap `CI_*` / `Kodhe\Library\*` → `Kodhe\Framework\*` |
 
 ### Topik Umum (`general/`)
