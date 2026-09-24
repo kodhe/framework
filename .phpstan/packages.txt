@@ -1,0 +1,31 @@
+# Daftar paket yang diaudit PHPStan oleh workflow Static Analysis.
+# Format: <folder-paket>: <level>  (satu per baris; '#' = komentar/baris kosong)
+# Naikkan level per paket secara bertahap, atau turunkan ke 'skipped' bila perlu.
+agent: 5
+cache: 5
+calendar: 5
+cart: 5
+database: 5
+driver: 5
+email: 5
+encrypt: 5
+encryption: 5
+ftp: 5
+http: 5
+image: 5
+javascript: 5
+migration: 5
+pagination: 5
+parser: 5
+profiler: 5
+session: 5
+table: 5
+test: 5
+trackback: 5
+typography: 5
+upload: 5
+validation: 5
+view: 5
+xmlrpc: 5
+xmlrpcs: 5
+zip: 5

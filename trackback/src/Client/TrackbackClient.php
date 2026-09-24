@@ -26,6 +26,11 @@ class TrackbackClient
     private TrackbackConfig $config;
     private array $errors = [];
 
+    /**
+     * @param TransportInterface|null $transport HTTP transport (default: TransportFactory::getDefault())
+     * @param ParserInterface|null    $parser    Trackback parser (default: TrackbackConfig-aware TrackbackParser)
+     * @param TrackbackConfig|null    $config    Shared configuration (fresh defaults when null)
+     */
     public function __construct(
         ?TransportInterface $transport = null,
         ?ParserInterface $parser = null,
@@ -41,8 +46,8 @@ class TrackbackClient
     /**
      * Send trackback to one or more URLs.
      *
-     * @param array $tb_data Trackback data
-     * @return bool TRUE on success (all URLs), FALSE on any failure
+     * @param array{url:string,title:string,excerpt:string,blog_name:string,ping_url:string} $tb_data Trackback data; ping_url may be a single URL or comma/space-separated list
+     * @return bool TRUE on success (all URLs), FALSE on any failure (collect details via getErrors())
      */
     public function send(array $tb_data): bool
     {
@@ -174,6 +179,8 @@ class TrackbackClient
 
     /**
      * Get all error messages.
+     *
+     * @return list<string> Errors accumulated by the last send() call
      */
     public function getErrors(): array
     {
