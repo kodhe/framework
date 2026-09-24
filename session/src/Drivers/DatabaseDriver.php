@@ -34,6 +34,17 @@ class DatabaseDriver extends Driver
     protected $lock = false;
 
     /**
+     * Expiry column used by garbage collection ('timestamp' or legacy CI3
+     * 'lastactivity'); resolved lazily on first gc() run.
+     */
+    protected ?string $_gc_column = null;
+
+    /**
+     * Whether the session table schema has been validated once per request.
+     */
+    protected bool $_schema_checked = false;
+
+    /**
      * Constructor
      */
     public function __construct(array &$params)
@@ -94,6 +105,43 @@ class DatabaseDriver extends Driver
 
         $this->_db->reset_query();
         $this->_session_id = $session_id;
+
+        // Fail fast with a clear message instead of an opaque
+        // mysqli_sql_exception ("Unknown column 'data' in 'SELECT'") when the
+        // configured table is not the CI3-style session schema
+        // (id, ip_address, timestamp|lastactivity, data).
+        if ($this->_schema_checked === false) {
+            $this->_schema_checked = true;
+            try {
+                $columns = (array) $this->_db->field_data($this->_config['save_path']);
+                $names = array_map(
+                    static function ($c) {
+                        return is_object($c) ? ($c->name ?? '') : (string) $c;
+                    },
+                    $columns
+                );
+                foreach (['id', 'ip_address', 'data'] as $required) {
+                    if (! in_array($required, $names, true)) {
+                        throw new Exception(
+                            "Session table '{$this->_config['save_path']}' is missing the required column"
+                            . " '$required'. Expected the CI3 session schema: id, ip_address,"
+                            . " timestamp (or legacy lastactivity), data. See session/README.md."
+                        );
+                    }
+                }
+            } catch (\Throwable $e) {
+                // field_data() itself failed (table missing / no privileges):
+                // surface that too rather than letting SELECT blow up later.
+                if ($e instanceof Exception) {
+                    throw $e;
+                }
+                throw new Exception(
+                    "Unable to inspect session table '{$this->_config['save_path']}': " . $e->getMessage(),
+                    0,
+                    $e
+                );
+            }
+        }
 
         $this->_db->select('data')
                   ->from($this->_config['save_path'])
@@ -216,11 +264,35 @@ class DatabaseDriver extends Driver
     public function gc(int $maxlifetime): int|false
     {
         $this->_db->reset_query();
+
+        // Some deployments keep the legacy CI3 session schema whose expiry
+        // column is named 'lastactivity' instead of 'timestamp'. Detect the
+        // actual column once so garbage collection never triggers an
+        // "Unknown column" database error.
+        if ($this->_gc_column === null) {
+            $this->_gc_column = 'timestamp';
+            try {
+                $columns = (array) $this->_db->field_data($this->_config['save_path']);
+                $names = array_map(
+                    static function ($c) {
+                        return is_object($c) ? ($c->name ?? '') : (string) $c;
+                    },
+                    $columns
+                );
+                if (! in_array('timestamp', $names, true) && in_array('lastactivity', $names, true)) {
+                    $this->_gc_column = 'lastactivity';
+                }
+            } catch (\Throwable $e) {
+                // Schema probe failed; keep the default and let the delete
+                // surface any genuine error as before.
+            }
+        }
+
         $result = $this->_db->delete(
             $this->_config['save_path'],
-            'timestamp < ' . (time() - $maxlifetime)
+            $this->_gc_column . ' < ' . (time() - $maxlifetime)
         );
-        
+
         return $result ? $this->_db->affected_rows() : false;
     }
 
