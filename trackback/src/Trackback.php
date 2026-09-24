@@ -13,7 +13,7 @@ use Kodhe\Framework\Trackback\Support\TrackbackConfig;
  * Maintains 100% backward compatibility with CodeIgniter 3 Trackback class
  * while using modern modular architecture internally.
  *
- * @package         CodeIgniter
+ * @package         Kodhe\Framework\Trackback
  * @subpackage      Libraries
  * @category        Trackbacks
  * @author          EllisLab Dev Team

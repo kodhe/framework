@@ -12,48 +12,91 @@ use Kodhe\Framework\Pagination\Support\AttributeHelper;
 use Kodhe\Framework\Pagination\ValueObjects\LinkData;
 use Kodhe\Framework\Pagination\ValueObjects\PaginationConfig;
 
+/**
+ * Pagination library (CI3-compatible, modular rendering).
+ *
+ * @package Kodhe\Framework\Pagination
+ */
 class Pagination
 {
     // CI3 Config Properties
+    /** @var string Base URL used to build page links. */
     public $base_url = '';
+    /** @var string */
     public $prefix = '';
+    /** @var string */
     public $suffix = '';
+    /** @var int */
     public $total_rows = 0;
+    /** @var int */
     public $per_page = 10;
+    /** @var int */
     public $num_links = 2;
+    /** @var int */
     public $cur_page = 0;
+    /** @var bool */
     public $use_page_numbers = false;
+    /** @var string */
     public $first_link = '&lsaquo; First';
+    /** @var string */
     public $next_link = '&gt;';
+    /** @var string */
     public $prev_link = '&lt;';
+    /** @var string */
     public $last_link = 'Last &rsaquo;';
+    /** @var int */
     public $uri_segment = 3;
+    /** @var string */
     public $full_tag_open = '';
+    /** @var string */
     public $full_tag_close = '';
+    /** @var string */
     public $first_tag_open = '';
+    /** @var string */
     public $first_tag_close = '';
+    /** @var string */
     public $last_tag_open = '';
+    /** @var string */
     public $last_tag_close = '';
+    /** @var string */
     public $first_url = '';
+    /** @var string */
     public $cur_tag_open = '<strong>';
+    /** @var string */
     public $cur_tag_close = '</strong>';
+    /** @var string */
     public $next_tag_open = '';
+    /** @var string */
     public $next_tag_close = '';
+    /** @var string */
     public $prev_tag_open = '';
+    /** @var string */
     public $prev_tag_close = '';
+    /** @var string */
     public $num_tag_open = '';
+    /** @var string */
     public $num_tag_close = '';
+    /** @var bool */
     public $page_query_string = false;
+    /** @var string */
     public $query_string_segment = 'per_page';
+    /** @var bool */
     public $display_pages = true;
+    /** @var string */
     public $anchor_class = '';
 
     // Modular Properties
+    /** @var RendererInterface */
     protected RendererInterface $renderer;
+    /** @var UrlBuilderInterface */
     protected UrlBuilderInterface $urlBuilder;
+    /** @var LinkCache */
     protected LinkCache $cache;
+    /** @var bool */
     protected bool $enable_cache = true;
+    /** @var ?PaginationConfig */
     protected ?PaginationConfig $configObject = null;
+    /** @var string */
     protected string $renderer_name = 'default';
 
     /**
@@ -61,6 +104,8 @@ class Pagination
      *
      * Compatible with:
      * new Pagination($config)
+     *
+     * @param array<string, mixed>|object $params Pagination configuration.
      */
     public function __construct($params = [])
     {
@@ -76,6 +121,9 @@ class Pagination
      *
      * Compatible with CI3:
      * $this->pagination->initialize($config);
+     *
+     * @param array<string, mixed>|object $params Pagination configuration.
+     * @return void
      */
     public function initialize($params = [])
     {
@@ -150,6 +198,8 @@ class Pagination
      *
      * Compatible with CI3:
      * $this->pagination->create_links()
+     *
+     * @return string Rendered pagination links HTML ('' when total_rows <= 0).
      */
     public function create_links()
     {
@@ -443,6 +493,11 @@ class Pagination
      * Legacy compatibility placeholder.
      *
      * Parser functionality does not belong to Pagination.
+     *
+     * @param string $template Unused (legacy signature).
+     * @param array<string, mixed> $data Unused (legacy signature).
+     * @param bool $return Unused (legacy signature).
+     * @return string Always an empty string.
      */
     public function parse_string($template, $data, $return = false)
     {

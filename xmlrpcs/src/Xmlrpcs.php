@@ -25,7 +25,7 @@ if (!class_exists('Kodhe\Framework\Xmlrpc\Xmlrpc', false)) {
  * XML-RPC server class - Refactored with modular architecture
  * Maintains 100% backward compatibility with CI3 API
  *
- * @package     Kodhe\Xmlrpcs
+ * @package     Kodhe\Framework\Xmlrpcs
  * @category    XML-RPC
  */
 class Xmlrpcs extends \Kodhe\Framework\Xmlrpc\Xmlrpc

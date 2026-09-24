@@ -12,6 +12,8 @@ namespace Kodhe\Framework\Validation;
  * @category	Validation
  * @author		EllisLab Dev Team
  * @link		https://codeigniter.com/user_guide/libraries/form_validation.html
+ *
+ * @package Kodhe\Framework\Validation
  */
 class FormValidation
 {
@@ -131,7 +133,7 @@ class FormValidation
 	 * @param	string	$label
 	 * @param	mixed	$rules
 	 * @param	array	$errors
-	 * @return	CI_Form_validation
+	 * @return	$this
 	 */
 	public function set_rules($field, $label = '', $rules = array(), $errors = array())
 	{
@@ -231,7 +233,7 @@ class FormValidation
 	 * each array due to the limitations of CI's singleton
 	 *
 	 * @param	array	$data
-	 * @return	CI_Form_validation
+	 * @return	$this
 	 */
 	public function set_data(array $data)
 	{
@@ -253,7 +255,7 @@ class FormValidation
 	 *
 	 * @param	array
 	 * @param	string
-	 * @return	CI_Form_validation
+	 * @return	$this
 	 */
 	public function set_message($lang, $val = '')
 	{
@@ -275,7 +277,7 @@ class FormValidation
 	 *
 	 * @param	string
 	 * @param	string
-	 * @return	CI_Form_validation
+	 * @return	$this
 	 */
 	public function set_error_delimiters($prefix = '<p>', $suffix = '</p>')
 	{
@@ -1553,7 +1555,7 @@ class FormValidation
 	 * Prevents subsequent validation routines from being affected by the
 	 * results of any previous validation routine due to the CI singleton.
 	 *
-	 * @return	CI_Form_validation
+	 * @return	$this
 	 */
 	public function reset_validation()
 	{
