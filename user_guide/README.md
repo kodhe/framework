@@ -17,6 +17,7 @@ di setiap sub-folder.
 | [arsitektur](concepts/architecture.md) | Model modular paket, loader dual-mode, service container |
 | [instalasi](concepts/installation.md) | Composer per-paket vs root, autoload PSR-4, requirement PHP |
 | [migrasi-dari-ci3](concepts/migrating-from-ci3.md) | **Panduan langkah demi langkah memindahkan aplikasi CI3** (strategi, bootstrap, config, checklist verifikasi, rollback) |
+| [struktur-folder-routing](concepts/folder-structure-and-routing.md) | ⚠️ Perbedaan struktur folder Kodhe (`Controllers/`, tanpa `_`) vs CI3, router ganda modern+legacy, strategi koeksistensi |
 | [namespace-migrasi](concepts/namespaces-migration.md) | Peta lengkap `CI_*` / `Kodhe\Library\*` → `Kodhe\Framework\*` |
 
 ### Topik Umum (`general/`)
