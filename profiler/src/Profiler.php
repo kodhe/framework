@@ -158,7 +158,20 @@ class Profiler implements ProfilerInterface
 	 * @param string $section
 	 * @return void
 	 */
-	public function enableSection(string $section): void
+	/**
+ * Set sections to display (implementasi ProfilerInterface::setSections()).
+ *
+ * Delegasi ke ProfilerConfig; sebelumnya method ini tidak diimplementasikan
+ * sehingga kelas concrete memuat method abstrak interface (error fatal/parsintaks).
+ *
+ * @param array<string,bool> $config
+ */
+public function setSections(array $config): void
+{
+$this->config->setSections($config);
+}
+
+public function enableSection(string $section): void
 	{
 		$this->config->enableSection($section);
 		if (isset($this->sections[$section])) {
@@ -284,7 +297,7 @@ class Profiler implements ProfilerInterface
 			if (is_object($cobject)) {
 				if ($cobject instanceof \Kodhe\Framework\Database\DB) {
 					$dbs[get_class($this->CI) . ':$' . $name] = $cobject;
-				} elseif ($cobject instanceof CI_Model) {
+				} elseif ($cobject instanceof \CI_Model) {
 					foreach (get_object_vars($cobject) as $mname => $mobject) {
 						if ($mobject instanceof \Kodhe\Framework\Database\DB) {
 							$dbs[get_class($cobject) . ':$' . $mname] = $mobject;
@@ -653,7 +666,7 @@ class Profiler implements ProfilerInterface
 	 *
 	 * @return	string
 	 */
-	public function run()
+	public function run(): string
 	{
 		$output = '<div id="codeigniter_profiler" style="clear:both;background-color:#fff;padding:10px;">';
 		$fields_displayed = 0;
