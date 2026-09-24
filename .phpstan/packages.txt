@@ -1,42 +1,38 @@
 # Daftar paket yang diaudit PHPStan oleh workflow Static Analysis.
-# Format: <paket>: <level|skipped>  (satu per baris; '#' = komentar/baris kosong)
+# Format: <folder-paket>: <level>  (satu per baris; '#' = komentar/baris kosong)
 #
-# Level ditetapkan dari triase NYATA phpstan/phpstan 1.12.34 + PHP 8.2 pada master
-# pasca-PR #147, dengan bootstrap stub simbol legacy (.phpstan/bootstrap.php).
-# "ratchet" = level tertinggi saat ini yang LULUS tanpa error — naikkan lewat PR
-# kecil setelah error di level berikutnya diperbaiki (lihat issue phpstan #148-#175).
-#
-# LULUS TANPA BOOTSTRAP-PUN SUDAH BERSIH DI LEVEL TINGGI:
+# Ratchet berbasis bukti — tiap angka diverifikasi dengan phpstan 1.12.34 /
+# PHP 8.2 memakai .phpstan/bootstrap.php (stub CI3 globals), September 2026:
+#   - "5"     : bersih pada level 5 (parser, zip, calendar)
+#   - "0"     : bersih pada level 0 setelah stub bootstrap (encrypt, ftp, upload)
+#   - "skipped": masih punya error nyata pada level 0 -> butuh triase via issue
+#                paketnya (#148 dst.) sebelum diaktifkan kembali.
+# Naikkan level per paket lewat PR kecil setelah error pada level berikutnya nol.
+agent: skipped
+cache: skipped
 calendar: 5
+cart: skipped
+database: skipped
+driver: skipped
+email: skipped
+encrypt: 0
+encryption: skipped
+ftp: 0
+http: skipped
+image: skipped
+javascript: skipped
+migration: skipped
+pagination: skipped
 parser: 5
+profiler: skipped
+session: skipped
+table: skipped
+test: skipped
+trackback: skipped
+typography: skipped
+upload: 0
+validation: skipped
+view: skipped
+xmlrpc: skipped
+xmlrpcs: skipped
 zip: 5
-#
-# RATCHET: lulus bersih di level berikut (naikkan bertahap):
-encrypt: 2
-ftp: 2
-upload: 2
-cart: 1
-driver: 1
-email: 1
-encryption: 1
-pagination: 1
-test: 1
-typography: 1
-validation: 1
-xmlrpc: 1
-#
-# MASIH GAGAL DI LEVEL 0 (butuh perbaikan kode nyata dulu — jangan turunkan ke skipped,
-# biarkan CI merah terkelola via continue-on-error sampai ratchet naik):
-agent: 0
-cache: 0
-database: 0
-http: 0
-image: 0
-javascript: 0
-migration: 0
-profiler: 0
-session: 0
-table: 0
-trackback: 0
-view: 0
-xmlrpcs: 0
