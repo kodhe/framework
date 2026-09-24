@@ -6,7 +6,7 @@ return [
     'name' => 'Kodhe Framework',
     'description' => 'Kodhe Framework application setup',
     'version' => '1.0.0',
-    'namespace' => 'Kodhe\\Framework',
+    'namespace' => 'Kodhe',
     'aliases' => [
         'Service' => Kodhe\Framework\Container\ServiceHelper::class,
         'Route' => Kodhe\Framework\Http\Routing\Route::class,
