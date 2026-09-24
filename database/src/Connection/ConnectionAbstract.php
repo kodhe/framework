@@ -954,6 +954,15 @@ abstract class ConnectionAbstract {
 			return $escaped_array;
 		}
 
+		// Defensive guard: an empty/null identifier would otherwise reach
+		// strcspn()/preg_replace() below and raise an obscure TypeError under
+		// PHP 8 strict typing. Pass such values through unescaped, exactly
+		// like the ()' check right after this.
+		if ($item === NULL OR $item === '')
+		{
+			return $item;
+		}
+
 		if (strcspn($item, "()'") !== strlen($item))
 		{
 			return $item;

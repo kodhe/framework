@@ -76,8 +76,25 @@ class DatabaseDriver extends Driver
         }
 
         // BC work-around for old 'sess_table_name' setting
-        if (! isset($this->_config['save_path']) && ($this->_config['save_path'] = config_item('sess_table_name'))) {
-            log_message('debug', 'Session: "sess_save_path" is empty; using BC fallback to "sess_table_name".');
+        if (empty($this->_config['save_path'])) {
+            $this->_config['save_path'] = (string) config_item('sess_table_name');
+            if ($this->_config['save_path'] !== '') {
+                log_message('debug', 'Session: "sess_save_path" is empty; using BC fallback to "sess_table_name".');
+            }
+        }
+
+        // The database session driver requires a table name in sess_save_path.
+        // Fail fast here with an actionable message instead of letting the
+        // empty value travel into the query builder, where it surfaces as an
+        // obscure TypeError ("strcspn(): Argument #1 ($string) must be of type
+        // string, null given") from protect_identifiers().
+        if ($this->_config['save_path'] === '') {
+            throw new Exception(
+                'Session: "sess_save_path" is empty; the database session driver'
+                . " expects the session table name (e.g. \$config['sess_save_path'] = 'ci_sessions')"
+                . ' with the CI3 schema: id, ip_address, timestamp (or legacy lastactivity), data.'
+                . ' See session/README.md.'
+            );
         }
     }
 
