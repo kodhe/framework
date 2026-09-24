@@ -311,6 +311,9 @@ php kodhe make:command sync_data      # -> app/Console/Commands      (App\Consol
 
 Opsi: `--force` (timpa file yang ada), `--path=...` (lokasi custom).
 
+> Cara bootstrap `bin/console`, membuat command custom, dan migrasi job cron
+> `is_cli()` CI3 → lihat [cli-console](cli-console.md).
+
 Agar `App\*` terbaca autoload, daftarkan di `composer.json` proyek:
 
 ```json
