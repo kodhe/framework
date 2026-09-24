@@ -15,6 +15,13 @@ class TrackbackRequest
     private string $blogName;
     private string $charset;
 
+    /**
+     * @param string $url      Permalink of the entry sending the trackback
+     * @param string $title    Title of the sending entry
+     * @param string $excerpt  Excerpt of the sending entry
+     * @param string $blogName Name of the sending blog
+     * @param string $charset  Character encoding (default UTF-8)
+     */
     public function __construct(
         string $url,
         string $title,
@@ -43,26 +50,41 @@ class TrackbackRequest
         );
     }
 
+    /**
+     * @return string Sending-entry permalink
+     */
     public function getUrl(): string
     {
         return $this->url;
     }
 
+    /**
+     * @return string Sending-entry title
+     */
     public function getTitle(): string
     {
         return $this->title;
     }
 
+    /**
+     * @return string Sending-entry excerpt
+     */
     public function getExcerpt(): string
     {
         return $this->excerpt;
     }
 
+    /**
+     * @return string Sending-blog name
+     */
     public function getBlogName(): string
     {
         return $this->blogName;
     }
 
+    /**
+     * @return string Character encoding
+     */
     public function getCharset(): string
     {
         return $this->charset;
