@@ -20,6 +20,7 @@ di setiap sub-folder.
 | [migrasi-dari-ci3](concepts/migrating-from-ci3.md) | **Panduan langkah demi langkah memindahkan aplikasi CI3** (strategi, bootstrap, config, checklist verifikasi, rollback) |
 | [struktur-folder-routing](concepts/folder-structure-and-routing.md) | ⚠️ Perbedaan struktur folder Kodhe (`Controllers/`, tanpa `_`) vs CI3, router ganda modern+legacy, strategi koeksistensi |
 | [cli-console](concepts/cli-console.md) | Console CLI modern (`Console::getInstance()`, base `Command`, `make:*`) + migrasi job cron `is_cli()` CI3 |
+| [keamanan](concepts/security.md) | 🔐 XSS, CSRF (config + cara kerja di kernel & router modern), password hashing, enkripsi (`migrate()` ciphertext CI3), cookie/session aman, rate limiting (`RateLimiter`/`ThrottleRequests`), validasi, CAPTCHA, checklist pra-produksi |
 | [namespace-migrasi](concepts/namespaces-migration.md) | Peta lengkap `CI_*` / `Kodhe\Library\*` → `Kodhe\Framework\*` |
 
 ### Topik Umum (`general/`)
