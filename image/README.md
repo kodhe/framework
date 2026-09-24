@@ -19,11 +19,9 @@ src/
 ├── Contracts/
 │   └── ImageDriverInterface.php
 ├── Drivers/
-│   ├── GdDriver.php          # GD library driver
-│   └── ImagickDriver.php     # ImageMagick driver (TODO)
+│   └── GdDriver.php          # GD library driver
 ├── Factory/
 │   └── DriverFactory.php
-├── Operations/               # Image operations (TODO)
 ├── Support/
 │   └── ImageMetadataCache.php
 └── ValueObjects/
