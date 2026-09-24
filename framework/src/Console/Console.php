@@ -80,6 +80,18 @@ class Console
             $this->aliases[$alias] = $name;
         }
 
+        // Register sub-command style aliases: a command named "make" that
+        // declares usage entries like "make:controller <name>" also becomes
+        // callable as "php console make:controller ...".
+        if (!str_contains($name, ':')) {
+            foreach ($command->getUsage() as $usage) {
+                $first = explode(' ', trim($usage))[0] ?? '';
+                if (str_starts_with($first, $name . ':') && !isset($this->aliases[$first])) {
+                    $this->aliases[$first] = $name;
+                }
+            }
+        }
+
         return $this;
     }
 
@@ -127,12 +139,44 @@ class Console
     }
 
     /**
+     * Get all registered aliases (alias => canonical command name)
+     */
+    public function getAliases(): array
+    {
+        return $this->aliases;
+    }
+
+    /**
+     * Get the canonical command name for a name or alias
+     */
+    public function resolveCommandName(string $name): ?string
+    {
+        if (isset($this->commands[$name])) {
+            return $name;
+        }
+
+        return $this->aliases[$name] ?? null;
+    }
+
+    /**
      * Run the console application
      */
     public function run(?Input $input = null, ?Output $output = null): int
     {
         $this->input = $input ?? new Input();
         $this->output = $output ?? new Output();
+
+        // Map global verbosity flags to the output instance.
+        $options = $this->input->getOptions();
+        if (!empty($options['quiet']) || !empty($options['q'])) {
+            $this->output->setVerbosity(Output::VERBOSITY_QUIET);
+        } elseif (!empty($options['vvv'])) {
+            $this->output->setVerbosity(Output::VERBOSITY_DEBUG);
+        } elseif (!empty($options['vv'])) {
+            $this->output->setVerbosity(Output::VERBOSITY_VERY_VERBOSE);
+        } elseif (!empty($options['v'])) {
+            $this->output->setVerbosity(Output::VERBOSITY_VERBOSE);
+        }
 
         $commandName = $this->input->getFirstArgument();
 
