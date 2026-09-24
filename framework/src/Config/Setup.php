@@ -1,12 +1,12 @@
 <?php
 
 return [
-    'author' => 'Your Name',
-    'author_url' => 'https://example.com',
-    'name' => 'Your Application',
-    'description' => 'Your application description',
+    'author' => 'Kodhe',
+    'author_url' => 'https://github.com/kodhe',
+    'name' => 'Kodhe Framework',
+    'description' => 'Kodhe Framework application setup',
     'version' => '1.0.0',
-    'namespace' => 'Kodhe',
+    'namespace' => 'Kodhe\\Framework',
     'aliases' => [
         'Service' => Kodhe\Framework\Container\ServiceHelper::class,
         'Route' => Kodhe\Framework\Http\Routing\Route::class,
@@ -44,84 +44,84 @@ return [
     ],
     'services' => [
         'cache' => function ($provider) {
-            return new \Kodhe\Cache\Cache();
+            return new \Kodhe\Framework\Cache\Cache();
         }, 
         'calendar' => function ($provider) {
-            return new \Kodhe\Calendar\Calendar();
+            return new \Kodhe\Framework\Calendar\Calendar();
         }, 
         'cart' => function ($provider) {
-            return new \Kodhe\Cart\Cart();
+            return new \Kodhe\Framework\Cart\Cart();
         }, 
         'driver' => function ($provider) {
-            return new \Kodhe\Driver\Driver();
+            return new \Kodhe\Framework\Driver\Driver();
         }, 
         'email' => function ($provider) {
-            return new \Kodhe\Email\Email();
+            return new \Kodhe\Framework\Email\Email();
         }, 
         'encrypt' => function ($provider) {
-            return new \Kodhe\Encrypt\Encrypt();
+            return new \Kodhe\Framework\Encrypt\Encrypt();
         }, 
         'encryption' => function ($provider) {
-            return new \Kodhe\Encryption\Encryption();
+            return new \Kodhe\Framework\Encryption\Encryption();
         }, 
         'form_validation' => function ($provider) {
-            return new \Kodhe\FormValidation\FormValidation();
+            return new \Kodhe\Framework\Validation\FormValidation();
         }, 
         'ftp' => function ($provider) {
-            return new \Kodhe\Ftp\Ftp();
+            return new \Kodhe\Framework\Ftp\Ftp();
         }, 
         'image_lib' => function ($provider) {
-            return new \Kodhe\ImageLib\ImageLib();
+            return new \Kodhe\Framework\Image\ImageLib();
         }, 
         'javascript' => function ($provider) {
-            return new \Kodhe\Javascript\Javascript();
+            return new \Kodhe\Framework\Javascript\Javascript();
         }, 
         'migration' => function ($provider) {
-            return new \Kodhe\Migration\Migration();
+            return new \Kodhe\Framework\Migration\Migration();
         }, 
         'pagination' => function ($provider) {
-            return new \Kodhe\Pagination\Pagination();
+            return new \Kodhe\Framework\Pagination\Pagination();
         }, 
         'parser' => function ($provider) {
-            return new \Kodhe\Parser\Parser();
+            return new \Kodhe\Framework\Parser\Parser();
         }, 
         'profiler' => function ($provider) {
-            return new \Kodhe\Profiler\Profiler();
+            return new \Kodhe\Framework\Profiler\Profiler();
         }, 
         'table' => function ($provider) {
-            return new \Kodhe\Table\Table();
+            return new \Kodhe\Framework\Table\Table();
         }, 
         'trackback' => function ($provider) {
-            return new \Kodhe\Trackback\Trackback();
+            return new \Kodhe\Framework\Trackback\Trackback();
         }, 
         'typography' => function ($provider) {
-            return new \Kodhe\Typography\Typography();
+            return new \Kodhe\Framework\Typography\Typography();
         }, 
         'unit_test' => function ($provider) {
-            return new \Kodhe\UnitTest\UnitTest();
+            return new \Kodhe\Framework\Test\UnitTest();
         }, 
 
         'upload' => function ($provider) {
-            return new \Kodhe\Upload\Upload();
+            return new \Kodhe\Framework\Upload\Upload();
         }, 
 
         'agent' => function ($provider) {
-            return new \Kodhe\UserAgent\UserAgent();
+            return new \Kodhe\Framework\Agent\UserAgent();
         }, 
 
         'xmlrpc' => function ($provider) {
-            return new \Kodhe\Xmlrpc\Xmlrpc();
+            return new \Kodhe\Framework\Xmlrpc\Xmlrpc();
         }, 
 
         'xmlrpcs' => function ($provider) {
-            return new \Kodhe\Xmlrpcs\Xmlrpcs();
+            return new \Kodhe\Framework\Xmlrpcs\Xmlrpcs();
         }, 
 
         'zip' => function ($provider) {
-            return new \Kodhe\Zip\Zip();
+            return new \Kodhe\Framework\Zip\Zip();
         }, 
         'session' => function ($provider) {
-            return new \Kodhe\Session\Session();
+            return new \Kodhe\Framework\Session\Session();
         },
     ],
     'services.singletons' => [
