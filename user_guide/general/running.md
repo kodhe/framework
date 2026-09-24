@@ -6,13 +6,18 @@
 // index.php aplikasi
 require_once __DIR__ . '/vendor/autoload.php';
 
-$config = require __DIR__ . '/application/config/config.php'; // array ala CI3
-$app    = Kodhe\Framework\Foundation\Application::boot($config);
-$app->run();
+$app = Kodhe\Framework\Foundation\Application::create();
+$app->bootstrap();   // boot kernel: daftarkan services ke container
+$app->run();         // tangani request globals → kirim response
 ```
+
+> `Application` membutuhkan paket `kodhe/http` (Kernel, Request, Response). Bila
+> belum terpasang, constructor gagal dengan pesan jelas dan saran
+> `composer require kodhe/http`.
 
 Kernel membaca konfigurasi gaya CI3 (`base_url`, `sess_driver`, `$db['default']`, …)
 lalu mendaftarkan service melalui container (`framework/src/Config/Setup.php`).
+Akses container bila perlu resolve manual: `$app->getContainer()->get('session')`.
 
 ## Mode paket murni (tanpa kernel)
 
