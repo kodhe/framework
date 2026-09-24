@@ -20,6 +20,10 @@ class TrackbackReceiver
     private array $data = [];
     private array $errors = [];
 
+    /**
+     * @param ParserInterface|null $parser Parser used to sanitize incoming fields (default: TrackbackParser)
+     * @param TrackbackConfig|null $config Validation limits (fresh defaults when null)
+     */
     public function __construct(
         ?ParserInterface $parser = null,
         ?TrackbackConfig $config = null
@@ -171,6 +175,9 @@ class TrackbackReceiver
 
     /**
      * Get a specific data item.
+     *
+     * @param string $item Field name (url, title, excerpt, blog_name, charset)
+     * @return string Sanitized value, or empty string when the item was not received
      */
     public function getData(string $item): string
     {
@@ -179,6 +186,8 @@ class TrackbackReceiver
 
     /**
      * Get all received data.
+     *
+     * @return array<string,string> All sanitized fields from the last successful receive()
      */
     public function getAllData(): array
     {
@@ -199,6 +208,8 @@ class TrackbackReceiver
 
     /**
      * Get all error messages.
+     *
+     * @return list<string> Validation errors accumulated by the last receive() call
      */
     public function getErrors(): array
     {
