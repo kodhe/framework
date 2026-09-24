@@ -19,7 +19,7 @@ Library ini **DEPRECATED** dan dipertahankan hanya untuk backward compatibility.
 ## 📦 Instalasi
 
 ```bash
-composer require kodhe/ci3-encrypt
+composer require kodhe/encrypt
 ```
 
 Atau tambahkan ke `composer.json`:
@@ -27,7 +27,7 @@ Atau tambahkan ke `composer.json`:
 ```json
 {
     "require": {
-        "kodhe/ci3-encrypt": "^2.0"
+        "kodhe/encrypt": "^2.0"
     }
 }
 ```
