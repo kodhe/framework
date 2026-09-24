@@ -457,7 +457,14 @@ if ( ! function_exists('form_checkbox'))
 	 */
 	function form_checkbox($data = '', $value = '', $checked = FALSE, $extra = '')
 	{
-		$defaults = array('type' => 'checkbox', 'name' => ( ! is_array($data) ? $data : ''), 'value' => $value);
+		// Array literal (bukan shape sempit) agar PHPStan tidak mempersempit tipe
+		// saat 'checked' ditambahkan/di-unset di bawah.
+		/** @var array<string, mixed> $defaults */
+		$defaults = array(
+			'type' => 'checkbox',
+			'name' => ( ! is_array($data) ? $data : ''),
+			'value' => $value
+		);
 
 		if (is_array($data) && array_key_exists('checked', $data))
 		{

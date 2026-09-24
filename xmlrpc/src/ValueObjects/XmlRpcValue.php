@@ -36,7 +36,7 @@ class XmlRpcValue
      * @param mixed $value
      * @param string $type
      */
-    public function __construct($value, string $type = self::TYPE_STRING)
+    public function __construct($value = '', string $type = self::TYPE_STRING)
     {
         $this->value = $value;
         $this->type = $type;
