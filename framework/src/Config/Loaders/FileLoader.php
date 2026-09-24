@@ -925,34 +925,37 @@ class FileLoader extends LegacyLoader
         $studly = $this->formatClassName($library);
         $lower = strtolower($library);
 
-        // Special CI varmap reverse (agent -> UserAgent package)
+        // Special CI varmap reverse (agent -> UserAgent package).
+        // Semua FQCN wajib memakai namespace aktif Kodhe\Framework\* —
+        // hanya prefix itulah yang terdaftar di PSR-4 composer.json root;
+        // nama legacy Kodhe\<Pkg>\<Pkg> tidak ter-autoload (Class not found).
         $packageMap = [
             'session'     => 'Kodhe\\Framework\\Session\\Session',
             'cache'       => 'Kodhe\\Framework\\Cache\\Cache',
-            'email'       => 'Kodhe\\Email\\Email',
-            'upload'      => 'Kodhe\\Upload\\Upload',
-            'image_lib'   => 'Kodhe\\Image\\ImageLib',
-            'image'       => 'Kodhe\\Image\\ImageLib',
-            'encryption'  => 'Kodhe\\Encryption\\Encryption',
-            'encrypt'     => 'Kodhe\\Encrypt\\Encrypt',
-            'ftp'         => 'Kodhe\\Ftp\\Ftp',
-            'zip'         => 'Kodhe\\Zip\\Zip',
-            'cart'        => 'Kodhe\\Cart\\Cart',
-            'calendar'    => 'Kodhe\\Calendar\\Calendar',
-            'pagination'  => 'Kodhe\\Pagination\\Pagination',
-            'parser'      => 'Kodhe\\Parser\\Parser',
-            'profiler'    => 'Kodhe\\Profiler\\Profiler',
-            'table'       => 'Kodhe\\Table\\Table',
-            'typography'  => 'Kodhe\\Typography\\Typography',
-            'javascript'  => 'Kodhe\\Javascript\\Javascript',
-            'user_agent'  => 'Kodhe\\UserAgent\\UserAgent',
-            'agent'       => 'Kodhe\\UserAgent\\UserAgent',
-            'unit_test'   => 'Kodhe\\Test\\UnitTest',
+            'email'       => 'Kodhe\\Framework\\Email\\Email',
+            'upload'      => 'Kodhe\\Framework\\Upload\\Upload',
+            'image_lib'   => 'Kodhe\\Framework\\Image\\ImageLib',
+            'image'       => 'Kodhe\\Framework\\Image\\ImageLib',
+            'encryption'  => 'Kodhe\\Framework\\Encryption\\Encryption',
+            'encrypt'     => 'Kodhe\\Framework\\Encrypt\\Encrypt',
+            'ftp'         => 'Kodhe\\Framework\\Ftp\\Ftp',
+            'zip'         => 'Kodhe\\Framework\\Zip\\Zip',
+            'cart'        => 'Kodhe\\Framework\\Cart\\Cart',
+            'calendar'    => 'Kodhe\\Framework\\Calendar\\Calendar',
+            'pagination'  => 'Kodhe\\Framework\\Pagination\\Pagination',
+            'parser'      => 'Kodhe\\Framework\\Parser\\Parser',
+            'profiler'    => 'Kodhe\\Framework\\Profiler\\Profiler',
+            'table'       => 'Kodhe\\Framework\\Table\\Table',
+            'typography'  => 'Kodhe\\Framework\\Typography\\Typography',
+            'javascript'  => 'Kodhe\\Framework\\Javascript\\Javascript',
+            'user_agent'  => 'Kodhe\\Framework\\Agent\\UserAgent',
+            'agent'       => 'Kodhe\\Framework\\Agent\\UserAgent',
+            'unit_test'   => 'Kodhe\\Framework\\Test\\UnitTest',
             'form_validation' => 'Kodhe\\Framework\\Validation\\FormValidation',
-            'xmlrpc'      => 'Kodhe\\Xmlrpc\\Xmlrpc',
-            'xmlrpcs'     => 'Kodhe\\Xmlrpcs\\Xmlrpcs',
-            'trackback'   => 'Kodhe\\Trackback\\Trackback',
-            'migration'   => 'Kodhe\\Migration\\Migration',
+            'xmlrpc'      => 'Kodhe\\Framework\\Xmlrpc\\Xmlrpc',
+            'xmlrpcs'     => 'Kodhe\\Framework\\Xmlrpcs\\Xmlrpcs',
+            'trackback'   => 'Kodhe\\Framework\\Trackback\\Trackback',
+            'migration'   => 'Kodhe\\Framework\\Migration\\Migration',
         ];
 
         $candidates = [];
