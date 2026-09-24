@@ -7,7 +7,7 @@ namespace Kodhe\Framework\Javascript;
 /**
  * Javascript Class
  *
- * @package		CodeIgniter
+ * @package         Kodhe\Framework\Javascript
  * @subpackage	Libraries
  * @category	Javascript
  * @author		EllisLab Dev Team

@@ -19,7 +19,7 @@ use Kodhe\Framework\Xmlrpc\Exceptions\XmlParseException;
 /**
  * XML-RPC request handler class - Backward Compatible CI3 API
  *
- * @package     Kodhe\Xmlrpc
+ * @package     Kodhe\Framework\Xmlrpc
  * @category    XML-RPC
  */
 class Xmlrpc
