@@ -20,6 +20,11 @@ class SmtpTransport implements TransportInterface
     use ConfigurableTrait, DebugTrait;
 
     /**
+     * @var array Konfigurasi transport (dipakai oleh ConfigurableTrait).
+     */
+    protected $config = [];
+
+    /**
      * @var resource|null SMTP connection socket
      */
     private $connection = null;
