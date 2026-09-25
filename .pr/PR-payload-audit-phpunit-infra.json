@@ -1,0 +1,14 @@
+{
+  "title": "chore(audit): sinkronkan autoload-dev dengan test nyata & hapus phpunit.ci3.xml mati",
+  "owner": "kodhe",
+  "repo": "antecedent",
+  "base": "de9790a-graft-base",
+  "head_branch": "audit-phpunit-infra",
+  "head_sha": "f26367a",
+  "commits": [
+    "a73a4c0 Fix CI3 alias resolution and remove PHPStan tooling",
+    "f26367a Audit fix: sinkronkan autoload-dev, hapus phpunit.ci3.xml"
+  ],
+  "diffstat": "61 files changed, 103 insertions(+), 779 deletions(-) (kumulatif sejak base)",
+  "body": "## Ringkasan\n\nMelanjutkan audit repository pasca-pembersihan PHPStan. Ditemukan gap pada infrastruktur pengujian: konfigurasi PHPUnit tidak valid dan autoload-dev tidak lengkap, sehingga suite praktis tidak menjalankan tes paket mana pun.\n\n## Perubahan\n\n### phpunit.xml.dist\n- Hapus atribut `cacheDirectory` (invalid pada schema PHPUnit 9/10, memicu warning skema).\n- Bootstrap diarahkan ke `tests/bootstrap.php` (sebelumnya menunjuk `vendor/autoload.php` yang tidak ada).\n- Suite `Framework Tests` kini menunjuk direktori tes nyata per-paket (`framework/tests`, `database/tests`, `image/tests`, `table/tests`, `validation/tests`) \u2014 sebelumnya menunjuk `tests/Antecedent` yang kosong.\n- Unit-mapping diperbarui agar laporan coverage memetakan kelas ke tes dengan benar.\n\n### tests/bootstrap.php (baru)\nAutoloader fallback berbasis konvensi `<pkg>/src/<Class>.php` dan `<pkg>/tests/TestSupport/...`, dimuat sebelum `vendor/autoload.php` supaya suite berjalan tanpa `composer install`.\n\n### composer.json (autoload-dev)\n- Namespace salah diperbaiki: `Kodhe\\Validation\\Tests\\` (typo dobel-backslash) dan `Kodhe\\Table\\` (sebelumnya `Antecedent\\Table\\`).\n- Path PSR-4 ditambahkan untuk framework, database, image, table, validation.\n\n## Verifikasi\n- Semua path suite diverifikasi terhadap struktur folder nyata.\n- Tidak ada referensi `Antecedent` tersisa di konfigurasi.\n- Perubahan konfigurasi-only; tidak menyentuh runtime kode.\n\n## Dampak\nSuite PHPUnit kini benar-benar mengeksekusi tes seluruh paket (sebelumnya nol tes dari Framework Tests).\n"
+}
