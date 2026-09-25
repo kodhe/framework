@@ -112,14 +112,14 @@ class PhpLoader implements LoaderInterface
         
         // Check environment-specific config first
         $envConfig = defined('ENVIRONMENT') 
-            ? $this->basePath . 'config/' . ENVIRONMENT . '/' . $name . '.php'
+            ? app_config_file_in($this->basePath, ENVIRONMENT.'/'.$name.'.php')
             : null;
 
         if ($envConfig && file_exists($envConfig)) {
             return $envConfig;
         }
 
-        return $this->basePath . 'config/' . $name . '.php';
+        return app_config_file_in($this->basePath, $name.'.php');
     }
 
     /**

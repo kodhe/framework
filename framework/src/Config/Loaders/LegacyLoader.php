@@ -1297,25 +1297,25 @@ class LegacyLoader
 					// We test for both uppercase and lowercase, for servers that
 					// are case-sensitive with regard to file names. Load global first,
 					// override with environment next
-					if (file_exists($path.'config/'.strtolower($class).'.php'))
+					if (file_exists($config_file = app_config_file_in($path, strtolower($class).'.php')))
 					{
-						include($path.'config/'.strtolower($class).'.php');
+						include($config_file);
 						$found = TRUE;
 					}
-					elseif (file_exists($path.'config/'.ucfirst(strtolower($class)).'.php'))
+					elseif (file_exists($config_file = app_config_file_in($path, ucfirst(strtolower($class)).'.php')))
 					{
-						include($path.'config/'.ucfirst(strtolower($class)).'.php');
+						include($config_file);
 						$found = TRUE;
 					}
 
-					if (file_exists($path.'config/'.ENVIRONMENT.'/'.strtolower($class).'.php'))
+					if (file_exists($env_config_file = app_config_file_in($path, ENVIRONMENT.'/'.strtolower($class).'.php')))
 					{
-						include($path.'config/'.ENVIRONMENT.'/'.strtolower($class).'.php');
+						include($env_config_file);
 						$found = TRUE;
 					}
-					elseif (file_exists($path.'config/'.ENVIRONMENT.'/'.ucfirst(strtolower($class)).'.php'))
+					elseif (file_exists($env_config_file = app_config_file_in($path, ENVIRONMENT.'/'.ucfirst(strtolower($class)).'.php')))
 					{
-						include($path.'config/'.ENVIRONMENT.'/'.ucfirst(strtolower($class)).'.php');
+						include($env_config_file);
 						$found = TRUE;
 					}
 
@@ -1390,14 +1390,14 @@ class LegacyLoader
 	protected function _ci_autoloader()
 	{
 
-		if (file_exists(APPPATH.'config/autoload.php'))
+		if (file_exists($autoload_file = app_config_file_in(APPPATH, 'autoload.php')))
 		{
-			include(APPPATH.'config/autoload.php');
+			include($autoload_file);
 		}
 
-		if (file_exists(APPPATH.'config/'.ENVIRONMENT.'/autoload.php'))
+		if (file_exists($autoload_file = app_config_file_in(APPPATH, ENVIRONMENT.'/autoload.php')))
 		{
-			include(APPPATH.'config/'.ENVIRONMENT.'/autoload.php');
+			include($autoload_file);
 		}
 
 		if ( ! isset($autoload))

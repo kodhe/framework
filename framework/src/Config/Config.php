@@ -412,7 +412,7 @@ class Config implements \ArrayAccess, ConfigInterface
     
         foreach ($this->_config_paths as $path) {
             foreach (array($file, ENVIRONMENT.DIRECTORY_SEPARATOR.$file) as $location) {
-                $file_path = $path.'config/'.$location.'.php';
+                $file_path = app_config_file_in($path, $location.'.php');
                 
                 if (in_array($file_path, $this->is_loaded, TRUE)) {
                     return TRUE;

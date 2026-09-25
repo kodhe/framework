@@ -172,7 +172,19 @@ class Session implements SessionInterface
 
         try {
             $handler = DriverFactory::create($driver, $configArray);
-            
+
+            // A session that is already active (started elsewhere, e.g. by a
+            // middleware or legacy code) MUST NOT have its save handler swapped:
+            // PHP raises "Session save handler cannot be changed when a session
+            // is active". Close it first so the configured driver takes over,
+            // then resume with the new handler in place.
+            if (session_status() === PHP_SESSION_ACTIVE) {
+                session_write_close();
+                $resumed = true;
+            } else {
+                $resumed = false;
+            }
+
             if (PHP_VERSION_ID >= 50400) {
                 session_set_save_handler($handler, true);
             } else {
@@ -188,6 +200,11 @@ class Session implements SessionInterface
             }
 
             $this->driver = $handler;
+
+            if ($resumed) {
+                // Re-open with the newly configured save handler
+                @session_start();
+            }
         } catch (\Exception $e) {
             $this->log('error', "Session: Driver '{$driver}' failed to initialize: " . $e->getMessage());
         }
