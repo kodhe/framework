@@ -129,11 +129,48 @@ php bin/console make:controller Article    # -> app/Controllers           (App\C
 php bin/console make:model Article         # -> app/Models                (App\Models)
 php bin/console make:migration create_articles_table
 php bin/console make:middleware ThrottleApi
+php bin/console make:crud Article title:string body:text published:bool   # lihat §5b
 ```
 
 Opsi global generator: `--force` (timpa file yang ada), `--path=` (lokasi
 output custom). Detail tiap artefak hasil generate ada di
 [app-components](app-components.md).
+
+## 5b. Generator CRUD (`make:crud`)
+
+Satu perintah menghasilkan **satu set lengkap CRUD** (ala framework modern,
+tetap bergaya CI3/native): Model + Controller resource penuh + migration
+(`Loader::dbforge()` stack modern) + 5 view CI3-style
+(`index/create/edit/show/_form`) di `app/Views/<resource>/`.
+
+```bash
+php console make:crud Article title:string slug:string body:text published:bool
+# -> app/Models/Article.php
+#    app/Controllers/ArticleController.php
+#    database/migrations/<ts>_create_articles_table.php
+#    app/Views/articles/{index,create,edit,show,_form}.php
+```
+
+Panduan user guide lengkap (tipe field, peta route, alur kerja, catatan
+validasi/CSRF): [generator-crud](../general/crud-generator.md).
+
+## 5a. Membuat Proyek Baru (`new`) & Dev Server (`serve`)
+
+Selain generator kode, Console menyediakan dua perintah bootstrap proyek:
+
+```bash
+php console new my-app            # scaffold kerangka proyek Kodhe lengkap
+php console serve                 # dev server di http://localhost:8080
+```
+
+- `new` (alias `create-project`, `new:project`) membuat struktur folder standar,
+  `composer.json` PSR-4 `App\`, config, routes (legacy + modern), `.env`, dan
+  kode starter. Opsi: `--force` (direktori tidak kosong), `--min` (tanpa demo).
+- `serve` menjalankan PHP built-in server dengan `public/index.php` sebagai
+  router; opsi `--host=` dan `--port=`.
+
+Panduan lengkap (struktur hasil generate, isi config, alur cepat):
+[membuat-proyek-baru](../general/new-project.md).
 
 ## 6. Migrasi CLI dari CI3
 
