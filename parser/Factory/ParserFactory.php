@@ -2,7 +2,7 @@
 /**
  * Parser Factory - Factory + Builder pattern for creating parser instances
  *
- * @package CodeIgniter\Parser\Factory
+ * @package Kodhe\Framework\Parser\Factory
  */
 
 namespace Kodhe\Framework\Parser\Factory;

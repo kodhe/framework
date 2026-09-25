@@ -2,7 +2,7 @@
 /**
  * Template Cache - Lazy compilation and caching
  *
- * @package CodeIgniter\Parser\Cache
+ * @package Kodhe\Framework\Parser\Cache
  */
 
 namespace Kodhe\Framework\Parser\Cache;

@@ -28,19 +28,31 @@ return [
         'Benchmark' => Kodhe\Framework\Support\Legacy\Benchmark::class,
 
         // Codeigniter 3 Alias
+        //
+        // BUG FIX: entri-entri ini sebelumnya merujuk pada nama-nama pendek
+        // (Language::class, Router::class, ...) yang TIDAK ter-import di file
+        // ini. Karena setup.php adalah array literal tanpa namespace/use,
+        // ::class pada nama tak ter-resolve menghasilkan string lowercase
+        // ('language', 'router', ...) — bukan FQCN — sehingga class_alias()
+        // gagal dan alias CI_* tidak pernah terdaftar. Semua nilai kini
+        // memakai FQCN lengkap.
         'CI_model' => Kodhe\Framework\Database\ORM\CI_Model::class,
-        'CI_Lang' => Language::class,
-        'CI_Router' => Router::class,
-        'CI_Config' => Config::class,
-        'CI_Loader' => Loader::class,
-        'CI_Controller' => Controller::class,
-        'CI_Hooks' => Hooks::class,
-        'CI_Input' => Input::class,
-        'CI_URI' => URI::class,
-        'CI_Output' => Output::class,
-        'CI_Utf8' => Utf8::class,
-        'CI_Security' => Security::class,
-        'CI_Benchmark' => Benchmark::class,
+        'CI_Model' => Kodhe\Framework\Database\ORM\CI_Model::class,
+        'CI_Lang' => Kodhe\Framework\Support\Language::class,
+        'CI_Language' => Kodhe\Framework\Support\Language::class,
+        'CI_Router' => Kodhe\Framework\Http\Routing\Router::class,
+        'CI_Config' => Kodhe\Framework\Config\Config::class,
+        'CI_Loader' => Kodhe\Framework\Config\Loaders\FileLoader::class,
+        'CI_Controller' => Kodhe\Framework\Http\Controllers\BaseController::class,
+        'CI_Hooks' => Kodhe\Framework\Support\Legacy\Hooks::class,
+        'CI_Input' => Kodhe\Framework\Support\Legacy\Input::class,
+        'CI_URI' => Kodhe\Framework\Support\Legacy\URI::class,
+        'CI_Output' => Kodhe\Framework\Support\Legacy\Output::class,
+        'CI_Utf8' => Kodhe\Framework\Support\Legacy\Utf8::class,
+        'CI_Security' => Kodhe\Framework\Support\Legacy\Security::class,
+        'CI_Benchmark' => Kodhe\Framework\Support\Legacy\Benchmark::class,
+        'CI_Log' => Kodhe\Framework\Support\Legacy\Log::class,
+        'CI_Exceptions' => Kodhe\Framework\Support\Legacy\Exceptions::class,
     ],
     'services' => [
         'cache' => function ($provider) {
