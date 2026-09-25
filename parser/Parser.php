@@ -2,7 +2,7 @@
 /**
  * Parser - CodeIgniter 3 Compatible Template Parser
  *
- * @package Kodhe\Parser
+ * @package Kodhe\Framework\Parser
  */
 
 namespace Kodhe\Framework\Parser;

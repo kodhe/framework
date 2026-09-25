@@ -2,7 +2,7 @@
 /**
  * Parse Context - Manages parsing context and state
  *
- * @package CodeIgniter\Parser\Context
+ * @package Kodhe\Framework\Parser\Context
  */
 
 namespace Kodhe\Framework\Parser\Context;
