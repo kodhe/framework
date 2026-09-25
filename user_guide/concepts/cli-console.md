@@ -135,6 +135,24 @@ Opsi global generator: `--force` (timpa file yang ada), `--path=` (lokasi
 output custom). Detail tiap artefak hasil generate ada di
 [app-components](app-components.md).
 
+## 5a. Membuat Proyek Baru (`new`) & Dev Server (`serve`)
+
+Selain generator kode, Console menyediakan dua perintah bootstrap proyek:
+
+```bash
+php console new my-app            # scaffold kerangka proyek Kodhe lengkap
+php console serve                 # dev server di http://localhost:8080
+```
+
+- `new` (alias `create-project`, `new:project`) membuat struktur folder standar,
+  `composer.json` PSR-4 `App\`, config, routes (legacy + modern), `.env`, dan
+  kode starter. Opsi: `--force` (direktori tidak kosong), `--min` (tanpa demo).
+- `serve` menjalankan PHP built-in server dengan `public/index.php` sebagai
+  router; opsi `--host=` dan `--port=`.
+
+Panduan lengkap (struktur hasil generate, isi config, alur cepat):
+[membuat-proyek-baru](../general/new-project.md).
+
 ## 6. Migrasi CLI dari CI3
 
 CI3 biasanya membuat "controller khusus CLI" (`class Cli extends CI_Controller`

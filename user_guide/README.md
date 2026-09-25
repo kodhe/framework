@@ -26,6 +26,7 @@ di setiap sub-folder.
 ### Topik Umum (`general/`)
 | Dokumen | Isi |
 |---|---|
+| [proyek-baru](general/new-project.md) | Scaffold proyek dengan `php console new` + jalankan dev server (`serve`) |
 | [menjalankan-aplikasi](general/running.md) | Bootstrap framework, konfigurasi, menjalankan di server dev |
 | [troubleshooting](general/troubleshooting.md) | Pesan error umum & penyebabnya (class not found, schema tabel, dsb.) |
 
