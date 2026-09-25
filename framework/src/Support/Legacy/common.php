@@ -48,6 +48,42 @@
  * @link		https://codeigniter.com/user_guide/
  */
 
+// --------------------------------------------------------------------
+// Storage path bootstrap
+// --------------------------------------------------------------------
+/**
+ * Define STORAGEPATH, the writable base directory for runtime artifacts
+ * (cache, logs, sessions, uploads).
+ *
+ * Several packages (cache File driver, Modules cache, RouteCollection,
+ * BladeEngine, Log, Output page cache) reference STORAGEPATH directly.
+ * If the host application forgot to define it in its index.php, PHP 8+
+ * raises a fatal "Undefined constant" error at first use. Derive a sane
+ * default defensively instead of crashing:
+ *
+ *   1. BASEPATH.'storage/'    when BASEPATH is defined (CI3-style layout)
+ *   2. APPPATH.'../storage/'  otherwise
+ *   3. sys_get_temp_dir().'/kodhe-storage/' as a last resort
+ */
+if ( ! defined('STORAGEPATH'))
+{
+    if (defined('BASEPATH'))
+    {
+        $_kodhe_storage = rtrim(BASEPATH, '/\\').DIRECTORY_SEPARATOR.'storage'.DIRECTORY_SEPARATOR;
+    }
+    elseif (defined('APPPATH'))
+    {
+        $_kodhe_storage = rtrim(APPPATH, '/\\').DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'storage'.DIRECTORY_SEPARATOR;
+    }
+    else
+    {
+        $_kodhe_storage = sys_get_temp_dir().DIRECTORY_SEPARATOR.'kodhe-storage'.DIRECTORY_SEPARATOR;
+    }
+
+    define('STORAGEPATH', $_kodhe_storage);
+    unset($_kodhe_storage);
+}
+
 // Load the case-insensitive application path helpers (app_path_in(),
 // app_config_folder(), app_folder(), app_controller_file(), ...). These
 // are consumed by the legacy loader/router/config classes which live in
