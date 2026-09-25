@@ -60,6 +60,8 @@ class Console
         $this->addCommand(new Commands\ListCommand($this));
         $this->addCommand(new Commands\VersionCommand($this->version));
         $this->addCommand(new Commands\MakeCommand());
+        $this->addCommand(new Commands\NewProjectCommand());
+        $this->addCommand(new Commands\ServeCommand());
     }
 
     /**
@@ -215,8 +217,20 @@ class Console
             throw new CommandNotFoundException("Command '{$commandName}' not found");
         }
 
-        // Create new input with the command arguments
-        $input = new Input(array_merge([$commandName], array_slice($arguments, 1)));
+        // Rebuild argv from the ORIGINAL tokens (the parsed positional
+        // arguments alone would silently drop every --option/--flag), then
+        // create a fresh Input so relative offsets are stable regardless of
+        // whether an alias or the canonical name was typed on the CLI.
+        $tokens = $this->input->getTokens();
+        $cmdIndex = array_search($commandName, $tokens, true);
+        if ($cmdIndex === false) {
+            $cmdIndex = array_search($this->resolveCommandName($commandName) ?? '', $tokens, true);
+        }
+        $argv = $cmdIndex === false
+            ? array_merge([$commandName], $arguments)
+            : array_slice($tokens, $cmdIndex);
+
+        $input = new Input(array_merge([$commandName], array_slice($argv, 1)));
         
         $command->setInput($input);
         $command->setOutput($output);
