@@ -366,12 +366,63 @@ class Modules
                 log_message('debug', "Found cached file: {$full_path}");
                 return array($full_path, $file_name);
             }
+
+            // Case-insensitive fallback for renamed folders/spellings
+            $fallback = self::ci_find_fallback($module_path, $base, $subpath, $file_name, $file_ext);
+            if ($fallback[0] !== FALSE) {
+                log_message('debug', "Found cached ci-resolved file: {$fallback[0]}");
+                return $fallback;
+            }
         }
         
         log_message('debug', "Cached file not found: {$file} in module {$module}");
         return array(FALSE, $file);
     }
     
+    /**
+     * Case-insensitive fallback lookup for module files.
+     *
+     * Handles renamed folders (Libraries/, Models/, Language/) and the usual
+     * CI3/Kodhe file-spelling conventions (Auth.php, auth_lib.php, auth.php).
+     * Returns array($path, $name) or array(FALSE, $file_name).
+     */
+    protected static function ci_find_fallback(string $module_path, string $base, string $subpath, string $file_name, string $file_ext): array
+    {
+        if ( ! function_exists('app_class_file_in'))
+        {
+            return array(FALSE, $file_name);
+        }
+
+        $base = trim(str_replace(array("\\", '/'), '/', $base), '/');
+
+        if ($base === '')
+        {
+            return array(FALSE, $file_name);
+        }
+
+        // First segment of $base is the (possibly renamed) folder; the rest
+        // stays part of the relative path inside it.
+        $parts = explode('/', $base);
+        $folder = array_shift($parts);
+        $rest = implode('/', $parts);
+        $relative = ($rest !== '' ? $rest.'/' : '').$subpath.$file_name;
+
+        $hit = app_class_file_in($module_path, $folder, $relative);
+        if ($hit !== null)
+        {
+            return array($hit, basename($hit, '.php'));
+        }
+
+        // libraries/models also probe the _lib suffix spelling
+        $hit = app_class_file_in($module_path, $folder, $relative.'_lib');
+        if ($hit !== null)
+        {
+            return array($hit, $file_name);
+        }
+
+        return array(FALSE, $file_name);
+    }
+
     /**
      * Check if controller exists using cache
      */
@@ -569,6 +620,13 @@ class Modules
             } elseif (is_file($fullpath)) {
                 log_message('debug', "Found file: {$fullpath}");
                 return array($fullpath, $file_name);
+            }
+
+            // Case-insensitive fallback for renamed folders/spellings
+            $fallback = self::ci_find_fallback($module_path, $base, $subpath, $file_name, $file_ext);
+            if ($fallback[0] !== FALSE) {
+                log_message('debug', "Found ci-resolved file: {$fallback[0]}");
+                return $fallback;
             }
         }
         
