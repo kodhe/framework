@@ -230,14 +230,14 @@ if ( ! function_exists('_get_smiley_array'))
 
 		if ( ! is_array($_smileys))
 		{
-			if (file_exists(APPPATH.'config/smileys.php'))
+			if (file_exists($smileys_file = app_config_file_in(APPPATH, 'smileys.php')))
 			{
-				include(APPPATH.'config/smileys.php');
+				include($smileys_file);
 			}
 
-			if (file_exists(APPPATH.'config/'.ENVIRONMENT.'/smileys.php'))
+			if (file_exists($smileys_file = app_config_file_in(APPPATH, ENVIRONMENT.'/smileys.php')))
 			{
-				include(APPPATH.'config/'.ENVIRONMENT.'/smileys.php');
+				include($smileys_file);
 			}
 
 			if (empty($smileys) OR ! is_array($smileys))

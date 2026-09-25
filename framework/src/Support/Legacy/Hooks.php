@@ -53,14 +53,14 @@ class Hooks
 		}
 
 		// Grab the "hooks" definition file.
-		if (file_exists(APPPATH.'config/hooks.php'))
+		if (file_exists($hooks_file = app_config_file_in(APPPATH, 'hooks.php')))
 		{
-			include(APPPATH.'config/hooks.php');
+			include($hooks_file);
 		}
 
-		if (file_exists(APPPATH.'config/'.ENVIRONMENT.'/hooks.php'))
+		if (file_exists($hooks_file = app_config_file_in(APPPATH, ENVIRONMENT.'/hooks.php')))
 		{
-			include(APPPATH.'config/'.ENVIRONMENT.'/hooks.php');
+			include($hooks_file);
 		}
 
 		// If there are no hooks, we're done.
