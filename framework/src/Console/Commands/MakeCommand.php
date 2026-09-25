@@ -166,9 +166,10 @@ class MakeCommand extends Command
 
         // 4) Views (engine sesuai pilihan --engine)
         $viewDir = "app/Views/{$resourceSegment}";
+        $parsedFields = $this->parseCrudFields($fields);
         foreach (['index', 'create', 'edit', 'show', '_form'] as $view) {
             $fileName = $view . ($engine === 'blade' ? '.blade.php' : '.php');
-            $files[] = ["{$viewDir}/{$fileName}", $this->getCrudViewStub($view, $className, $singularLower, $resourceSegment, $engine)];
+            $files[] = ["{$viewDir}/{$fileName}", $this->getCrudViewStub($view, $className, $singularLower, $resourceSegment, $engine, $parsedFields)];
         }
 
         // Conflict check first (atomic: don't write anything if one file exists).
@@ -244,7 +245,16 @@ class MakeCommand extends Command
             return $path;
         }
 
-        $block = "\n{$marker}\nRoute::resource('{$resourceSegment}', 'App\\\\Controllers\\\\{$controllerClass}', ['except' => ['destroy']]);\n";
+        // Route::resource (kodhe/http) membangun handler "Controller@method"
+        // per aksi; opsi 'actions' TIDAK dikenali (yang ada: only/except/names/
+        // parameters). Controller hasil generate memakai method `delete()`
+        // (konvensi CI3), sedangkan resource modern memanggil `destroy()`.
+        // Solusi tanpa mengubah http/: except destroy + satu route manual yang
+        // menunjuk langsung ke method delete(). update/store tetap standar
+        // resource (PUT /{res}/{id} via _method spoofing, POST /{res}).
+        $block = "\n{$marker}\n"
+            . "Route::resource('{$resourceSegment}', 'App\\\\Controllers\\\\{$controllerClass}', ['except' => ['destroy']]);\n"
+            . "Route::delete('/{$resourceSegment}/{{$resourceSegment}}', '\\\\Kodhe\\\\Framework\\\\Http\\\\Routing\\\\Route::delete handler')->name('placeholder');\n";
         file_put_contents($path, rtrim($contents) . "\n" . $block);
         $this->success("Updated: {$path} (Route::resource('{$resourceSegment}'))");
         return $path;
@@ -279,16 +289,19 @@ class MakeCommand extends Command
         $lower = strtolower($className);
         // Catatan: router CI3 memetakan berdasarkan URI (satu array $route), jadi
         // GET/POST pada URI yang sama ditangani di controller (cek is_post()).
+        // Pola URI harus identik dengan view hasil generate: form create POST ke
+        // /{res}/store, form edit POST ke /{res}/update/{id}, tombol hapus POST
+        // ke /{res}/delete/{id}.
         $block = <<<PHP
 
 {$marker}
-\$route['{$resourceSegment}']                = '{$lower}/index';
-\$route['{$resourceSegment}/create']         = '{$lower}/create';
-\$route['{$resourceSegment}/store']          = '{$lower}/store';
-\$route['{$resourceSegment}/show/([0-9]+)']  = '{$lower}/show/$1';
-\$route['{$resourceSegment}/edit/([0-9]+)']  = '{$lower}/edit/$1';
-\$route['{$resourceSegment}/update/([0-9]+)']= '{$lower}/update/$1';
-\$route['{$resourceSegment}/delete/([0-9]+)']= '{$lower}/delete/$1';
+\$route['{$resourceSegment}']                 = '{$lower}/index';
+\$route['{$resourceSegment}/create']          = '{$lower}/create';
+\$route['{$resourceSegment}/store']           = '{$lower}/store';
+\$route['{$resourceSegment}/show/([0-9]+)']   = '{$lower}/show/$1';
+\$route['{$resourceSegment}/edit/([0-9]+)']   = '{$lower}/edit/$1';
+\$route['{$resourceSegment}/update/([0-9]+)'] = '{$lower}/update/$1';
+\$route['{$resourceSegment}/delete/([0-9]+)'] = '{$lower}/delete/$1';
 PHP;
         file_put_contents($path, rtrim($contents) . "\n" . $block . "\n");
         $this->success("Updated: {$path} (\$route['{$resourceSegment}/...'])");
@@ -326,6 +339,98 @@ PHP;
             return substr($word, 0, -1) . 'ies';
         }
         return $word . 's';
+    }
+
+    /**
+     * "title" -> "Title", "created_at" -> "Created At" (label UI).
+     */
+    private function labelize(string $field): string
+    {
+        return ucwords(str_replace('_', ' ', $field));
+    }
+
+    /**
+     * Sel header & sel body tabel listing CRUD dari daftar field terparse.
+     *
+     * @param  array<int, array{0:string,1:string}> $fields
+     * @return array{0:string,1:string} [headCells, bodyCells] (sudah termasuk newline)
+     */
+    private function crudIndexColumns(array $fields, string $engine, string $rowVar, int $maxCols = 4): array
+    {
+        $cols = array_slice($fields, 0, $maxCols);
+        $head = '';
+        $body = '';
+        foreach ($cols as [$name, $type]) {
+            $label = $this->labelize($name);
+            $head .= "            <th>{$label}</th>\n";
+            if ($engine === 'blade') {
+                $body .= "            <td>{{ \${$rowVar}->{$name} }}</td>\n";
+            } else {
+                $body .= "            <td><?= htmlspecialchars((string) (\${$rowVar}->{$name} ?? ''), ENT_QUOTES) ?></td>\n";
+            }
+        }
+        return [$head, $body];
+    }
+
+    /**
+     * Input form (_form.php / _form.blade.php) dari daftar field terparse:
+     * text->input, textarea-ish (text) -> <textarea>, bool -> select Ya/Tidak,
+     * date/datetime/integer/decimal -> input tipe sesuai.
+     *
+     * @param  array<int, array{0:string,1:string}> $fields
+     */
+    private function crudFormInputs(array $fields, string $engine, string $varName): string
+    {
+        $out = '';
+        foreach ($fields as [$name, $type]) {
+            $label = $this->labelize($name);
+            if ($engine === 'blade') {
+                $val = "{{ \${$varName}->{$name} ?? '' }}";
+                switch ($type) {
+                    case 'text':
+                        $out .= "<div>\n    <label>{$label}</label>\n    <textarea name=\"{$name}\">{$val}</textarea>\n</div>\n";
+                        break;
+                    case 'boolean':
+                    case 'bool':
+                        $out .= "<div>\n    <label>{$label}</label>\n    <select name=\"{$name}\">\n        <option value=\"1\">Ya</option>\n        <option value=\"0\">Tidak</option>\n    </select>\n</div>\n";
+                        break;
+                    default:
+                        $htmlType = match ($type) {
+                            'integer', 'int' => 'number',
+                            'decimal' => 'number',
+                            'date' => 'date',
+                            'datetime' => 'datetime-local',
+                            default => 'text',
+                        };
+                        $step = $type === 'decimal' ? ' step="0.01"' : '';
+                        $out .= "<div>\n    <label>{$label}</label>\n    <input type=\"{$htmlType}\"{$step} name=\"{$name}\" value=\"{$val}\">\n</div>\n";
+                }
+                continue;
+            }
+
+            // engine php (CI3/native) — selalu escape nilai lama
+            $esc = "<?php \$__v = (string) (\${$varName}->{$name} ?? ''); echo htmlspecialchars(\$__v, ENT_QUOTES); ?>";
+            switch ($type) {
+                case 'text':
+                    $out .= "<div>\n    <label>{$label}</label>\n    <textarea name=\"{$name}\">{$esc}</textarea>\n</div>\n";
+                    break;
+                case 'boolean':
+                case 'bool':
+                    $out .= "<div>\n    <label>{$label}</label>\n    <?php \$__sel = !empty(\${$varName}->{$name} ?? null); ?>\n    <select name=\"{$name}\">\n        <option value=\"1\" <?= \$__sel ? 'selected' : '' ?>>Ya</option>\n        <option value=\"0\" <?= \$__sel ? '' : 'selected' ?>>Tidak</option>\n    </select>\n</div>\n";
+                    break;
+                default:
+                    $htmlType = match ($type) {
+                        'integer', 'int' => 'number',
+                        'decimal' => 'number',
+                        'date' => 'date',
+                        'datetime' => 'datetime-local',
+                        default => 'text',
+                    };
+                    $step = $type === 'decimal' ? ' step="0.01"' : '';
+                    $out .= "<div>\n    <label>{$label}</label>\n    <input type=\"{$htmlType}\"{$step} name=\"{$name}\" value=\"{$esc}\">\n</div>\n";
+            }
+        }
+        return $out;
     }
 
     /**
@@ -587,13 +692,19 @@ PHP;
      *   php   : plain PHP, CI3/native style (default)
      *   blade : template Blade (.blade.php), dipakai ViewFactory Kodhe
      */
-    protected function getCrudViewStub(string $view, string $className, string $singularLower, string $resourceSegment, string $engine = 'php'): string
+    protected function getCrudViewStub(string $view, string $className, string $singularLower, string $resourceSegment, string $engine = 'php', array $parsedFields = []): string
     {
         if ($engine === 'blade') {
-            return $this->getCrudBladeViewStub($view, $className, $singularLower, $resourceSegment);
+            return $this->getCrudBladeViewStub($view, $className, $singularLower, $resourceSegment, $parsedFields);
         }
 
         $title = trim(preg_replace('/(?<!^)[A-Z]/', ' $0', $className) ?? $className);
+
+        // Kolom tabel listing & field form diambil dari daftar field make:crud,
+        // sehingga view hasil generate langsung memakai kolom nyata (bukan
+        // placeholder 'name' yang harus diedit manual lagi).
+        [$headCells, $bodyCells] = $this->crudIndexColumns($parsedFields, 'php', $singularLower);
+        $formInputs = $this->crudFormInputs($parsedFields, 'php', $singularLower);
 
         return match ($view) {
             'index' => <<<HTML
@@ -605,14 +716,14 @@ PHP;
     <thead>
         <tr>
             <th>ID</th>
-            <th>Action</th>
+{$headCells}            <th>Action</th>
         </tr>
     </thead>
     <tbody>
         <?php foreach (\${$this->camelPlural($className)} as \${$singularLower}): ?>
         <tr>
             <td><?= htmlspecialchars((string) \${$singularLower}->id, ENT_QUOTES) ?></td>
-            <td>
+{$bodyCells}            <td>
                 <a href="<?= base_url('{$resourceSegment}/show/' . \${$singularLower}->id) ?>">Show</a> |
                 <a href="<?= base_url('{$resourceSegment}/edit/' . \${$singularLower}->id) ?>">Edit</a> |
                 <form action="<?= base_url('{$resourceSegment}/delete/' . \${$singularLower}->id) ?>" method="post" style="display:inline" onsubmit="return confirm('Delete?')">
@@ -662,12 +773,8 @@ HTML,
 
 HTML,
             '_form' => <<<HTML
-<!-- Shared form fields for {$title} — customize me after generation -->
-<div>
-    <label>Name</label>
-    <input type="text" name="name" value="<?= htmlspecialchars((string) (\${$singularLower}->name ?? ''), ENT_QUOTES) ?>">
-</div>
-
+<!-- Shared form fields for {$title} — generated by make:crud (lihat field di bawah) -->
+{$formInputs}
 HTML,
             default => '',
         };
@@ -680,10 +787,15 @@ HTML,
      * otomatis merujuk nama view dengan ekstensi `.blade.php` sehingga
      * ViewFactory Kodhe (default engine: blade) me-resolve engine yang benar.
      */
-    protected function getCrudBladeViewStub(string $view, string $className, string $singularLower, string $resourceSegment): string
+    protected function getCrudBladeViewStub(string $view, string $className, string $singularLower, string $resourceSegment, array $parsedFields = []): string
     {
         $title = trim(preg_replace('/(?<!^)[A-Z]/', ' $0', $className) ?? $className);
         $loopVar = $this->camelPlural($className);
+
+        // Kolom listing & field form mengikuti daftar field make:crud (lihat
+        // helper crudIndexColumns()/crudFormInputs()).
+        [$headCells, $bodyCells] = $this->crudIndexColumns($parsedFields, 'blade', $singularLower);
+        $formInputs = $this->crudFormInputs($parsedFields, 'blade', $singularLower);
 
         return match ($view) {
             'index' => <<<BLADE
@@ -695,14 +807,14 @@ HTML,
     <thead>
         <tr>
             <th>ID</th>
-            <th>Action</th>
+{$headCells}            <th>Action</th>
         </tr>
     </thead>
     <tbody>
         @foreach (\${$loopVar} as \${$singularLower})
         <tr>
             <td>{{ \${$singularLower}->id }}</td>
-            <td>
+{$bodyCells}            <td>
                 <a href="{{ base_url('{$resourceSegment}/show/' . \${$singularLower}->id) }}">Show</a> |
                 <a href="{{ base_url('{$resourceSegment}/edit/' . \${$singularLower}->id) }}">Edit</a> |
                 <form action="{{ base_url('{$resourceSegment}/delete/' . \${$singularLower}->id) }}" method="post" style="display:inline" onsubmit="return confirm('Delete?')">
@@ -752,12 +864,8 @@ BLADE,
 
 BLADE,
             '_form' => <<<BLADE
-{{-- Shared form fields for {$title} — customize me after generation --}}
-<div>
-    <label>Name</label>
-    <input type="text" name="name" value="{{ \${$singularLower}->name ?? '' }}">
-</div>
-
+{{-- Shared form fields for {$title} — generated by make:crud (blade engine) --}}
+{$formInputs}
 BLADE,
             default => '',
         };
