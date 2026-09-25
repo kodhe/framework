@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-if ( ! defined('BASEPATH') && ! defined('STDIN')) exit('No direct script access allowed');
+if ( ! defined('BASEPATH') && ! defined('STDIN') && ! function_exists('is_cli')) exit('No direct script access allowed');
 
 if ( ! function_exists('app_config_folder'))
 {
@@ -46,6 +46,54 @@ if ( ! function_exists('app_config_folder'))
 		$folder = 'config';
 		return $folder;
 	}
+}
+
+if ( ! function_exists('app_folder'))
+{
+/**
+ * Resolve the real on-disk name of a first-level application folder
+ * under APPPATH, case-insensitively (e.g. 'controllers' -> 'Controllers').
+ *
+ * Falls back to the requested lowercase spelling when nothing matching
+ * exists on disk, so plain CI3 projects are unaffected.
+ *
+ * @paramstring$name Folder name without slashes
+ * @returnstring Actual folder name as stored on disk
+ */
+function app_folder(string $name): string
+{
+static $cache = array();
+
+$key = strtolower($name);
+
+if (isset($cache[$key]))
+{
+return $cache[$key];
+}
+
+$found = $name;
+
+if (defined('APPPATH') && is_dir(APPPATH))
+{
+foreach (((is_dir(APPPATH) ? scandir(APPPATH) : array()) ?: array()) as $entry)
+{
+if ($entry !== '.' && $entry !== '..'
+&& strcasecmp($entry, $name) === 0
+&& is_dir(APPPATH.$entry))
+{
+$found = $entry;
+
+if ($entry === $name)
+{
+break; // exact win
+}
+}
+}
+}
+
+$cache[$key] = $found;
+return $found;
+}
 }
 
 if ( ! function_exists('app_config_file'))
@@ -174,4 +222,162 @@ $legacy = $base.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.ltrim(str_repla
 
 return file_exists($legacy) ? $legacy : $candidate;
 }
+}
+
+if ( ! function_exists('app_path_in'))
+{
+	/**
+	 * Case-insensitive path resolver for arbitrary application paths.
+	 *
+	 * CodeIgniter 3 projects use lowercase folder names (controllers/,
+	 * models/, libraries/, ...) but many Kodhe-style projects rename them
+	 * to PascalCase (Controllers/, Models/, ...). On case-sensitive
+	 * filesystems a hardcoded lowercase lookup silently fails, so the
+	 * legacy loader/router can no longer find files or folders.
+	 *
+	 * This helper walks every segment of the requested relative path
+	 * through the real on-disk directory listing:
+	 *   - exact-case match always wins (zero overhead for plain CI3 apps),
+	 *   - otherwise the first case-insensitive match is used,
+	 *   - when nothing matches, the naive lowercased path is returned so
+	 *     callers' file_exists()/is_dir() checks fail gracefully as before.
+	 *
+	 * Directories are cached per base path to keep repeated lookups cheap.
+	 *
+	 * @param	string	$base_path		 Base directory (e.g. APPPATH.'controllers')
+	 * @param	string	$relative_path Path relative to the base directory
+	 *                                     (file name, sub-folder, or nested path)
+	 * @return	string Absolute resolved path (may not exist on disk)
+	 */
+	function app_path_in(string $base_path, string $relative_path): string
+	{
+		$base = rtrim(str_replace(array('\\', '/'), DIRECTORY_SEPARATOR, $base_path), DIRECTORY_SEPARATOR);
+		$relative_path = trim((string) $relative_path, '/\\');
+
+		if ($relative_path === '')
+		{
+			return $base;
+		}
+
+		static $dir_cache = array();
+
+		$list_dir = static function (string $dir) use (&$dir_cache)
+		{
+			if ( ! isset($dir_cache[$dir]))
+			{
+				$entries = (is_dir($dir) ? scandir($dir) : array()) ?: array();
+				$map = array();
+
+				foreach ($entries as $entry)
+				{
+					if ($entry !== '.' && $entry !== '..')
+					{
+						// Later entries never override an existing key; exact
+						// and near-exact spellings remain reachable via the
+						// fast-path check below anyway.
+						$map[strtolower($entry)] = isset($map[strtolower($entry)]) ? $map[strtolower($entry)] : $entry;
+					}
+				}
+
+				$dir_cache[$dir] = $map;
+			}
+
+			return $dir_cache[$dir];
+		};
+
+		$path = $base;
+
+		foreach (explode('/', str_replace('\\', '/', $relative_path)) as $segment)
+		{
+			if ($segment === '' || $segment === '.')
+			{
+				continue;
+			}
+
+			$candidate = $path.DIRECTORY_SEPARATOR.$segment;
+
+			if (file_exists($candidate))
+			{
+				$path = $candidate; // exact win, no scan needed
+				continue;
+			}
+
+			$map = $list_dir($path);
+			$key = strtolower($segment);
+
+			if (isset($map[$key]))
+			{
+				$path .= DIRECTORY_SEPARATOR.$map[$key];
+				continue;
+			}
+
+			// Nothing on disk: return the naive path so callers behave exactly
+			// like plain CI3 (404 / "unable to load" instead of fatal errors).
+			return $base.DIRECTORY_SEPARATOR.str_replace('/', DIRECTORY_SEPARATOR, $relative_path);
+		}
+
+		return $path;
+	}
+}
+
+if ( ! function_exists('app_controller_file'))
+{
+	/**
+	 * Locate a controller file under APPPATH's controllers folder using a
+	 * case-insensitive search over every folder/file segment, including the
+	 * optional "_Controller" suffix convention.
+	 *
+	 * Handles combinations like:
+	 *   APPPATH.'controllers/admin/Welcome_controller.php'
+	 *   APPPATH.'Controllers/Admin/WelcomeController.php'
+	 *   APPPATH.'Controllers/Admin/Welcome.php'
+	 *
+	 * @param	string	$relative Controller path relative to the controllers
+	 *                              folder, WITHOUT extension (e.g. 'admin/welcome')
+	 * @param	string	$suffix	 Optional controller suffix (e.g. '_Controller')
+	 * @return	string Absolute path to the matched file, or the naive
+	 *                  lowercase path when nothing exists on disk.
+	 */
+	function app_controller_file(string $relative, string $suffix = ''): string
+	{
+		$relative = str_replace('.php', '', trim($relative, '/\\'));
+		$segments = explode('/', str_replace('\\', '/', $relative));
+		$file = (string) array_pop($segments);
+		$subdir = empty($segments) ? '' : implode('/', $segments).'/';
+
+		// Candidate spellings, most-likely first (CI3 convention: ucfirst).
+		$variants = array(ucfirst($file), $file, strtolower($file));
+
+		$candidates = array();
+
+		foreach ($variants as $v)
+		{
+			$candidates[] = $v;
+
+			if ($suffix !== '')
+			{
+				// Try the suffix in its raw and ucfirst spelling so a
+				// '_controller' config still matches WelcomeController.php.
+				$candidates[] = $v.$suffix;
+				$candidates[] = $v.ucfirst(ltrim($suffix, '_'));
+			}
+		}
+
+		$candidates = array_values(array_unique($candidates));
+
+		$base = defined('APPPATH') ? APPPATH.app_folder('controllers').'/' : 'controllers/';
+
+		foreach ($candidates as $candidate)
+		{
+			$resolved = app_path_in(rtrim($base, '/\\'), $subdir.$candidate.'.php');
+
+			if (is_file($resolved))
+			{
+				return $resolved;
+			}
+		}
+
+		// Graceful default: naive lowercase path (file_exists() will fail as before).
+		return $base.$subdir.strtolower($file).(($suffix !== '') ? $suffix : '').'.php';
+	}
 }
