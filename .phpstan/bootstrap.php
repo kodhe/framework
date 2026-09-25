@@ -11,7 +11,7 @@
  * masalah kode nyata.
  */
 
-declare(strict_types=0);
+declare(strict_types=1);
 
 if (!defined('APPPATH')) {
     define('APPPATH', 'APPPATH');
