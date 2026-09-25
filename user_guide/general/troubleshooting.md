@@ -39,20 +39,14 @@ skema dan memberi pesan jelas bila kolom kurang (PR #192). Kolom warisan lama
 pesan eksplisit alih-alih TypeError membingungkan (PR #192/#196). Untuk dev cepat,
 pakai `'sess_driver' => 'files', 'sess_save_path' => sys_get_temp_dir()`.
 
-## 4. Error PHPStan/CI "Cannot resolve class ..." di paket
+## 4. Error "Cannot resolve class ..." di paket
 
-**Penyebab**: biasanya artefak environment (fungsi global CI3 belum distub) atau
-manifest level terlalu tinggi.
-**Solusi**: jalankan `bash scripts/phpstan-package.sh <paket>`; hasil nyata per
-paket tercatat di `.phpstan/packages.txt` dan issue #148–#175.
+**Penyebab**: biasanya autoload composer belum di-regenerate setelah pindah
+folder/branch, atau file helper bootstrap tidak termuat.
+**Solusi**: jalankan `composer dump-autoload` lalu `composer test`; hasil nyata per
+paket tercatat di issue #148–#175.
 
-## 5. Workflow statis tidak berjalan
-
-File contoh ada di `ci/static-analysis.yml.example`; salin isinya ke
-`.github/workflows/static-analysis.yml` (PAT tanpa scope `workflow` tidak boleh
-mengirim file workflows — harus via UI/repo admin).
-
-## 6. `index.html` menutupi aplikasi
+## 5. `index.html` menutupi aplikasi
 
 Root repo/app kadang berisi `index.html` bawaan; arahkan DocumentRoot ke folder
 `public/` atau hapus file tersebut.

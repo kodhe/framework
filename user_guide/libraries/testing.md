@@ -18,5 +18,5 @@ final class RegisterTest extends \PHPUnit\Framework\TestCase
 
 Prinsip pengujian paket ini: hampir semua kelas dapat di-`new` langsung dengan
 array config (tanpa superobject CI) — dependency injection eksplisit membuat
-testing jauh lebih mudah dibanding CI3. Suite statis per paket: PHPStan level 0–5
-(lihat `.phpstan/packages.txt` + workflow static-analysis).
+testing jauh lebih mudah dibanding CI3. PHPUnit adalah satu-satunya tester resmi
+proyek ini (statis analyzer seperti PHPStan sudah dihapus agar tidak dobel).
