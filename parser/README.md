@@ -37,7 +37,7 @@ Parser/
 
 ```php
 // Basic usage
-$parser = new \CodeIgniter\Parser\Parser();
+$parser = new \Kodhe\Framework\Parser\Parser();
 
 // Parse template dengan variable
 $template = 'Hello, {name}!';
@@ -140,7 +140,7 @@ $template = '{{greeting}}, {{name}}!';
 
 ### Factory Pattern
 ```php
-use CodeIgniter\Parser\Factory\ParserFactory;
+use Kodhe\Framework\Parser\Factory\ParserFactory;
 
 // Default
 $parser = ParserFactory::make();

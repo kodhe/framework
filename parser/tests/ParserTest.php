@@ -2,17 +2,17 @@
 /**
  * Parser Test Suite
  *
- * @package CodeIgniter\Parser\Tests
+ * @package Kodhe\Framework\Parser\Tests
  */
 
-namespace CodeIgniter\Parser\Tests;
+namespace Kodhe\Framework\Parser\Tests;
 
 use PHPUnit\Framework\TestCase;
-use CodeIgniter\Parser\Parser;
-use CodeIgniter\Parser\Factory\ParserFactory;
-use CodeIgniter\Parser\Cache\TemplateCache;
-use CodeIgniter\Parser\Lexer\TemplateLexer;
-use CodeIgniter\Parser\Compiler\TemplateCompiler;
+use Kodhe\Framework\Parser\Parser;
+use Kodhe\Framework\Parser\Factory\ParserFactory;
+use Kodhe\Framework\Parser\Cache\TemplateCache;
+use Kodhe\Framework\Parser\Lexer\TemplateLexer;
+use Kodhe\Framework\Parser\Compiler\TemplateCompiler;
 
 class ParserTest extends TestCase
 {

@@ -2,7 +2,7 @@
 /**
  * Token Value Object
  *
- * @package CodeIgniter\Parser\ValueObjects
+ * @package Kodhe\Framework\Parser\ValueObjects
  */
 
 namespace Kodhe\Framework\Parser\ValueObjects;
