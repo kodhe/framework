@@ -7,6 +7,29 @@ namespace Kodhe\Framework\Http\Routing;
 use Kodhe\Framework\Http\Request;
 use Kodhe\Framework\Http\Response;
 use Kodhe\Framework\Support\Legacy\URI;
+
+// The case-insensitive path helpers (app_path_in(), app_config_folder(),
+// app_folder(), app_controller_file()) are plain global functions defined
+// in framework/src/Support/app_path.php. This package may be loaded via
+// composer autoload "files", but projects that include the router through
+// a manual loader must still find them, so we guarantee availability here.
+if ( ! function_exists('app_path_in'))
+{
+    foreach (array(
+        // Monorepo layout: ../../framework/src/Support/app_path.php
+        dirname(__DIR__, 3).'/framework/src/Support/app_path.php',
+        // Installed as standalone package alongside kodhe/framework-core
+        dirname(__DIR__, 4).'/kodhe/framework/framework/src/Support/app_path.php',
+        dirname(__DIR__, 4).'/framework/src/Support/app_path.php',
+    ) as $__app_path_helper) {
+        if (is_file($__app_path_helper)) {
+            require_once $__app_path_helper;
+            break;
+        }
+    }
+}
+unset($__app_path_helper);
+
 class LegacyRouter
 {
     public $routes = [];

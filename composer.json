@@ -77,6 +77,7 @@
       "Kodhe\\Framework\\View\\": "view/src/"
     },
     "files": [
+      "framework/src/Support/app_path.php",
       "framework/src/Support/Legacy/common.php",
       "framework/src/Support/Helpers.php",
       "http/src/helpers/url.php",
