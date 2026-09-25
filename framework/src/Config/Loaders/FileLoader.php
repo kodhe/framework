@@ -998,24 +998,45 @@ class FileLoader extends LegacyLoader
 
         foreach ($candidates as $class) {
             if (class_exists($class)) {
-                // CI3 compatibility aliases
-                $ciName = 'CI_' . $studly;
-                if ($lower === 'user_agent') {
-                    $ciName = 'CI_User_agent';
-                }
-                if ($lower === 'image_lib' || $lower === 'image') {
-                    $ciName = 'CI_Image_lib';
-                }
-                if ($lower === 'form_validation') {
-                    $ciName = 'CI_Form_validation';
-                }
-                if ($lower === 'unit_test') {
-                    $ciName = 'CI_Unit_test';
+                // CI3 compatibility aliases.
+                //
+                // Canonical name is always 'CI_' . ucfirst($lower): PHP
+                // resolves class names case-insensitively on every platform,
+                // so a single registration covers CI_Input / CI_input /
+                // CI_INput lookups alike. The previous code hard-coded only
+                // four special cases (user_agent, image_lib, form_validation,
+                // unit_test), which made aliases depend on load order and
+                // failed intermittently for everything else on Linux.
+                $canonicalCi = 'CI_' . ucfirst($lower);
+
+                // Preserve historically-documented exact spellings for tools
+                // that inspect the symbol table with strict-case comparisons
+                // (e.g. reflection-based scanners). class_alias() registers
+                // under the literal string given, and duplicate registrations
+                // of the same case-insensitive name are skipped defensively.
+                $exactSpellings = [$canonicalCi];
+                switch ($lower) {
+                    case 'user_agent':
+                        $exactSpellings[] = 'CI_User_agent';
+                        break;
+                    case 'image':
+                    case 'image_lib':
+                        $exactSpellings[] = 'CI_Image_lib';
+                        break;
+                    case 'form_validation':
+                        $exactSpellings[] = 'CI_Form_validation';
+                        break;
+                    case 'unit_test':
+                        $exactSpellings[] = 'CI_Unit_test';
+                        break;
                 }
 
-                if (!class_exists($ciName, false)) {
-                    class_alias($class, $ciName);
+                foreach ($exactSpellings as $ciName) {
+                    if (!class_exists($ciName, false)) {
+                        class_alias($class, $ciName);
+                    }
                 }
+
                 // Also alias plain Session, Email, etc. if not already defined
                 if (!class_exists($studly, false) && strpos($studly, '_') === false) {
                     class_alias($class, $studly);
