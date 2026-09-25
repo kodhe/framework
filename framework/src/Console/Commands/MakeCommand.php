@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Kodhe\Framework\Console\Commands;
 
+use Kodhe\Framework\Console\Command;
+use Kodhe\Framework\Console\Console;
+
 /**
  * Make Command - Generate boilerplate code for various components
  */
@@ -35,6 +38,18 @@ class MakeCommand extends Command
     {
         $type = $this->argument(0);
         $name = $this->argument(1);
+
+        // Support the sub-command style invocation: `console make:controller Foo`.
+        // When dispatched via a "make:<type>" alias, argument 0 is the literal
+        // command name and the real component name shifts one position right.
+        if (is_string($type) && str_starts_with($type, 'make:')) {
+            $name = $name ?: $this->argument(2);
+            $type = substr($type, strlen('make:'));
+        } elseif ($type === 'make') {
+            // `console make controller Foo`
+            $type = $name;
+            $name = $this->argument(2);
+        }
 
         if (!$type || !$name) {
             $this->error('Missing arguments. Usage: make:<type> <name>');
