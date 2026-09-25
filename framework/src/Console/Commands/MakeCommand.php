@@ -20,7 +20,7 @@ class MakeCommand extends Command
         'make:model <name>',
         'make:migration <name>',
         'make:middleware <name>',
-        'make:crud <name>',
+        'make:crud <name> [field:type ...] [--style=kodhe|ci3|both] [--engine=php|blade]',
     ];
     protected array $arguments = [
         'type' => 'Type of component to generate (command, controller, model, migration, middleware, crud)',
@@ -29,6 +29,8 @@ class MakeCommand extends Command
     protected array $options = [
         'force' => 'Overwrite existing file',
         'path' => 'Custom output path',
+        'style' => 'CRUD routing style: kodhe (modern Route::resource), ci3 ($route[...] legacy), or both (default)',
+        'engine' => 'CRUD view engine: php (CI3/native, default) or blade',
     ];
     protected array $aliases = ['generate', 'g'];
 
@@ -61,7 +63,13 @@ class MakeCommand extends Command
             $this->writeln('  model       - Create a new model');
             $this->writeln('  migration   - Create a new migration');
             $this->writeln('  middleware  - Create a new middleware');
-            $this->writeln('  crud        - Create a full CRUD stack (model, controller, migration, views)');
+            $this->writeln('  crud        - Create a full CRUD stack (model, controller, migration, views, routes)');
+            $this->writeln('');
+            $this->writeln('CRUD options:');
+            $this->writeln('  --style=kodhe|ci3|both   Route generation style (default: both)');
+            $this->writeln('      kodhe : modern fluent routes -> app/Config/routes_modern.php (Route::resource)');
+            $this->writeln('      ci3   : legacy CI3 routes    -> app/Config/routes.php ($route[...])');
+            $this->writeln('  --engine=php|blade       View engine for generated views (default: php)');
             return 1;
         }
 
@@ -76,14 +84,17 @@ class MakeCommand extends Command
     }
 
     /**
-     * Make a full CRUD stack: model, controller, migration and views.
+     * Make a full CRUD stack: model, controller, migration, views and routes.
      *
      * Style-nya mengikuti generator CRUD pada framework modern (Laravel/Craft),
      * tetapi hasil generate tetap kompatibel dengan Kodhe Framework:
      *   - Model  : Kodhe\Framework\Database\Model (CI3-style query builder)
      *   - Controller : extends Kodhe\Framework\Http\Controllers\BaseController
-     *   - Migration  : anonymous class up()/down()
-     *   - Views      : CI3-style view files (index/create/edit/show)
+     *   - Migration  : anonymous class up()/down() via Loader::dbforge() (modern stack)
+     *   - Views      : engine bisa dipilih (--engine=php|blade)
+     *   - Routes     : --style=kodhe  -> app/Config/routes_modern.php (Route::resource)
+     *                  --style=ci3    -> app/Config/routes.php ($route[...] legacy CI3)
+     *                  --style=both   -> keduanya (default)
      */
     protected function makeCrud(string $name): int
     {
@@ -91,6 +102,20 @@ class MakeCommand extends Command
 
         if ($className === '' || !preg_match('/^[A-Z][A-Za-z0-9_]*$/', $className)) {
             $this->error('CRUD name must be an UpperCamelCase resource name, e.g. "Post" or "Product".');
+            return 1;
+        }
+
+        // Routing style: kodhe (modern fluent) | ci3 (legacy $route[...]) | both (default)
+        $style = strtolower((string) $this->option('style', 'both'));
+        if (!in_array($style, ['kodhe', 'ci3', 'both'], true)) {
+            $this->error("Unknown --style '{$style}'. Use: kodhe, ci3, or both.");
+            return 1;
+        }
+
+        // View engine: php (CI3/native, default) | blade
+        $engine = strtolower((string) $this->option('engine', 'php'));
+        if (!in_array($engine, ['php', 'blade'], true)) {
+            $this->error("Unknown --engine '{$engine}'. Use: php or blade.");
             return 1;
         }
 
@@ -105,7 +130,7 @@ class MakeCommand extends Command
                 continue; // command token (any invocation style)
             }
             if (str_starts_with($arg, '-')) {
-                continue; // options like --force
+                continue; // options like --force / --style=ci3 / --engine=blade
             }
             if (strtolower($arg) === strtolower($className)) {
                 continue; // the resource name itself
@@ -120,6 +145,7 @@ class MakeCommand extends Command
         // Controller memakai suffix "Controller" agar tidak bentrok dengan nama
         // Model saat kedua class di-autoload dalam satu request (CI3-style).
         $controllerClass = $className . 'Controller';
+        $viewSuffix = $engine === 'blade' ? '.blade.php' : '.php';
 
         $files = [];
 
@@ -131,17 +157,18 @@ class MakeCommand extends Command
         // 2) Controller
         $controllerDir = 'app/Controllers';
         $controllerPath = "{$controllerDir}/{$controllerClass}.php";
-        $files[] = [$controllerPath, $this->getCrudControllerStub($className, $controllerClass, $pluralSnake, $singularLower, $resourceSegment)];
+        $files[] = [$controllerPath, $this->getCrudControllerStub($className, $controllerClass, $pluralSnake, $singularLower, $resourceSegment, $viewSuffix)];
 
         // 3) Migration
         $timestamp = date('Y_m_d_His');
         $migrationPath = "database/migrations/{$timestamp}_create_{$pluralSnake}_table.php";
         $files[] = [$migrationPath, $this->getCrudMigrationStub($pluralSnake, $fields)];
 
-        // 4) Views (CI3 style)
+        // 4) Views (engine sesuai pilihan --engine)
         $viewDir = "app/Views/{$resourceSegment}";
         foreach (['index', 'create', 'edit', 'show', '_form'] as $view) {
-            $files[] = ["{$viewDir}/{$view}.php", $this->getCrudViewStub($view, $className, $singularLower, $resourceSegment)];
+            $fileName = $view . ($engine === 'blade' ? '.blade.php' : '.php');
+            $files[] = ["{$viewDir}/{$fileName}", $this->getCrudViewStub($view, $className, $singularLower, $resourceSegment, $engine)];
         }
 
         // Conflict check first (atomic: don't write anything if one file exists).
@@ -163,12 +190,109 @@ class MakeCommand extends Command
             $this->success("Created: {$path}");
         }
 
+        // 5) Routes — otomatis, tanpa perlu edit manual.
+        $routesWritten = [];
+        if ($style === 'kodhe' || $style === 'both') {
+            $written = $this->appendModernRoutes($resourceSegment, $controllerClass);
+            if ($written !== null) {
+                $routesWritten[] = $written;
+            }
+        }
+        if ($style === 'ci3' || $style === 'both') {
+            $written = $this->appendCi3Routes($resourceSegment, $className);
+            if ($written !== null) {
+                $routesWritten[] = $written;
+            }
+        }
+
         $this->writeln('');
         $this->info("CRUD \"{$className}\" generated successfully!");
         $this->writeln("Next steps:");
         $this->writeln("  1. Run the migration:  php console migrate (or load it manually)");
-        $this->writeln("  2. Add routes for /{$resourceSegment} to your routing config.");
+        if ($routesWritten === []) {
+            $this->writeln("  2. Routes NOT written (routing files not found). Add routes for /{$resourceSegment} manually.");
+        } else {
+            $this->writeln("  2. Routes registered in: " . implode(', ', $routesWritten));
+        }
         return 0;
+    }
+
+    /**
+     * Append modern Kodhe-style routes (fluent Route::resource) to
+     * app/Config/routes_modern.php. Creates the file from scratch when missing.
+     * Uses markers so re-running with --force stays idempotent.
+     */
+    private function appendModernRoutes(string $resourceSegment, string $controllerClass): ?string
+    {
+        $path = 'app/Config/routes_modern.php';
+        $marker = "/* make:crud:{$resourceSegment} (modern) */";
+
+        if (!file_exists($path)) {
+            if (!is_dir('app/Config')) {
+                if (!is_dir('app')) {
+                    return null; // no app skeleton at all -> skip, user informed
+                }
+                mkdir('app/Config', 0755, true);
+            }
+            $contents = "<?php\n\n/**\n * Modern routing (kodhe/http fluent router).\n * Loaded when \$config['enable_modern_routing'] is TRUE.\n */\n\nuse Kodhe\\Http\\Routing\\Route;\n\n";
+        } else {
+            $contents = (string) file_get_contents($path);
+        }
+
+        if (strpos($contents, $marker) !== false) {
+            $this->success("Routes already present: {$path} ({$resourceSegment})");
+            return $path;
+        }
+
+        $block = "\n{$marker}\nRoute::resource('{$resourceSegment}', 'App\\\\Controllers\\\\{$controllerClass}', ['except' => ['destroy']]);\n";
+        file_put_contents($path, rtrim($contents) . "\n" . $block);
+        $this->success("Updated: {$path} (Route::resource('{$resourceSegment}'))");
+        return $path;
+    }
+
+    /**
+     * Append CI3-style legacy routes ($route[...] map) to
+     * app/Config/routes.php. Creates the file from scratch when missing.
+     */
+    private function appendCi3Routes(string $resourceSegment, string $className): ?string
+    {
+        $path = 'app/Config/routes.php';
+        $marker = "/* make:crud:{$resourceSegment} (ci3) */";
+
+        if (!file_exists($path)) {
+            if (!is_dir('app/Config')) {
+                if (!is_dir('app')) {
+                    return null;
+                }
+                mkdir('app/Config', 0755, true);
+            }
+            $contents = "<?php\n\n/**\n * CI3-style routes (legacy router).\n */\n\$route['default_controller'] = 'Home/index';\n\$route['404_override'] = '';\n\$route['translate_uri_dashes'] = FALSE;\n";
+        } else {
+            $contents = (string) file_get_contents($path);
+        }
+
+        if (strpos($contents, $marker) !== false) {
+            $this->success("Routes already present: {$path} ({$resourceSegment})");
+            return $path;
+        }
+
+        $lower = strtolower($className);
+        // Catatan: router CI3 memetakan berdasarkan URI (satu array $route), jadi
+        // GET/POST pada URI yang sama ditangani di controller (cek is_post()).
+        $block = <<<PHP
+
+{$marker}
+\$route['{$resourceSegment}']                = '{$lower}/index';
+\$route['{$resourceSegment}/create']         = '{$lower}/create';
+\$route['{$resourceSegment}/store']          = '{$lower}/store';
+\$route['{$resourceSegment}/show/([0-9]+)']  = '{$lower}/show/$1';
+\$route['{$resourceSegment}/edit/([0-9]+)']  = '{$lower}/edit/$1';
+\$route['{$resourceSegment}/update/([0-9]+)']= '{$lower}/update/$1';
+\$route['{$resourceSegment}/delete/([0-9]+)']= '{$lower}/delete/$1';
+PHP;
+        file_put_contents($path, rtrim($contents) . "\n" . $block . "\n");
+        $this->success("Updated: {$path} (\$route['{$resourceSegment}/...'])");
+        return $path;
     }
 
     /**
@@ -274,7 +398,7 @@ PHP;
      * Nama class memakai suffix "Controller" agar tidak bentrok dengan Model
      * bernama sama saat keduanya di-autoload dalam satu request.
      */
-    protected function getCrudControllerStub(string $className, string $controllerClass, string $pluralSnake, string $singularLower, string $resourceSegment): string
+    protected function getCrudControllerStub(string $className, string $controllerClass, string $pluralSnake, string $singularLower, string $resourceSegment, string $viewSuffix = '.php'): string
     {
         $modelVar = '$' . $singularLower . 'Model';
         return <<<PHP
@@ -308,7 +432,7 @@ class {$controllerClass} extends BaseController
     public function index()
     {
         \$data['{$pluralSnake}'] = \$this->{$singularLower}Model->orderBy('id', 'DESC')->all();
-        \$this->load->view('{$resourceSegment}/index', \$data);
+        \$this->load->view('{$resourceSegment}/index{$viewSuffix}', \$data);
     }
 
     /**
@@ -316,7 +440,7 @@ class {$controllerClass} extends BaseController
      */
     public function create()
     {
-        \$this->load->view('{$resourceSegment}/create');
+        \$this->load->view('{$resourceSegment}/create{$viewSuffix}');
     }
 
     /**
@@ -331,7 +455,7 @@ class {$controllerClass} extends BaseController
         }
 
         \$data['error'] = \$this->{$singularLower}Model->errors();
-        \$this->load->view('{$resourceSegment}/create', \$data);
+        \$this->load->view('{$resourceSegment}/create{$viewSuffix}', \$data);
     }
 
     /**
@@ -345,7 +469,7 @@ class {$controllerClass} extends BaseController
             show_404();
         }
 
-        \$this->load->view('{$resourceSegment}/show', ['{$singularLower}' => \${$singularLower}]);
+        \$this->load->view('{$resourceSegment}/show{$viewSuffix}', ['{$singularLower}' => \${$singularLower}]);
     }
 
     /**
@@ -359,7 +483,7 @@ class {$controllerClass} extends BaseController
             show_404();
         }
 
-        \$this->load->view('{$resourceSegment}/edit', ['{$singularLower}' => \${$singularLower}]);
+        \$this->load->view('{$resourceSegment}/edit{$viewSuffix}', ['{$singularLower}' => \${$singularLower}]);
     }
 
     /**
@@ -375,7 +499,7 @@ class {$controllerClass} extends BaseController
 
         \$data['error'] = \$this->{$singularLower}Model->errors();
         \$data['{$singularLower}'] = \$this->{$singularLower}Model->find(\$id);
-        \$this->load->view('{$resourceSegment}/edit', \$data);
+        \$this->load->view('{$resourceSegment}/edit{$viewSuffix}', \$data);
     }
 
     /**
@@ -459,10 +583,16 @@ PHP;
     }
 
     /**
-     * CRUD view stubs — plain PHP, CI3/native style (no Blade required).
+     * CRUD view stubs — engine bisa dipilih:
+     *   php   : plain PHP, CI3/native style (default)
+     *   blade : template Blade (.blade.php), dipakai ViewFactory Kodhe
      */
-    protected function getCrudViewStub(string $view, string $className, string $singularLower, string $resourceSegment): string
+    protected function getCrudViewStub(string $view, string $className, string $singularLower, string $resourceSegment, string $engine = 'php'): string
     {
+        if ($engine === 'blade') {
+            return $this->getCrudBladeViewStub($view, $className, $singularLower, $resourceSegment);
+        }
+
         $title = trim(preg_replace('/(?<!^)[A-Z]/', ' $0', $className) ?? $className);
 
         return match ($view) {
@@ -539,6 +669,96 @@ HTML,
 </div>
 
 HTML,
+            default => '',
+        };
+    }
+
+    /**
+     * CRUD view stubs — Blade engine (.blade.php).
+     *
+     * Dipakai saat `make:crud ... --engine=blade`. Controller hasil generate
+     * otomatis merujuk nama view dengan ekstensi `.blade.php` sehingga
+     * ViewFactory Kodhe (default engine: blade) me-resolve engine yang benar.
+     */
+    protected function getCrudBladeViewStub(string $view, string $className, string $singularLower, string $resourceSegment): string
+    {
+        $title = trim(preg_replace('/(?<!^)[A-Z]/', ' $0', $className) ?? $className);
+        $loopVar = $this->camelPlural($className);
+
+        return match ($view) {
+            'index' => <<<BLADE
+{{-- {$title} listing — generated by make:crud (blade engine) --}}
+<h1>{$title}</h1>
+<p><a href="{{ base_url('{$resourceSegment}/create') }}">+ Add New</a></p>
+
+<table border="1" cellpadding="6">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (\${$loopVar} as \${$singularLower})
+        <tr>
+            <td>{{ \${$singularLower}->id }}</td>
+            <td>
+                <a href="{{ base_url('{$resourceSegment}/show/' . \${$singularLower}->id) }}">Show</a> |
+                <a href="{{ base_url('{$resourceSegment}/edit/' . \${$singularLower}->id) }}">Edit</a> |
+                <form action="{{ base_url('{$resourceSegment}/delete/' . \${$singularLower}->id) }}" method="post" style="display:inline" onsubmit="return confirm('Delete?')">
+                    <button type="submit">Delete</button>
+                </form>
+            </td>
+        </tr>
+        @endforeach
+    </tbody>
+</table>
+
+BLADE,
+            'create' => <<<BLADE
+{{-- Create {$title} — generated by make:crud (blade engine) --}}
+<h1>New {$title}</h1>
+@if (!empty(\$error))
+    <pre>{{ print_r(\$error, true) }}</pre>
+@endif
+
+<form action="{{ base_url('{$resourceSegment}') }}" method="post">
+    @include('{$resourceSegment}/_form')
+    <button type="submit">Save</button>
+</form>
+<a href="{{ base_url('{$resourceSegment}') }}">Back to list</a>
+
+BLADE,
+            'edit' => <<<BLADE
+{{-- Edit {$title} — generated by make:crud (blade engine) --}}
+<h1>Edit {$title}</h1>
+@if (!empty(\$error))
+    <pre>{{ print_r(\$error, true) }}</pre>
+@endif
+
+<form action="{{ base_url('{$resourceSegment}/update/' . \${$singularLower}->id) }}" method="post">
+    @include('{$resourceSegment}/_form')
+    <button type="submit">Update</button>
+</form>
+<a href="{{ base_url('{$resourceSegment}') }}">Back to list</a>
+
+BLADE,
+            'show' => <<<BLADE
+{{-- Show {$title} — generated by make:crud (blade engine) --}}
+<h1>{$title} #{{ \${$singularLower}->id }}</h1>
+<pre>{{ print_r(\${$singularLower}, true) }}</pre>
+<a href="{{ base_url('{$resourceSegment}/edit/' . \${$singularLower}->id) }}">Edit</a> |
+<a href="{{ base_url('{$resourceSegment}') }}">Back to list</a>
+
+BLADE,
+            '_form' => <<<BLADE
+{{-- Shared form fields for {$title} — customize me after generation --}}
+<div>
+    <label>Name</label>
+    <input type="text" name="name" value="{{ \${$singularLower}->name ?? '' }}">
+</div>
+
+BLADE,
             default => '',
         };
     }
