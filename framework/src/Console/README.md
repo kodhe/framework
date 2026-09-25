@@ -116,6 +116,14 @@ php bin/console make:migration create_users_table
 # Buat middleware
 php bin/console make:middleware AuthMiddleware
 
+# Buat satu set CRUD lengkap (model + controller + migration + 5 views)
+php bin/console make:crud Article title:string slug:string body:text published:bool
+# -> app/Models/Article.php, app/Controllers/ArticleController.php,
+#    database/migrations/<ts>_create_articles_table.php,
+#    app/Views/articles/{index,create,edit,show,_form}.php
+# Tipe field: string|text|integer|int|boolean|bool|date|datetime|decimal
+# Panduan user guide: user_guide/general/crud-generator.md
+
 # Force overwrite jika file sudah ada
 php bin/console make:command MyCommand --force
 

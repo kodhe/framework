@@ -27,6 +27,7 @@ di setiap sub-folder.
 | Dokumen | Isi |
 |---|---|
 | [proyek-baru](general/new-project.md) | Scaffold proyek dengan `php console new` + jalankan dev server (`serve`) |
+| [generator-crud](general/crud-generator.md) | 🚀 `make:crud` — satu perintah menghasilkan set CRUD lengkap (Model, Controller, migration, views) + tipe field, peta route, alur kerja |
 | [menjalankan-aplikasi](general/running.md) | Bootstrap framework, konfigurasi, menjalankan di server dev |
 | [troubleshooting](general/troubleshooting.md) | Pesan error umum & penyebabnya (class not found, schema tabel, dsb.) |
 
