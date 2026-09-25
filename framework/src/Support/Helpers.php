@@ -13,20 +13,6 @@ if ( ! function_exists('load_class'))
 	 * @param	mixed	an optional argument to pass to the class constructor
 	 * @return	object
 	 */
-	if ( ! function_exists('load_class'))
-	{
-		/**
-		 * Class registry
-		 *
-		 * This function acts as a singleton. If the requested class does not
-		 * exist it is instantiated and set to a static variable. If it has
-		 * previously been instantiated the variable is returned.
-		 *
-		 * @param	string	the class name being requested
-		 * @param	string	the directory where the class should be found
-		 * @param	mixed	an optional argument to pass to the class constructor
-		 * @return	object
-		 */
 		function &load_class($class, $directory = null, $param = NULL)
 		{
 			static $_classes = array();
@@ -70,7 +56,14 @@ if ( ! function_exists('load_class'))
 				return $_classes[$class];
 			}
 
+			// A CI_<class> may already be defined (e.g. by an autoloader or a
+			// previous require) without having been registered here yet.
+			// Instantiate it instead of returning an empty value from the
+			// static slot (previous behavior silently broke callers).
 			if (class_exists('CI_'.$class, false)) {
+				$_name = 'CI_'.$class;
+				$_classes[$class] = isset($param) ? new $_name($param) : new $_name();
+				is_loaded($class);
 				return $_classes[$class];
 			}
 	
@@ -160,7 +153,6 @@ if ( ! function_exists('load_class'))
 				? new $name($param)
 				: new $name();
 			return $_classes[$class];
-		}
 	}
 }
 
