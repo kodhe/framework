@@ -1149,7 +1149,8 @@ class LegacyLoader
 		}
 
 		// Is this a stock library? There are a few special conditions if so ...
-		if (file_exists(BASEPATH.'libraries/'.$subdir.$class.'.php'))
+		if (file_exists(BASEPATH.'libraries/'.$subdir.$class.'.php')
+			OR is_file((string) app_class_file_in(BASEPATH, 'libraries', $subdir.$class)))
 		{
 			return $this->_ci_load_stock_library($class, $subdir, $params, $object_name);
 		}
@@ -1183,9 +1184,11 @@ class LegacyLoader
 				continue;
 			}
 
-			$filepath = $path.'libraries/'.$subdir.$class.'.php';
+			// Case-insensitive + convention-flexible lookup: libraries/, Libraries/,
+		// Foo.php / foo.php / Foo_lib.php all resolve on renamed projects.
+		$filepath = (string) app_class_file_in($path, 'libraries', $subdir.$class);
 			// Does the file exist? No? Bummer...
-			if ( ! file_exists($filepath))
+			if ($filepath === '' OR ! file_exists($filepath))
 			{
 				continue;
 			}
@@ -1254,7 +1257,8 @@ class LegacyLoader
 
 		foreach ($paths as $path)
 		{
-			$path = is_string($path) ? (rtrim((string) $path, "/\\") . '/libraries/' . $file_path . $library_name . '.php') : '';
+			// Case-insensitive folder/file resolution (Libraries/ vs libraries/)
+			$path = is_string($path) ? (string) app_class_file_in($path, 'libraries', $file_path.$library_name) : '';
 			if ($path !== '' && is_string($path) && file_exists($path))
 			{
 				// Override
@@ -1269,7 +1273,11 @@ class LegacyLoader
 		}
 
 		$_stock = BASEPATH.'libraries/'.$file_path.$library_name.'.php';
-		if (is_string($_stock) && is_file($_stock)) {
+		if ( ! is_file($_stock))
+		{
+			$_stock = (string) app_class_file_in(BASEPATH, 'libraries', $file_path.$library_name);
+		}
+		if (is_string($_stock) && $_stock !== '' && is_file($_stock)) {
 			include_once($_stock);
 		}
 
@@ -1277,7 +1285,8 @@ class LegacyLoader
 		$subclass = config_item('subclass_prefix').$library_name;
 		foreach ($paths as $path)
 		{
-			$path = is_string($path) ? (rtrim((string) $path, "/\\") . '/libraries/' . $file_path . $subclass . '.php') : '';
+			// MY_ extensions may live in Libraries/ (PascalCase rename) too
+			$path = is_string($path) ? (string) app_class_file_in($path, 'libraries', $file_path.$subclass) : '';
 			if ($path !== '' && is_string($path) && file_exists($path))
 			{
 				include_once($path);
@@ -1331,19 +1340,6 @@ class LegacyLoader
 					{
 						include($config_file);
 						$found = TRUE;
-					}
-					// Case-insensitive fallback: proyek boleh menamai ulang folder
-					// views menjadi Views/ dan menyimpan view dengan kapitalisasi berbeda.
-					$__ci_try = rtrim($_ci_view_file, '/\\').DIRECTORY_SEPARATOR.$_ci_file;
-					if ( ! file_exists($__ci_try))
-					{
-						$__ci_resolved = app_realpath($__ci_try);
-						if ($__ci_resolved !== $__ci_try && file_exists($__ci_resolved))
-						{
-							$_ci_path = $__ci_resolved;
-							$file_exists = TRUE;
-							break;
-						}
 					}
 					elseif (file_exists($config_file = app_config_file_in($path, ucfirst(strtolower($class)).'.php')))
 					{
