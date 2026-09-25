@@ -29,9 +29,14 @@ if ( ! function_exists('load_class'))
 				// Try to autoload the namespaced class
 				spl_autoload_call($class);
 				
-				// If class doesn't exist after autoload, return false or handle error
+				// If class doesn't exist after autoload, fail loudly with a
+				// catchable exception instead of returning false (which used to
+				// silently poison callers and trigger by-reference notices).
 				if (!class_exists($class, false)) {
-					return false; // or throw exception
+					throw new \Kodhe\Framework\Exceptions\ClassLoadingException(
+						'Unable to autoload the specified class: ' . $class,
+						0, null, $class
+					);
 				}
 				
 				// Instantiate the class
@@ -139,11 +144,14 @@ if ( ! function_exists('load_class'))
 			// Did we find the class?
 			if ($name === FALSE)
 			{
-				// Note: We use exit() rather than show_error() in order to avoid a
-				// self-referencing loop with the Exceptions class
-				set_status_header(503);
-				echo 'Unable to locate the specified class: '.$class.'.php';
-				exit(5); // EXIT_UNK_CLASS
+				// Throw a catchable exception instead of the legacy hard-fail
+				// (set_status_header + echo + exit(5)). The HTTP 503 status is
+				// carried on the exception (ClassLoadingException::$httpStatusCode)
+				// so the framework error handler can translate it into a proper
+				// response, and callers/tests can recover gracefully.
+				throw \Kodhe\Framework\Exceptions\ClassLoadingException::unableToLocate(
+					$class, (string) $directory
+				);
 			}
 	
 			// Keep track of what we just loaded
