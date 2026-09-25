@@ -1,5 +1,21 @@
 <?php namespace Kodhe\Framework\Support\Legacy;
 
+// Guarantee the case-insensitive app path helpers (app_path_in(),
+// app_config_file_in(), app_config_folder(), ...) are available even
+// when this class is loaded without composer's autoload "files"
+// section (bundled copies, manual includes, stale autoloader, etc.).
+if ( ! function_exists('app_config_file_in'))
+{
+	$__kodhe_app_path = dirname(__DIR__).'/app_path.php';
+
+	if (is_file($__kodhe_app_path))
+	{
+		require_once $__kodhe_app_path;
+	}
+
+	unset($__kodhe_app_path);
+}
+
 class Hooks
 {
 
