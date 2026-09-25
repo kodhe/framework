@@ -67,13 +67,13 @@ class LegacyRouter
         $route = [];
         
         // Load main routes
-        if (file_exists(APPPATH.'config/routes.php')) {
-            include(APPPATH.'config/routes.php');
+        if (file_exists($routesFile = app_config_file_in(APPPATH, 'routes.php'))) {
+            include($routesFile);
         }
 
         // Load environment routes
-        if (file_exists(APPPATH.'config/'.ENVIRONMENT.'/routes.php')) {
-            include(APPPATH.'config/'.ENVIRONMENT.'/routes.php');
+        if (file_exists($routesFile = app_config_file_in(APPPATH, ENVIRONMENT.'/routes.php'))) {
+            include($routesFile);
         }
 
         // Validate & get reserved routes

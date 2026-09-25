@@ -234,14 +234,14 @@ if ( ! function_exists('doctype'))
 
 		if ( ! is_array($doctypes))
 		{
-			if (file_exists(APPPATH.'config/doctypes.php'))
+			if (file_exists($doctypes_file = app_config_file_in(APPPATH, 'doctypes.php')))
 			{
-				include(APPPATH.'config/doctypes.php');
+				include($doctypes_file);
 			}
 
-			if (file_exists(APPPATH.'config/'.ENVIRONMENT.'/doctypes.php'))
+			if (file_exists($doctypes_file = app_config_file_in(APPPATH, ENVIRONMENT.'/doctypes.php')))
 			{
-				include(APPPATH.'config/'.ENVIRONMENT.'/doctypes.php');
+				include($doctypes_file);
 			}
 
 			if (empty($_doctypes) OR ! is_array($_doctypes))

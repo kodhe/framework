@@ -28,6 +28,7 @@
     },
     "files": [
       "src/Support/Legacy/common.php",
+      "src/Support/app_path.php",
       "src/Support/Helpers.php"
     ]
   },
