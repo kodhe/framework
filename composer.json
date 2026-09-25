@@ -89,18 +89,14 @@
   "autoload-dev": {
     "psr-4": {
       "Kodhe\\Framework\\Tests\\": "framework/tests/",
-      "Kodhe\\Framework\\Database\\Tests\\": "database/tests/",
       "Kodhe\\Framework\\Http\\Tests\\": "http/tests/",
+      "Kodhe\\Framework\\Email\\Tests\\": "email/tests/",
       "Kodhe\\Framework\\Encryption\\Tests\\": "encryption/tests/",
-      "Kodhe\\Framework\\Encrypt\\Tests\\": "encrypt/tests/",
-      "Kodhe\\Framework\\Test\\Tests\\": "test/tests/",
+      "Kodhe\\Framework\\Validation\\Tests\\": "validation/tests/",
       "Kodhe\\Framework\\Cache\\Tests\\": "cache/tests/",
       "Kodhe\\Framework\\Parser\\Tests\\": "parser/tests/",
-      "Kodhe\\Framework\\Profiler\\Tests\\": "profiler/tests/",
-      "Kodhe\\Framework\\Driver\\Tests\\": "driver/tests/",
       "Kodhe\\Framework\\Cart\\Tests\\": "cart/tests/",
-      "Kodhe\\Framework\\Agent\\Tests\\": "agent/tests/",
-      "Kodhe\\Framework\\Ftp\\Tests\\": "ftp/tests/"
+      "Kodhe\\Framework\\Agent\\Tests\\": "agent/tests/"
     }
   },
   "minimum-stability": "dev",
