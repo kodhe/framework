@@ -1,2 +1,2 @@
-# PHPUnit cache
-.phpunit.cache/
+# Dependencies
+vendor/
