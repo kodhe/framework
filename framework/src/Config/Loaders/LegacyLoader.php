@@ -407,8 +407,21 @@ class LegacyLoader
                 $check_files = array(
                     $original_model,            // user_model
                     strtolower($original_model), // user_model
-                    ucfirst($original_model)    // User_model
+                    ucfirst($original_model),   // User_model
+                    'CI_'.$original_model      // CI_User_model (stock style)
                 );
+
+                // Varian CamelCase penuh untuk proyek yang mengganti "_"
+                // menjadi huruf besar: auth_model -> AuthModel, dst.
+                if (function_exists('app_class_name_variants'))
+                {
+                    $__snake = strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $original_model));
+                    foreach (app_class_name_variants($__snake) as $__variant)
+                    {
+                        $check_files[] = str_replace('_', '', ucwords($__variant, '_'));  // Authmodel/AuthModel-ish
+                        $check_files[] = str_replace('_', '', ucwords($__snake, '_'));    // AuthModel
+                    }
+                }
 
                 foreach (array_unique($check_files) as $file_name)
                 {
@@ -427,6 +440,21 @@ class LegacyLoader
                             $class_to_load = class_exists($class_to_load, FALSE) ? $class_to_load : $original_model;
                             $found = TRUE;
                             break 2; // Keluar dari kedua loop (file dan path)
+                        }
+
+                        // Class mungkin memakai ejaan berbeda kapitalisasi
+                        // (AuthModel vs Auth_model) - cocokkan case-insensitive.
+                        foreach (get_declared_classes() as $declared)
+                        {
+                            $short = (($pos = strrpos($declared, '\\')) === FALSE) ? $declared : substr($declared, $pos + 1);
+                            if (strcasecmp($short, $class_to_load) === 0
+                                OR strcasecmp($short, $original_model) === 0
+                                OR strcasecmp(str_replace('_', '', $short), str_replace('_', '', $class_to_load)) === 0)
+                            {
+                                $class_to_load = $declared;
+                                $found = TRUE;
+                                break 2;
+                            }
                         }
                     }
                 }
