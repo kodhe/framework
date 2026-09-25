@@ -172,9 +172,11 @@ php console make:controller Blog    # app/Controllers/Blog.php (namespace App\Co
 php console make:model Post         # app/Models/Post.php
 php console make:migration create_posts_table
 php console make:middleware Auth
+php console make:crud Post title:string body:text   # satu set CRUD lengkap (model+controller+migration+views)
 ```
 
 Daftar lengkap perintah scaffold: [cli-console](../concepts/cli-console.md).
+Panduan step-by-step generator CRUD: [generator-crud](crud-generator.md).
 
 ## 7. Catatan & keterbatasan
 

@@ -307,9 +307,16 @@ php kodhe make:model ItemModel        # -> app/Models/ItemModel.php  (App\Models
 php kodhe make:migration create_items # -> folder migrations
 php kodhe make:middleware Auth        # -> app/Middleware/Auth.php   (App\Middleware)
 php kodhe make:command sync_data      # -> app/Console/Commands      (App\Console\Commands)
+php kodhe make:crud Article title:string body:text published:bool  # -> satu set CRUD lengkap (lihat catatan di bawah)
 ```
 
 Opsi: `--force` (timpa file yang ada), `--path=...` (lokasi custom).
+
+> `make:crud` menghasilkan **8 file sekaligus**: Model (`app/Models/`),
+> Controller resource penuh (`app/Controllers/<Nama>Controller.php`), migration
+> `create_<tabel>_table` (stack modern `Loader::dbforge()`), dan 5 view
+> CI3-style di `app/Views/<resource>/`. Panduan penuh (tipe field, route,
+> alur kerja): [generator-crud](../general/crud-generator.md).
 
 > Cara bootstrap `bin/console`, membuat command custom, dan migrasi job cron
 > `is_cli()` CI3 → lihat [cli-console](cli-console.md).
