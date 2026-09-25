@@ -374,7 +374,10 @@ class LegacyLoader
             $this->database($db_conn, FALSE, TRUE);
         }
         
-        $app_path = APPPATH.'core'.DIRECTORY_SEPARATOR;
+        // Case-insensitive: proyek boleh memakai folder Core/ (Kodhe style)
+        // maupun core/ (CI3 legacy). app_folder() sudah mengembalikan nama
+        // asli di disk dengan fallback lowercase, jadi cukup disambung APPPATH.
+        $app_path = APPPATH.app_folder('core').DIRECTORY_SEPARATOR;
 
         $class = config_item('subclass_prefix').'Model';
         if (file_exists($app_path.$class.'.php'))
@@ -941,7 +944,7 @@ class LegacyLoader
 		$this->_ci_library_paths = array_unique(array_merge($this->_ci_library_paths, array(APPPATH, BASEPATH)));
 		$this->_ci_helper_paths = array_unique(array_merge($this->_ci_helper_paths, array(APPPATH, BASEPATH)));
 		$this->_ci_model_paths = array_unique(array_merge($this->_ci_model_paths, array(APPPATH)));
-		$this->_ci_view_paths = array_merge($this->_ci_view_paths, array(APPPATH.'views/' => TRUE));
+		$this->_ci_view_paths = array_merge($this->_ci_view_paths, array(APPPATH.app_folder('views').DIRECTORY_SEPARATOR => TRUE));
 		$config->_config_paths = array_unique(array_merge($config->_config_paths, array(APPPATH)));
 
 		return $this;
