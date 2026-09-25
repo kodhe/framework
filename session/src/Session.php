@@ -185,19 +185,10 @@ class Session implements SessionInterface
                 $resumed = false;
             }
 
-            if (PHP_VERSION_ID >= 50400) {
-                session_set_save_handler($handler, true);
-            } else {
-                session_set_save_handler(
-                    [$handler, 'open'],
-                    [$handler, 'close'],
-                    [$handler, 'read'],
-                    [$handler, 'write'],
-                    [$handler, 'destroy'],
-                    [$handler, 'gc']
-                );
-                register_shutdown_function('session_write_close');
-            }
+            // session_set_save_handler(object) requires PHP >= 5.4; the
+            // package requires PHP >= 8.1, so the legacy per-callback
+            // registration fallback was removed.
+            session_set_save_handler($handler, true);
 
             $this->driver = $handler;
 
