@@ -8,6 +8,24 @@ use Kodhe\Framework\Database\Loader as DB;
 use Kodhe\Framework\Support\Facades\Facade;
 use RuntimeException;
 
+// Guarantee the case-insensitive app path helpers (app_path_in(),
+// app_config_folder(), app_folder(), app_controller_file(), ...) are
+// available even when this package is loaded without composer's autoload
+// "files" section (manual includes, bundled copies, etc.).
+if ( ! function_exists('app_path_in'))
+{
+    foreach (array(
+        dirname(__DIR__, 4).'/framework/src/Support/app_path.php',
+        dirname(__DIR__, 4).'/../framework/src/Support/app_path.php',
+    ) as $__app_path_helper) {
+        if (is_file($__app_path_helper)) {
+            require_once $__app_path_helper;
+            break;
+        }
+    }
+}
+unset($__app_path_helper);
+
 class LegacyLoader
 {
 
