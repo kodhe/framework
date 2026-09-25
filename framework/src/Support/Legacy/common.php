@@ -226,11 +226,14 @@ if ( ! function_exists('load_class_original'))
 		// Did we find the class?
 		if ($name === FALSE)
 		{
-			// Note: We use exit() rather than show_error() in order to avoid a
-			// self-referencing loop with the Exceptions class
-			set_status_header(503);
-			echo 'Unable to locate the specified class: '.$class.'.php';
-			exit(5); // EXIT_UNK_CLASS
+			// Throw a catchable exception instead of the legacy hard-fail
+			// (set_status_header + echo + exit(5)). The HTTP 503 status is
+			// carried on the exception so the framework error handler can
+			// translate it into a proper response, and callers/tests can
+			// recover gracefully.
+			throw \Kodhe\Framework\Exceptions\ClassLoadingException::unableToLocate(
+				$class, (string) $directory
+			);
 		}
 
 		// Keep track of what we just loaded
@@ -327,9 +330,10 @@ if ( ! function_exists('get_config'))
                 }
                 else
                 {
-                    set_status_header(503);
-                    echo 'Your config file does not appear to be formatted correctly.';
-                    exit(3); // EXIT_CONFIG
+                    // Catchable exception instead of the legacy echo + exit(3) hard-fail.
+                    throw \Kodhe\Framework\Exceptions\ConfigurationException::parseError(
+                        $file_path, 'Config file does not return an array (bad format).'
+                    );
                 }
             }
 
@@ -349,16 +353,18 @@ if ( ! function_exists('get_config'))
                 }
                 else
                 {
-                    set_status_header(503);
-                    echo 'Your environment config file does not appear to be formatted correctly.';
-                    exit(3); // EXIT_CONFIG
+                    // Catchable exception instead of the legacy echo + exit(3) hard-fail.
+                    throw \Kodhe\Framework\Exceptions\ConfigurationException::parseError(
+                        $env_file_path, 'Environment config file does not return an array (bad format).'
+                    );
                 }
             }
             elseif ( ! $found)
             {
-                set_status_header(503);
-                echo 'The configuration file does not exist.';
-                exit(3); // EXIT_CONFIG
+                // Catchable exception instead of the legacy echo + exit(3) hard-fail.
+                throw \Kodhe\Framework\Exceptions\ConfigurationException::fileNotFound(
+                    'The configuration file does not exist.'
+                );
             }
         }
 
