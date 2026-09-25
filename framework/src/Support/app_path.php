@@ -96,6 +96,206 @@ return $found;
 }
 }
 
+if ( ! function_exists('app_folder_in'))
+{
+        /**
+         * Resolve a sub-folder name inside an arbitrary base path, keeping
+         * the trailing slash. Returns "$base$name/" using the real on-disk
+         * spelling when it exists, otherwise falls back to "$base$name/".
+         *
+         * @param       string  $base   Base directory (with or without trailing slash)
+         * @param       string  $name   Sub-folder name to look up case-insensitively
+         * @return      string  Resolved absolute folder path WITH trailing slash
+         */
+        function app_folder_in(string $base, string $name): string
+        {
+                $base = rtrim($base, '/\\').DIRECTORY_SEPARATOR;
+
+                static $cache = array();
+                $key = $base.'|'.$name;
+                if (isset($cache[$key]))
+                {
+                        return $cache[$key];
+                }
+
+                $found = $name;
+                if (is_dir($base))
+                {
+                        foreach ((scandir($base) ?: array()) as $entry)
+                        {
+                                if ($entry !== '.' && $entry !== '..'
+                                        && strcasecmp($entry, $name) === 0
+                                        && is_dir($base.$entry))
+                                {
+                                        $found = $entry;
+                                        if ($entry === $name)
+                                        {
+                                                break;
+                                        }
+                                }
+                        }
+                }
+
+                return $cache[$key] = $base.$found.DIRECTORY_SEPARATOR;
+        }
+}
+
+if ( ! function_exists('app_file_in'))
+{
+        /**
+         * Resolve a file path inside APPPATH case-insensitively, per segment.
+         *
+         * Lets legacy CI3 calls keep working when project folders are renamed
+         * to PascalCase (Models/, Helpers/, Views/, Libraries/, errors/ ...),
+         * e.g. app_file_in(APPPATH.'models/welcome_model.php') will find
+         * app/Models/Welcome_model.php on Linux.
+         *
+         * Falls back to the original path when nothing matches so plain
+         * lowercase CI3 projects are completely unaffected.
+         *
+         * @param       string  $relative_path  Path relative to APPPATH (may include subfolders)
+         * @return      string  Absolute resolved path (existing file preferred, else original)
+         */
+        function app_file_in(string $relative_path): string
+        {
+                if ( ! defined('APPPATH'))
+                {
+                        return $relative_path;
+                }
+
+                static $cache = array();
+                if (isset($cache[$relative_path]))
+                {
+                        return $cache[$relative_path];
+                }
+
+                $result = app_path_in(rtrim(APPPATH, '/\\'), $relative_path);
+
+                return $cache[$relative_path] = $result;
+        }
+}
+
+if ( ! function_exists('app_realpath'))
+{
+        /**
+         * Case-insensitive resolution of an ABSOLUTE path (any base folder).
+         *
+         * Walks each directory segment of the given absolute path and swaps
+         * it for the real on-disk spelling when a case-insensitive sibling
+         * exists. Works outside APPPATH too (e.g. VIEWPATH pointing at a
+         * renamed "Views" folder, or vendor paths). Returns the original
+         * path untouched when every segment already resolves exactly.
+         *
+         * @param       string  $absolute_path
+         * @return      string
+         */
+        function app_realpath(string $absolute_path): string
+        {
+                if ($absolute_path === '' || file_exists($absolute_path))
+                {
+                        return $absolute_path;
+                }
+
+                static $cache = array();
+                if (isset($cache[$absolute_path]))
+                {
+                        return $cache[$absolute_path];
+                }
+
+                $normalized = str_replace('\\', '/', $absolute_path);
+                $is_dir_suffix = (substr($normalized, -1) === '/');
+                $segments = array_values(array_filter(explode('/', $normalized), function ($s) { return $s !== ''; }));
+
+                // Drive letter (Windows) or leading slash (POSIX)
+                if (preg_match('#^[A-Za-z]:#', $segments[0] ?? '', $m))
+                {
+                        $current = $segments[0].'/';
+                        array_shift($segments);
+                }
+                elseif (substr($normalized, 0, 1) === '/')
+                {
+                        $current = '/';
+                }
+                else
+                {
+                        return $cache[$absolute_path] = $absolute_path; // relative: not our job
+                }
+
+                $count = count($segments);
+                foreach ($segments as $i => $segment)
+                {
+                        $candidate = rtrim($current, '/').'/'.$segment;
+
+                        if (file_exists($candidate) || ! is_dir($current))
+                        {
+                                $current = $candidate;
+                                continue;
+                        }
+
+                        // try case-insensitive match among siblings of $current
+                        $entries = scandir($current) ?: array();
+                        $found = null;
+                        foreach ($entries as $entry)
+                        {
+                                if ($entry !== '.' && $entry !== '..' && strcasecmp($entry, $segment) === 0)
+                                {
+                                        $found = $entry;
+                                        if ($entry === $segment)
+                                        {
+                                                break;
+                                        }
+                                }
+                        }
+
+                        $current = rtrim($current, '/').'/'.($found !== null ? $found : $segment);
+                }
+
+                if ($is_dir_suffix && substr($current, -1) !== '/')
+                {
+                        $current .= '/';
+                }
+
+                return $cache[$absolute_path] = $current;
+        }
+}
+
+if ( ! function_exists('app_view_file'))
+{
+        /**
+         * Locate a view/template file under the (possibly renamed) views
+         * folder. Accepts names with or without the .php extension and
+         * subfolders like 'errors/html/error_php'.
+         *
+         * @param       string  $relative_path  View path relative to the views folder
+         * @return      string|null  Resolved existing file or NULL
+         */
+        function app_view_file(string $relative_path): ?string
+        {
+                if ( ! defined('APPPATH'))
+                {
+                        return null;
+                }
+
+                $base = rtrim(APPPATH, '/\\').DIRECTORY_SEPARATOR.app_folder('views').DIRECTORY_SEPARATOR;
+                $candidates = array($relative_path);
+                if (strtolower(substr($relative_path, -4)) !== '.php')
+                {
+                        $candidates[] = $relative_path.'.php';
+                }
+
+                foreach ($candidates as $c)
+                {
+                        $resolved = app_path_in($base, $c);
+                        if (is_file($resolved))
+                        {
+                                return $resolved;
+                        }
+                }
+
+                return null;
+        }
+}
+
 if ( ! function_exists('app_config_file'))
 {
 	/**
