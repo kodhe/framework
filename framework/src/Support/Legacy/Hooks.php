@@ -171,9 +171,19 @@ class Hooks
 
 		$filepath = APPPATH.$data['filepath'].'/'.$data['filename'];
 
+		// Case-insensitive: hook files may live in renamed folders such as
+		// Hooks/, Libraries/ or Sub/ with different spellings.
 		if ( ! file_exists($filepath))
 		{
-			return FALSE;
+			$_resolved = app_path_in(APPPATH, $data['filepath'].'/'.$data['filename']);
+			if (file_exists($_resolved))
+			{
+				$filepath = $_resolved;
+			}
+			else
+			{
+				return FALSE;
+			}
 		}
 
 		// Determine and class and/or function names
