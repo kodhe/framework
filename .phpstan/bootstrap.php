@@ -22,6 +22,9 @@ if (!defined('FCPATH')) {
 if (!defined('BASEPATH')) {
     define('BASEPATH', 'BASEPATH');
 }
+if (!defined('STORAGEPATH')) {
+    define('STORAGEPATH', 'STORAGEPATH');
+}
 if (!defined('ENVIRONMENT')) {
     define('ENVIRONMENT', 'production');
 }

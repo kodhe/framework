@@ -124,9 +124,10 @@ Perbedaan perilaku yang paling sering mengejutkan pemigran CI3:
   psr-4 di composer.json, controller hasil `make:controller` tidak akan
   ter autoload di mode paket murni.
 - Cache route di production membuat perubahan `routes/*.php` tidak terlihat
-  sampai cache dibersihkan (`Router::clearCache()`); file cache berada di
-  `{cache_path}/routes.cache.php` (default `STORAGEPATH.'cache/'`, lihat
-  `RouteCollection::__construct()`).
+  sampai cache dibersihkan (`Router::clearCache()`); file cache berupa JSON
+  murni berada di `{cache_path}/routes.cache.json` (default
+  `STORAGEPATH.'cache/'`, lihat `RouteCollection::__construct()`). File
+  warisan lama `routes.cache.php` dibaca sekali lalu dimigrasi otomatis.
 - `isValidMethod()` pada Router saat ini selalu mengembalikan `true` — validasi
   method eksis terjadi belakangan (saat eksekusi), sehingga salah ketik method
   baru muncul error di tahap yang lebih lambat daripada CI3.
