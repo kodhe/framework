@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Kodhe\Framework\Table;
 
-// CI_DB_result dipasok oleh lingkungan CodeIgniter 3 saat runtime; untuk analisis
-// statis, stub .phpstan/bootstrap.php menyediakan kelas ini.
+// CI_DB_result dipasok oleh lingkungan CodeIgniter 3 saat runtime.
 use CI_DB_result;
 use Kodhe\Framework\Table\Contracts\TableInterface;
 use Kodhe\Framework\Table\Contracts\RendererInterface;

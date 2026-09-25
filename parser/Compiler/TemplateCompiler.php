@@ -2,7 +2,7 @@
 /**
  * Template Compiler - Interpreter pattern for template compilation
  *
- * @package CodeIgniter\Parser\Compiler
+ * @package Kodhe\Framework\Parser\Compiler
  */
 
 namespace Kodhe\Framework\Parser\Compiler;

@@ -2,7 +2,7 @@
 /**
  * Template Lexer - Tokenizes template strings
  *
- * @package CodeIgniter\Parser\Lexer
+ * @package Kodhe\Framework\Parser\Lexer
  */
 
 namespace Kodhe\Framework\Parser\Lexer;
