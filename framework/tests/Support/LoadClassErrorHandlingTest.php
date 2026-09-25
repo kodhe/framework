@@ -27,6 +27,11 @@ class LoadClassErrorHandlingTest extends TestCase
      */
     private function bootstrapConstants(): void
     {
+        // NOTE: constants must be defined before anything else, because the
+        // global composer autoloader (phpunit bootstrap) already loaded
+        // common.php/Helpers.php with the *test-suite* APPPATH, and define()
+        // cannot be overridden afterwards. Everything in this test therefore
+        // resolves against a fresh per-test temp application directory.
         $tmp = sys_get_temp_dir() . '/kodhe_loadclass_test_' . uniqid();
         @mkdir($tmp . '/system', 0777, true);
         @mkdir($tmp . '/application/libraries', 0777, true);
@@ -39,6 +44,19 @@ class LoadClassErrorHandlingTest extends TestCase
         if (!defined('ROOTPATH'))   define('ROOTPATH', $tmp . '/');
         if (!defined('STORAGEPATH')) define('STORAGEPATH', $tmp . '/storage/');
         if (!defined('EXIT_UNK_CLASS')) define('EXIT_UNK_CLASS', 5);
+
+        // If the suite bootstrap already fixed APPPATH to a location without a
+        // config file, load_class() -> config_item() -> get_config() would
+        // throw ConfigurationException and mask the ClassLoadingException
+        // under test. Ensure a minimal config exists wherever APPPATH points.
+        $configDir = rtrim(APPPATH, '/\\') . '/config';
+        @mkdir($configDir, 0777, true);
+        if (!is_file($configDir . '/config.php')) {
+            file_put_contents(
+                $configDir . '/config.php',
+                "<?php\n\$config = array('subclass_prefix' => 'MY_', 'base_url' => 'http://localhost/');\n"
+            );
+        }
 
         // config_item() is used by load_class(); provide a stub if absent.
         if (!function_exists('config_item')) {
@@ -103,8 +121,12 @@ class LoadClassErrorHandlingTest extends TestCase
         require_once __DIR__ . '/../../src/Support/Legacy/common.php';
         require_once __DIR__ . '/../../src/Support/Helpers.php';
 
-        // Create a discoverable CI_ library class on the fly.
-        $file = rtrim(APPPATH, '/') . '/libraries/Teststage3.php';
+        // Create a discoverable CI_ library class on the fly. APPPATH may be
+        // fixed by the suite bootstrap (constants cannot be redefined), so
+        // write into the real APPATH rather than the temp dir.
+        $libDir = rtrim(APPPATH, '/\\') . '/libraries';
+        @mkdir($libDir, 0777, true);
+        $file = $libDir . '/Teststage3.php';
         file_put_contents($file, "<?php\nif (!class_exists('CI_Teststage3', false)) { class CI_Teststage3 { public \$ok = TRUE; } }\n");
 
         $instance = load_class('Teststage3', 'libraries');
