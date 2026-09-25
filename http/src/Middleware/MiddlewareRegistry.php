@@ -32,7 +32,7 @@ class MiddlewareRegistry
     
     protected function loadConfig() {
         try {
-            $configFile = APPPATH . 'config/middleware.php';
+            $configFile = app_config_file_in(APPPATH, 'middleware.php');
             
             if (!file_exists($configFile)) {
                 log_message('debug', 'Middleware config file not found at: ' . $configFile);

@@ -385,7 +385,7 @@ class Modules
         $module_paths = self::$modulesCache[$module_name] ?? array();
         
         foreach ($module_paths as $module_path) {
-            $config_file = $module_path . 'config/config.php';
+            $config_file = app_config_file_in($module_path, 'config.php');
             if (is_file($config_file)) {
                 return $config_file;
             }

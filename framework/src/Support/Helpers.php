@@ -225,7 +225,9 @@ if (!function_exists('csrf_token')) {
 			return $ci->session->userdata('csrf_token');
 		}
 		
-		session_start();
+		if (session_status() === PHP_SESSION_NONE) {
+			session_start();
+		}
 		return $_SESSION['csrf_token'] ?? '';
 	}
 }
