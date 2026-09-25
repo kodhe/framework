@@ -13,20 +13,6 @@ if ( ! function_exists('load_class'))
 	 * @param	mixed	an optional argument to pass to the class constructor
 	 * @return	object
 	 */
-	if ( ! function_exists('load_class'))
-	{
-		/**
-		 * Class registry
-		 *
-		 * This function acts as a singleton. If the requested class does not
-		 * exist it is instantiated and set to a static variable. If it has
-		 * previously been instantiated the variable is returned.
-		 *
-		 * @param	string	the class name being requested
-		 * @param	string	the directory where the class should be found
-		 * @param	mixed	an optional argument to pass to the class constructor
-		 * @return	object
-		 */
 		function &load_class($class, $directory = null, $param = NULL)
 		{
 			static $_classes = array();
@@ -43,9 +29,14 @@ if ( ! function_exists('load_class'))
 				// Try to autoload the namespaced class
 				spl_autoload_call($class);
 				
-				// If class doesn't exist after autoload, return false or handle error
+				// If class doesn't exist after autoload, fail loudly with a
+				// catchable exception instead of returning false (which used to
+				// silently poison callers and trigger by-reference notices).
 				if (!class_exists($class, false)) {
-					return false; // or throw exception
+					throw new \Kodhe\Framework\Exceptions\ClassLoadingException(
+						'Unable to autoload the specified class: ' . $class,
+						0, null, $class
+					);
 				}
 				
 				// Instantiate the class
@@ -70,7 +61,14 @@ if ( ! function_exists('load_class'))
 				return $_classes[$class];
 			}
 
+			// A CI_<class> may already be defined (e.g. by an autoloader or a
+			// previous require) without having been registered here yet.
+			// Instantiate it instead of returning an empty value from the
+			// static slot (previous behavior silently broke callers).
 			if (class_exists('CI_'.$class, false)) {
+				$_name = 'CI_'.$class;
+				$_classes[$class] = isset($param) ? new $_name($param) : new $_name();
+				is_loaded($class);
 				return $_classes[$class];
 			}
 	
@@ -146,11 +144,14 @@ if ( ! function_exists('load_class'))
 			// Did we find the class?
 			if ($name === FALSE)
 			{
-				// Note: We use exit() rather than show_error() in order to avoid a
-				// self-referencing loop with the Exceptions class
-				set_status_header(503);
-				echo 'Unable to locate the specified class: '.$class.'.php';
-				exit(5); // EXIT_UNK_CLASS
+				// Throw a catchable exception instead of the legacy hard-fail
+				// (set_status_header + echo + exit(5)). The HTTP 503 status is
+				// carried on the exception (ClassLoadingException::$httpStatusCode)
+				// so the framework error handler can translate it into a proper
+				// response, and callers/tests can recover gracefully.
+				throw \Kodhe\Framework\Exceptions\ClassLoadingException::unableToLocate(
+					$class, (string) $directory
+				);
 			}
 	
 			// Keep track of what we just loaded
@@ -160,7 +161,6 @@ if ( ! function_exists('load_class'))
 				? new $name($param)
 				: new $name();
 			return $_classes[$class];
-		}
 	}
 }
 

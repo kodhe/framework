@@ -27,6 +27,10 @@ if (!defined('CACHEPATH')) {
     define('CACHEPATH', sys_get_temp_dir() . '/cache/');
 }
 
+if (!defined('STORAGEPATH')) {
+    define('STORAGEPATH', sys_get_temp_dir() . '/storage/');
+}
+
 if (!defined('FCPATH')) {
     define('FCPATH', __DIR__ . '/../../');
 }
@@ -38,6 +42,7 @@ if (!defined('ENVIRONMENT')) {
 // Create necessary directories
 @mkdir(LOGPATH, 0777, true);
 @mkdir(CACHEPATH, 0777, true);
+@mkdir(STORAGEPATH, 0777, true);
 @mkdir(APPPATH, 0777, true);
 @mkdir(VIEWPATH, 0777, true);
 

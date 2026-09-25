@@ -588,14 +588,10 @@ class Input
             return $new_array;
         }
 
-        /* We strip slashes if magic quotes is on to keep things consistent
-
-           NOTE: In PHP 5.4 get_magic_quotes_gpc() will always return 0 and
-                 it will probably not exist in future versions at all.
-        */
-        if (! is_php('5.4') && get_magic_quotes_gpc()) {
-            $str = stripslashes($str);
-        }
+        /* Magic quotes were removed in PHP 5.4 and the function itself no
+           longer exists on modern PHP (this package requires PHP >= 8.1),
+           so the legacy stripslashes() branch was dead code and has been
+           deleted. */
 
         // Clean UTF-8 if supported
         if ($this->uni && method_exists($this->uni, 'clean_string')) {

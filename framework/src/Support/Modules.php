@@ -191,7 +191,7 @@ class Modules
             : '';
             
         $cache_path = ($path === '') ? STORAGEPATH.'cache/' : $path;
-        self::$cacheFile = $cache_path . 'modules.cache.php';
+        self::$cacheFile = rtrim($cache_path, '/\\') . DIRECTORY_SEPARATOR . 'modules.cache.json';
     }
     
     /**
@@ -206,29 +206,22 @@ class Modules
             return false;
         }
 
-        // Create cache directory if not exists
-        $cacheDir = dirname(self::$cacheFile);
-        if (!is_dir($cacheDir)) {
-            mkdir($cacheDir, 0755, true);
-        }
+        try {
+            // Pure-JSON payload, written atomically (temp+rename) so
+            // concurrent requests never read a half-written file. The
+            // file is no longer executable PHP.
+            CacheFileWriter::write(self::$cacheFile, $cacheData);
 
-        // Encode to JSON
-        $jsonData = json_encode($cacheData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        
-        if ($jsonData === false) {
-            throw new BadRequestException('Failed to encode modules to JSON: ' . json_last_error_msg());
-        }
+            // Remove the legacy .cache.php sibling if it still exists.
+            $legacy = CacheFileWriter::legacyPath(self::$cacheFile);
+            if (is_file($legacy)) {
+                @unlink($legacy);
+            }
 
-        // Write to file
-        $content = "<?php\n// Modules Cache File - DO NOT EDIT MANUALLY\n// Generated: " . date('Y-m-d H:i:s') . "\nreturn <<<'CACHE'\n{$jsonData}\nCACHE;\n";
-        
-        $result = file_put_contents(self::$cacheFile, $content, LOCK_EX);
-        
-        if ($result !== false) {
             return true;
+        } catch (\RuntimeException $e) {
+            throw new BadRequestException($e->getMessage(), 0, $e);
         }
-        
-        throw new BadRequestException("Failed to write cache file: " . self::$cacheFile);
     }
 
     /**
@@ -241,7 +234,13 @@ class Modules
             'modules_list' => self::$modulesCache,
             'timestamp' => time(),
             'location_count' => count(self::$locations),
-            'modules_count' => count(self::$modulesCache)
+            'modules_count' => count(self::$modulesCache),
+            // Top-level mtimes of each location: cheap dev-mode invalidation
+            // signal (a module added/removed bumps the parent dir mtime).
+            'location_mtimes' => array_map(
+                static fn ($location) => @filemtime($location) ?: 0,
+                array_keys(self::$locations)
+            ),
         ];
     }
 
@@ -250,49 +249,81 @@ class Modules
      */
     public static function loadFromCache(): bool
     {
-        // Debug mode: disable cache untuk development
+        // Development mode: the on-disk cache is never *trusted*, but we still
+        // read it as a cheap baseline and only rescan when a module location's
+        // mtime changed (module added/removed) or a cached entry disappeared
+        // from disk. This avoids a full scandir() of every location on each
+        // request while keeping newly created/deleted modules visible.
         if (defined('ENVIRONMENT') && ENVIRONMENT !== 'production') {
-            return false;
+            return self::loadFromCacheDev();
         }
         
-        if (!file_exists(self::$cacheFile)) {
-            return false;
-        }
+        // New JSON cache first; fall back to a legacy .cache.php heredoc
+        // file (if any) and migrate it transparently to the new format.
+        $cacheData = CacheFileWriter::read(self::$cacheFile, 'locations');
 
-        try {
-            // Read JSON from heredoc
-            $content = file_get_contents(self::$cacheFile);
-            
-            // Extract JSON from heredoc
-            if (preg_match("/return <<<'CACHE'\n(.*?)\nCACHE;/s", $content, $matches)) {
-                $jsonData = $matches[1];
-            } else {
-                // Try direct JSON
-                $jsonData = trim(str_replace(['<?php', '//'], '', $content));
-            }
-            
-            $cacheData = json_decode($jsonData, true);
-            
-            if (!$cacheData || !isset($cacheData['locations'])) {
+        if ($cacheData === null) {
+            $legacy = CacheFileWriter::legacyPath(self::$cacheFile);
+            $cacheData = CacheFileWriter::readLegacy($legacy, 'locations');
+
+            if ($cacheData === null) {
+                // Missing or corrupt - drop both and force a rescan.
                 self::clearCache();
                 return false;
             }
 
-            // Restore all data from cache
-            self::$locations = $cacheData['locations'];
-            self::$modulesCache = $cacheData['modules_list'] ?? array();
-            
-            // Validate cache freshness
-            if (self::isCacheFresh(86400)) { // 24 hours
-                return true;
+            @unlink($legacy);
+            try {
+                CacheFileWriter::write(self::$cacheFile, $cacheData);
+            } catch (\RuntimeException $e) {
+                // Migration write failed; still usable in-memory this request.
             }
-            
-            return true;
-            
-        } catch (\Exception $e) {
-            self::clearCache();
+        }
+
+        // Restore all data from cache
+        self::$locations = $cacheData['locations'];
+        self::$modulesCache = $cacheData['modules_list'] ?? array();
+
+        return true;
+    }
+
+    /**
+     * Development-mode cache load with cheap invalidation.
+     *
+     * Reads the JSON cache (if valid) and validates it without a full scan:
+     *   1. any module root directory that vanished -> stale;
+     *   2. any location directory whose mtime changed since caching
+     *      (a module was added/removed at top level) -> stale.
+     * Only when stale do we fall back to the normal rescan path (init()
+     * calls scanAndCacheAllModules(), which rewrites the cache).
+     *
+     * @return bool TRUE when the cached data is still fresh and restored.
+     */
+    protected static function loadFromCacheDev(): bool
+    {
+        $cacheData = CacheFileWriter::read(self::$cacheFile, 'locations');
+
+        if ($cacheData === null || empty($cacheData['locations'])) {
             return false;
         }
+
+        $mtimes = $cacheData['location_mtimes'] ?? array();
+
+        foreach ($cacheData['locations'] as $location => $offset) {
+            clearstatcache(true, $location);
+            if (!is_dir($location)) {
+                return false; // a module root disappeared -> rescan
+            }
+            $current = @filemtime($location);
+            if ($current === false || !isset($mtimes[$location]) || $mtimes[$location] !== $current) {
+                return false; // top-level entries changed -> rescan
+            }
+        }
+
+        self::$locations = $cacheData['locations'];
+        self::$modulesCache = $cacheData['modules_list'] ?? array();
+
+        return true;
     }
 
     /**
@@ -300,11 +331,15 @@ class Modules
      */
     public static function clearCache(): bool
     {
-        if (file_exists(self::$cacheFile)) {
-            return unlink(self::$cacheFile);
+        $result = true;
+
+        foreach (array(self::$cacheFile, CacheFileWriter::legacyPath(self::$cacheFile)) as $file) {
+            if (is_file($file) && !@unlink($file)) {
+                $result = false;
+            }
         }
 
-        return true;
+        return $result;
     }
 
     /**

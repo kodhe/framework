@@ -1,1 +1,15 @@
-(empty)
+<<<<<<< Updated upstream
+# Dependencies
+vendor/
+=======
+# Composer dependencies
+/vendor/
+
+# PHPUnit cache and reports
+.phpunit.cache/
+coverage/
+phpunit.xml.bak
+
+# Application cache
+/cache//vendor/
+>>>>>>> Stashed changes
