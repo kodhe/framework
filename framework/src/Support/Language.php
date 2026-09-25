@@ -62,7 +62,9 @@ class Language
 
 		$_module OR $_module = app()->router->fetch_module();
 
-		[$path, $_langfile] = Modules::find($langfile.'_lang', $_module, '/language/'.$idiom.'/');
+		// Base is resolved case-insensitively (language/ vs Language/) inside
+		// Modules::find via the app_path_in() fallback below.
+		[$path, $_langfile] = Modules::find($langfile.'_lang', $_module, 'language/'.$idiom.'/');
 
 		if ($path === FALSE) 
 		{
@@ -173,6 +175,14 @@ class Language
 
 		// Load the base file, so any others found can override it
 		$basepath = BASEPATH.'/Resources/language/'.$idiom.'/'.$langfile;
+		if ( ! file_exists($basepath) && function_exists('app_realpath'))
+		{
+			$_rp = app_realpath($basepath);
+			if ($_rp !== $basepath && file_exists($_rp))
+			{
+				$basepath = $_rp;
+			}
+		}
 		if (($found = file_exists($basepath)) === TRUE)
 		{
 			include($basepath);
@@ -182,6 +192,14 @@ class Language
 		if ($alt_path !== '')
 		{
 			$alt_path .= 'language/'.$idiom.'/'.$langfile;
+			if ( ! file_exists($alt_path) && function_exists('app_realpath'))
+			{
+				$_rp = app_realpath($alt_path);
+				if ($_rp !== $alt_path && file_exists($_rp))
+				{
+					$alt_path = $_rp;
+				}
+			}
 			if (file_exists($alt_path))
 			{
 				include($alt_path);
@@ -193,6 +211,15 @@ class Language
 			foreach (get_instance()->load->get_package_paths(TRUE) as $package_path)
 			{
 				$package_path .= 'language/'.$idiom.'/'.$langfile;
+				// Case-insensitive: Language/ (Kodhe rename) or language/ (CI3)
+				if ( ! file_exists($package_path) && function_exists('app_realpath'))
+				{
+					$_rp = app_realpath($package_path);
+					if ($_rp !== $package_path && file_exists($_rp))
+					{
+						$package_path = $_rp;
+					}
+				}
 				if ($basepath !== $package_path && file_exists($package_path))
 				{
 					include($package_path);

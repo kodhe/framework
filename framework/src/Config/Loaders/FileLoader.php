@@ -125,26 +125,38 @@ class FileLoader extends LegacyLoader
             /* only add a module path if it exists */
             if (is_dir($module_path) && ! in_array($module_path, $this->_ci_model_paths))
             {
+                // Case-insensitive: folder boleh 'libraries/' atau 'Libraries/' dst.
+                if (function_exists('app_folder_in'))
+                {
+                    $moduleLibrariesPath = app_folder_in($module_path, 'libraries');
+                    $moduleHelpersPath  = app_folder_in($module_path, 'helpers');
+                    $moduleModelsPath   = app_folder_in($module_path, 'models');
+                    $moduleViewsPath    = app_folder_in($module_path, 'views');
+                }
+                else
+                {
+                    $moduleLibrariesPath = $module_path . 'libraries/';
+                    $moduleHelpersPath   = $module_path . 'helpers/';
+                    $moduleModelsPath    = $module_path . 'models/';
+                    $moduleViewsPath     = $module_path . 'views/';
+                }
+
                 // Tambahkan lokasi libraries modul
-                $moduleLibrariesPath = $module_path . 'libraries/';
                 if (!in_array($moduleLibrariesPath, $this->_ci_library_paths)) {
                     array_unshift($this->_ci_library_paths, $moduleLibrariesPath);
                 }
 
                 // Tambahkan lokasi helpers modul
-                $moduleHelpersPath = $module_path . 'helpers/';
                 if (!in_array($moduleHelpersPath, $this->_ci_helper_paths)) {
                     array_unshift($this->_ci_helper_paths, $moduleHelpersPath);
                 }
 
                 // Tambahkan lokasi model modul
-                $moduleModelsPath = $module_path . 'models/';
                 if (!in_array($moduleModelsPath, $this->_ci_model_paths)) {
                     array_unshift($this->_ci_model_paths, $moduleModelsPath);
                 }
 
                 // Tambahkan lokasi views modul (sebagai associative array dengan cascade flag)
-                $moduleViewsPath = $module_path . 'views/';
                 if (!array_key_exists($moduleViewsPath, $this->_ci_view_paths)) {
                     $this->_ci_view_paths = [$moduleViewsPath => TRUE] + $this->_ci_view_paths;
                 }
@@ -807,36 +819,45 @@ class FileLoader extends LegacyLoader
         foreach (Modules::$locations as $location => $offset)
         {
             $module_path = rtrim($location,'/').'/'.$module.'/';
-            
-            // Remove libraries path
-            $moduleLibrariesPath = $module_path . 'libraries/';
-            if (($key = array_search($moduleLibrariesPath, $this->_ci_library_paths)) !== FALSE) {
-                unset($this->_ci_library_paths[$key]);
-                $this->_ci_library_paths = array_values($this->_ci_library_paths); // Re-index
+
+            // Try every spelling that may have been registered (lowercase CI3
+            // or renamed PascalCase folders resolved via app_folder_in()).
+            $spelling = function ($folder) use ($module_path) {
+                return array_values(array_unique(array_filter(array(
+                    $module_path.$folder.'/',
+                    function_exists('app_folder_in') ? app_folder_in($module_path, $folder) : '',
+                ), function ($v) { return $v !== ''; })));
+            };
+
+            foreach ($spelling('libraries') as $p) {
+                while (($key = array_search($p, $this->_ci_library_paths)) !== FALSE) {
+                    unset($this->_ci_library_paths[$key]);
+                    $this->_ci_library_paths = array_values($this->_ci_library_paths);
+                }
             }
-            
-            // Remove helpers path
-            $moduleHelpersPath = $module_path . 'helpers/';
-            if (($key = array_search($moduleHelpersPath, $this->_ci_helper_paths)) !== FALSE) {
-                unset($this->_ci_helper_paths[$key]);
-                $this->_ci_helper_paths = array_values($this->_ci_helper_paths); // Re-index
+
+            foreach ($spelling('helpers') as $p) {
+                while (($key = array_search($p, $this->_ci_helper_paths)) !== FALSE) {
+                    unset($this->_ci_helper_paths[$key]);
+                    $this->_ci_helper_paths = array_values($this->_ci_helper_paths);
+                }
             }
-            
-            // Remove models path
-            $moduleModelsPath = $module_path . 'models/';
-            if (($key = array_search($moduleModelsPath, $this->_ci_model_paths)) !== FALSE) {
-                unset($this->_ci_model_paths[$key]);
-                $this->_ci_model_paths = array_values($this->_ci_model_paths); // Re-index
+
+            foreach ($spelling('models') as $p) {
+                while (($key = array_search($p, $this->_ci_model_paths)) !== FALSE) {
+                    unset($this->_ci_model_paths[$key]);
+                    $this->_ci_model_paths = array_values($this->_ci_model_paths);
+                }
             }
-            
-            // Remove views path
-            $moduleViewsPath = $module_path . 'views/';
-            if (array_key_exists($moduleViewsPath, $this->_ci_view_paths)) {
-                unset($this->_ci_view_paths[$moduleViewsPath]);
+
+            foreach ($spelling('views') as $p) {
+                if (array_key_exists($p, $this->_ci_view_paths)) {
+                    unset($this->_ci_view_paths[$p]);
+                }
             }
         }
     }
-    
+
     /**
      * Detects the module from a string. Returns the module name and class if found.
      *

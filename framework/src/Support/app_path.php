@@ -520,6 +520,79 @@ if ( ! function_exists('app_path_in'))
 	}
 }
 
+if ( ! function_exists('app_class_file_in'))
+{
+        /**
+         * Locate a class file (library/model/driver) inside an arbitrary base
+         * path, trying every common naming convention used across CI3 and
+         * Kodhe-style projects, case-insensitively.
+         *
+         * Conventions probed, in order of likelihood:
+         *   Libraries/Auth.php          (Kodhe style: PascalCase, no suffix)
+         *   Libraries/Auth_lib.php      (CI3 MY_*-style lib suffix)
+         *   Libraries/auth_lib.php      (lowercase + suffix)
+         *   Libraries/auth.php          (plain lowercase)
+         * plus the caller-provided spelling first when it differs.
+         *
+         * Sub-directories inside the folder are resolved case-insensitively
+         * too (e.g. 'sub/Pdf' -> 'Sub/Pdf.php').
+         *
+         * @param       string  $base_path   Base directory (e.g. APPPATH)
+         * @param       string  $folder      Folder name ('libraries', 'models', ...)
+         * @param       string  $class       Class name WITHOUT .php (may include subdir)
+         * @return      string|null  Absolute existing file path or NULL
+         */
+        function app_class_file_in(string $base_path, string $folder, string $class): ?string
+        {
+                $base = rtrim(str_replace(array('\\', '/'), DIRECTORY_SEPARATOR, $base_path), DIRECTORY_SEPARATOR);
+                $class = str_replace('.php', '', trim($class, '/\\'));
+
+                if ($class === '')
+                {
+                        return null;
+                }
+
+                // Split optional sub-directory from the class/file name
+                $subdir = '';
+                if (($slash = strrpos($class, '/')) !== FALSE)
+                {
+                        $subdir = substr($class, 0, $slash + 1);
+                        $name = substr($class, $slash + 1);
+                }
+                else
+                {
+                        $name = $class;
+                }
+
+                $ucfirst = ucfirst($name);
+
+                $file_variants = array(
+                        $ucfirst,            // Auth.php          (Kodhe PascalCase)
+                        $ucfirst.'_lib',     // Auth_lib.php      (CI3 lib suffix)
+                        strtolower($name).'_lib',
+                        strtolower($name),   // auth.php          (legacy lowercase)
+                        $name,               // caller's exact spelling
+                );
+
+                $candidates = array();
+                foreach (array_unique($file_variants) as $variant)
+                {
+                        $candidates[] = $folder.'/'.$subdir.$variant.'.php';
+                }
+
+                foreach ($candidates as $candidate)
+                {
+                        $resolved = app_path_in($base, $candidate);
+                        if (is_file($resolved))
+                        {
+                                return $resolved;
+                        }
+                }
+
+                return null;
+        }
+}
+
 if ( ! function_exists('app_controller_file'))
 {
 	/**
