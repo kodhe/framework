@@ -6,6 +6,7 @@ namespace Kodhe\Framework\Http\Routing;
 
 use Kodhe\Framework\Exceptions\Http\BadRequestException;
 use Kodhe\Framework\Http\Request;
+use Kodhe\Framework\Support\CacheFileWriter;
 
 class RouteCollection
 {
@@ -31,7 +32,7 @@ class RouteCollection
     {
         $path = app()->config->item('cache_path');
 		$cache_path = ($path === '') ? STORAGEPATH.'cache/' : $path;
-        $this->cacheFile = $cache_path . 'routes.cache.php';
+        $this->cacheFile = rtrim($cache_path, '/\\') . DIRECTORY_SEPARATOR . 'routes.cache.json';
     }
 
     /**
@@ -156,29 +157,22 @@ class RouteCollection
             return false;
         }
 
-        // Create cache directory if not exists
-        $cacheDir = dirname($this->cacheFile);
-        if (!is_dir($cacheDir)) {
-            mkdir($cacheDir, 0755, true);
-        }
+        try {
+            // Pure-JSON payload, written atomically (temp+rename) so
+            // concurrent requests never read a half-written file. The
+            // file is no longer executable PHP.
+            CacheFileWriter::write($this->cacheFile, $cacheData);
 
-        // Encode to JSON
-        $jsonData = json_encode($cacheData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        
-        if ($jsonData === false) {
-            throw new BadRequestException('Failed to encode routes to JSON: ' . json_last_error_msg());
-        }
+            // Remove the legacy .cache.php sibling if it still exists.
+            $legacy = CacheFileWriter::legacyPath($this->cacheFile);
+            if (is_file($legacy)) {
+                @unlink($legacy);
+            }
 
-        // Write to file
-        $content = "<?php\n// Route Cache File - DO NOT EDIT MANUALLY\n// Generated: " . date('Y-m-d H:i:s') . "\nreturn <<<'CACHE'\n{$jsonData}\nCACHE;\n";
-        
-        $result = file_put_contents($this->cacheFile, $content, LOCK_EX);
-        
-        if ($result !== false) {
             return true;
+        } catch (\RuntimeException $e) {
+            throw new BadRequestException($e->getMessage(), 0, $e);
         }
-        
-        throw new BadRequestException("Failed to write cache file: {$this->cacheFile}");
     }
 
     /**
@@ -244,62 +238,56 @@ class RouteCollection
             return false;
         }
         
-        if (!file_exists($this->cacheFile)) {
-            return false;
-        }
+        // New JSON cache first; fall back to a legacy .cache.php heredoc
+        // file (if any) and migrate it transparently to the new format.
+        $cacheData = CacheFileWriter::read($this->cacheFile, 'routes');
 
-        try {
-            // Read JSON from heredoc
-            $content = file_get_contents($this->cacheFile);
-            
-            // Extract JSON from heredoc
-            if (preg_match("/return <<<'CACHE'\n(.*?)\nCACHE;/s", $content, $matches)) {
-                $jsonData = $matches[1];
-            } else {
-                // Try direct JSON
-                $jsonData = trim(str_replace(['<?php', '//'], '', $content));
-            }
-            
-            $cacheData = json_decode($jsonData, true);
-            
-            if (!$cacheData || !isset($cacheData['routes'])) {
+        if ($cacheData === null) {
+            $legacy = CacheFileWriter::legacyPath($this->cacheFile);
+            $cacheData = CacheFileWriter::readLegacy($legacy, 'routes');
+
+            if ($cacheData === null) {
+                // Missing or corrupt - drop both and rebuild from scratch.
                 $this->clearCache();
                 return false;
             }
 
-            // Clear current routes
-            $this->routes = [];
-            $this->namedRoutes = [];
+            @unlink($legacy);
+            try {
+                CacheFileWriter::write($this->cacheFile, $cacheData);
+            } catch (\RuntimeException $e) {
+                // Migration write failed; still usable in-memory this request.
+            }
+        }
 
-            // Rebuild routes from cache
-            foreach ($cacheData['routes'] as $routeData) {
-                $action = $this->restoreActionFromCache($routeData);
-                
-                if ($action === null) {
-                    continue;
-                }
+        // Clear current routes
+        $this->routes = [];
+        $this->namedRoutes = [];
 
-                $route = new RouteItem(
-                    $routeData['method'],
-                    $routeData['uri'],
-                    $action,
-                    $routeData['middleware'] ?? [],
-                    $routeData['namespace'] ?? ''
-                );
+        // Rebuild routes from cache
+        foreach ($cacheData['routes'] as $routeData) {
+            $action = $this->restoreActionFromCache($routeData);
 
-                if (!empty($routeData['name'])) {
-                    $route->name($routeData['name']);
-                }
-
-                $this->add($route);
+            if ($action === null) {
+                continue;
             }
 
-            return true;
-            
-        } catch (\Exception $e) {
-            $this->clearCache();
-            return false;
+            $route = new RouteItem(
+                $routeData['method'],
+                $routeData['uri'],
+                $action,
+                $routeData['middleware'] ?? [],
+                $routeData['namespace'] ?? ''
+            );
+
+            if (!empty($routeData['name'])) {
+                $route->name($routeData['name']);
+            }
+
+            $this->add($route);
         }
+
+        return true;
     }
 
     /**
@@ -327,12 +315,15 @@ class RouteCollection
      */
     public function clearCache(): bool
     {
-        if (file_exists($this->cacheFile)) {
-            $result = unlink($this->cacheFile);
-            return $result;
+        $result = true;
+
+        foreach (array($this->cacheFile, CacheFileWriter::legacyPath($this->cacheFile)) as $file) {
+            if (is_file($file) && !@unlink($file)) {
+                $result = false;
+            }
         }
 
-        return true;
+        return $result;
     }
 
     /**
