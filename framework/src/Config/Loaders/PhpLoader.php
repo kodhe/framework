@@ -4,6 +4,24 @@ declare(strict_types=1);
 
 namespace Kodhe\Framework\Config\Loaders;
 
+// Guarantee the case-insensitive app path helpers (app_path_in(),
+// app_config_folder(), app_folder(), app_controller_file(), ...) are
+// available even when this package is loaded without composer's autoload
+// "files" section (manual includes, bundled copies, etc.).
+if ( ! function_exists('app_path_in'))
+{
+    foreach (array(
+        dirname(__DIR__, 4).'/framework/src/Support/app_path.php',
+        dirname(__DIR__, 4).'/../framework/src/Support/app_path.php',
+    ) as $__app_path_helper) {
+        if (is_file($__app_path_helper)) {
+            require_once $__app_path_helper;
+            break;
+        }
+    }
+}
+unset($__app_path_helper);
+
 /**
  * PHP Loader
  * 
@@ -112,14 +130,14 @@ class PhpLoader implements LoaderInterface
         
         // Check environment-specific config first
         $envConfig = defined('ENVIRONMENT') 
-            ? $this->basePath . 'config/' . ENVIRONMENT . '/' . $name . '.php'
+            ? app_config_file_in($this->basePath, ENVIRONMENT.'/'.$name.'.php')
             : null;
 
         if ($envConfig && file_exists($envConfig)) {
             return $envConfig;
         }
 
-        return $this->basePath . 'config/' . $name . '.php';
+        return app_config_file_in($this->basePath, $name.'.php');
     }
 
     /**

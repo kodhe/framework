@@ -48,6 +48,21 @@
 
 // ------------------------------------------------------------------------
 
+// Guarantee the case-insensitive app path helpers (app_config_file_in(),
+// app_path_in(), ...) are available even when this helper is loaded without
+// composer's autoload "files" section.
+if ( ! function_exists('app_config_file_in'))
+{
+	$__kodhe_app_path = dirname(__DIR__).'/../Support/app_path.php';
+
+	if (is_file($__kodhe_app_path))
+	{
+		require_once $__kodhe_app_path;
+	}
+
+	unset($__kodhe_app_path);
+}
+
 if ( ! function_exists('word_limiter'))
 {
 	/**
@@ -400,14 +415,14 @@ if ( ! function_exists('convert_accented_characters'))
 
 		if ( ! is_array($array_from))
 		{
-			if (file_exists(APPPATH.'config/foreign_chars.php'))
+			if (file_exists($chars_file = app_config_file_in(APPPATH, 'foreign_chars.php')))
 			{
-				include(APPPATH.'config/foreign_chars.php');
+				include($chars_file);
 			}
 
-			if (file_exists(APPPATH.'config/'.ENVIRONMENT.'/foreign_chars.php'))
+			if (file_exists($chars_file = app_config_file_in(APPPATH, ENVIRONMENT.'/foreign_chars.php')))
 			{
-				include(APPPATH.'config/'.ENVIRONMENT.'/foreign_chars.php');
+				include($chars_file);
 			}
 
 			if (empty($foreign_characters) OR ! is_array($foreign_characters))

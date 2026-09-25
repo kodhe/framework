@@ -48,6 +48,16 @@
  * @link		https://codeigniter.com/user_guide/
  */
 
+// Load the case-insensitive application path helpers (app_path_in(),
+// app_config_folder(), app_folder(), app_controller_file(), ...). These
+// are consumed by the legacy loader/router/config classes which live in
+// separate composer packages, so requiring them here guarantees the
+// functions exist regardless of autoload order or manual include setups.
+if ( ! function_exists('app_path_in'))
+{
+    require_once dirname(__DIR__).'/app_path.php';
+}
+
 // ------------------------------------------------------------------------
 
 if ( ! function_exists('is_php'))

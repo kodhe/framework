@@ -4,6 +4,20 @@ declare(strict_types=1);
 
 namespace Kodhe\Framework\Support\Modern;
 
+// Guarantee the case-insensitive app folder helpers (app_folder(), ...) are
+// available even when this file is loaded before composer's autoload "files"
+// entry for framework/src/Support/app_path.php has run.
+if ( ! function_exists('app_folder'))
+{
+	$__app_path_helper = __DIR__.'/../app_path.php';
+	if (is_file($__app_path_helper))
+	{
+		require_once $__app_path_helper;
+	}
+	unset($__app_path_helper);
+}
+
+
 use Kodhe\Framework\Support\Autoloader;
 
 /**
@@ -55,7 +69,8 @@ class HelperManager
     {
         // Add default framework helper paths
         self::addPath(ROOTPATH . 'framework/src/Support/Helpers');
-        self::addPath(APPPATH . 'helpers');
+        // Case-insensitive: Helpers/ (Kodhe style) maupun helpers/ (CI3 legacy)
+        self::addPath(APPPATH . app_folder('helpers'));
         
         // Auto-discover helpers in registered paths
         $this->discoverHelpers();

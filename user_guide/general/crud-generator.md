@@ -1,12 +1,18 @@
 # Generator CRUD (`make:crud`)
 
 `php console make:crud <NamaResource>` membuat **satu set lengkap CRUD** dalam
-satu perintah — seperti `php artisan make:*` di framework modern, tetapi hasil
-generate-nya tetap bergaya CI3/native PHP khas Kodhe Framework (tanpa Blade,
-tanpa atribut router).
+satu perintah — seperti `php artisan make:*` di framework modern. Hasil
+generate-nya bisa mengikuti gaya yang Anda pilih:
 
-Cocok untuk: memindahkan cepat satu entitas dari aplikasi CI3, atau membuat
-modul admin baru (list → create → edit → show → delete) di proyek Kodhe.
+- **Gaya routing**: kodhe (router modern, `Route::resource`) dan/atau CI3
+  (legacy `$route[...]`) — via `--style`.
+- **Engine view**: PHP native khas CI3 (`*.php`) atau Blade (`*.blade.php`)
+  — via `--engine`.
+
+Route **otomatis didaftarkan** ke file konfigurasi proyek, jadi tidak ada lagi
+edit manual setelah generate. Cocok untuk: memindahkan cepat satu entitas dari
+aplikasi CI3, atau membuat modul admin baru (list → create → edit → show →
+delete) di proyek Kodhe.
 
 ## 1. Sintaks
 
@@ -18,6 +24,8 @@ php console make:crud <NamaResource> [field:tipe ...] [opsi]
 |---|---|
 | `<NamaResource>` | Wajib. **UpperCamelCase**, bentuk tunggal: `Post`, `Article`, `ProductTag` |
 | `field:tipe` | Opsional, boleh banyak. Daftar kolom tabel + model. Contoh: `title:string body:text published:bool` |
+| `--style=kodhe\|ci3\|both` | Gaya route yang didaftarkan otomatis (default: `both`). `kodhe` → `app/Config/routes_modern.php`, `ci3` → `app/Config/routes.php` |
+| `--engine=php\|blade` | Engine view hasil generate (default: `php`). `blade` menghasilkan `*.blade.php` yang me-resolve lewat ViewFactory Kodhe |
 | `--force` | Timpa file yang sudah ada (default: generator berhenti tanpa menulis apa pun bila ada konflik) |
 | `--path=` | Lokasi output custom (opsi global `make:*`) |
 
@@ -46,11 +54,13 @@ Contoh: `php console make:crud Article title:string slug:string body:text publis
 | `app/Models/Article.php` | Model extends `Kodhe\Framework\Database\Model` (ORM CI3-compatible). `$table = 'articles'`, `$useTimestamps = true`, dan **`$allowedFields` terisi otomatis** dari daftar field (tanpa `id`) sehingga mass-assignment `insert()/update()` langsung aman dipakai |
 | `app/Controllers/ArticleController.php` | Controller extends `Kodhe\Framework\Http\Controllers\BaseController` dengan aksi penuh: `index` `create` `store` `show` `edit` `update` `delete`. Nama class diberi suffix `Controller` agar tidak bentrok dengan Model bernama sama |
 | `database/migrations/<timestamp>_create_articles_table.php` | Migration anonymous-class `up()/down()` memakai **stack database modern**: `Loader::dbforge(kodhe()->db, true)` + `add_field/add_key/create_table` (bukan `CI::load_dbutil` legacy) |
-| `app/Views/articles/index.php` | Tabel listing + tombol Show/Edit/Delete |
+| `app/Views/articles/index.php` | Tabel listing + tombol Show/Edit/Delete (ekstensi `.blade.php` bila `--engine=blade`) |
 | `app/Views/articles/create.php` | Form tambah (POST ke resource) |
 | `app/Views/articles/edit.php` | Form ubah (POST ke `update/{id}`) |
 | `app/Views/articles/show.php` | Detail satu record |
-| `app/Views/articles/_form.php` | Field form bersama — **wajib Anda sesuaikan** setelah generate (lihat §4 langkah 3) |
+| `app/Views/articles/_form.php` | Field form bersama — **sudah terisi otomatis** sesuai daftar `field:tipe` yang Anda deklarasikan (`<input>`/`<textarea>`/`<select>` per kolom, lengkap dengan nilai lama untuk mode edit) |
+| `app/Config/routes_modern.php` *(jika `--style=kodhe/both`)* | Route modern ditambahkan otomatis: `Route::resource(...)` + rute POST `update/{id}` dan DELETE `{id}` yang menunjuk method controller hasil generate |
+| `app/Config/routes.php` *(jika `--style=ci3/both`)* | Peta `$route['articles/...']` gaya CI3 ditambahkan otomatis (7 pola URI: index/create/store/show/edit/update/delete) |
 
 Penamaan otomatis: tabel = snake_case jamak (`ProductTag` → `product_tags`),
 segmen URL = kebab-case jamak (`/product-tags`). Pluralizer masih sederhana —
@@ -58,34 +68,65 @@ cek ulang nama tabel/URL untuk kata tak beraturan (mis. `Category` →
 `categories` benar, tetapi istilah teknis asing bisa salah) dan sesuaikan bila
 perlu.
 
-## 3. Peta route
+## 3. Route otomatis (--style) & engine view (--engine)
 
-Generator **tidak** menulis route (rute adalah konfigurasi proyek). Tambahkan
-sesuai gaya routing yang Anda pakai:
+Generator **langsung mendaftarkan route** sesuai gaya yang dipilih — tidak perlu
+edit manual lagi. File tujuan dibuat otomatis bila belum ada, dan penulisan
+bersifat **idempoten**: setiap blok ditandai marker `/* make:crud:<res> */`,
+sehingga menjalankan ulang perintah yang sama tidak menghasilkan duplikat
+(output cukup `Routes already present`).
 
-**Legacy CI3-style** (`application/config/routes.php`):
+| `--style` | Ditulis ke | Isi yang ditambahkan |
+|---|---|---|
+| `kodhe` | `app/Config/routes_modern.php` | `Route::resource('articles', 'App\Controllers\ArticleController', ['except' => ['destroy']])` + `Route::post('/articles/update/{articles}', ...@update)` + `Route::delete('/articles/{articles}', ...@delete)` |
+| `ci3` | `app/Config/routes.php` | 7 pola `$route['articles...'] = 'article/<aksi>'` gaya legacy CI3 |
+| `both` *(default)* | kedua file di atas | keduanya sekaligus |
 
-```php
-$route['articles']              = 'article/index';
-$route['articles/create']       = 'article/create';
-$route['articles/store']        = 'article/store';         // POST
-$route['articles/show/(:num)']  = 'article/show/$1';
-$route['articles/edit/(:num)']   = 'article/edit/$1';
-$route['articles/update/(:num)'] = 'article/update/$1';    // POST
-$route['articles/delete/(:num)'] = 'article/delete/$1';    // POST
+Catatan teknis:
+
+- **Kenapa `except destroy` + rute DELETE manual?** `Route::resource` modern
+  memanggil method `destroy()`, sedangkan controller hasil generate memakai
+  konvensi CI3 `delete()`. Rute DELETE eksplisit menjembatani tanpa mengubah
+  router `kodhe/http`.
+- **Update via POST.** Router CI3 memetakan berdasarkan URI (satu array
+  `$route`, tanpa pemisahan method), jadi bentuk legacy-nya `POST
+  /articles/update/{id}`. Agar konsisten di kedua gaya, view hasil generate
+  selalu mengirim form edit ke `/articles/update/{id}` dan generator ikut
+  mendaftarkan `Route::post(.../update/{id})` di sisi modern. (`PUT
+  /articles/{id}` standar resource tetap tersedia bila Anda ingin memakai
+  `_method` spoofing.)
+- **Modern routing aktif** hanya bila `$config['enable_modern_routing'] = TRUE`
+  pada konfigurasi proyek; file `routes_modern.php` dimuat saat itu.
+- Aksi tulis (`store/update/delete`) menerima **POST**; tombol hapus pada view
+  listing sudah berupa `<form method="post">` sehingga cocok dengan route ini.
+
+### Engine view
+
+| `--engine` | Hasil | Kapan dipakai |
+|---|---|---|
+| `php` *(default)* | `app/Views/articles/*.php` — sintaks native PHP/CI3 (`<?= base_url(...) ?>`, `htmlspecialchars()`) | Proyek bergaya CI3 murni |
+| `blade` | `app/Views/articles/*.blade.php` — direktif Blade (`{{ }}`, `@foreach`) | Proyek yang memakai ViewFactory Kodhe (default engine: blade) |
+
+Controller hasil generate otomatis merujuk nama view dengan ekstensi yang benar
+sesuai `--engine`, jadi tidak perlu penyesuaian tambahan.
+
+Contoh kombinasi lazim:
+
+```bash
+# Proyek lama CI3 -> hanya routes.php, view native
+php console make:crud Post title:string body:text --style=ci3
+
+# Proyek Kodhe modern -> hanya routes_modern.php, view Blade
+php console make:crud Post title:string body:text --style=kodhe --engine=blade
+
+# Default: daftarkan kedua gaya routing, view native
+php console make:crud Post title:string body:text
 ```
-
-**Modern router** (`routes/web.php`): daftarkan tiap method controller per URI
-di atas — pola segment persis sama dengan tabel komentar pada controller hasil
-generate (`GET /articles`, `POST /articles`, `POST /articles/update/{id}`, dst).
-
-> Konvensi: aksi tulis (`store/update/delete`) menerima **POST**. View listing
-> sudah memakai `<form method="post">` untuk delete, jadi cocok dengan route ini.
 
 ## 4. Alur kerja lengkap (contoh nyata)
 
 ```bash
-# 1) Generate seluruh stack
+# 1) Generate seluruh stack (route langsung terdaftar, form langsung terisi)
 php console make:crud Article title:string slug:string body:text published:bool
 
 # 2) Jalankan migration (via kodhe/migration)
@@ -93,15 +134,7 @@ php -r "require 'vendor/autoload.php';
 $m = new Kodhe\Framework\Migration\Migration(['migrations_path' => __DIR__.'/database/migrations']);
 $m->latest();"
 
-# 3) Sesuaikan _form.php — generator hanya menulis 1 input contoh;
-#    tambahkan input per field yang Anda deklarasikan, mis.:
-#    <input type="text" name="title" value="...$article->title...">
-#    <textarea name="body">...</textarea>
-#    <select name="published"><option value="1">Ya</option><option value="0">Tidak</option></select>
-
-# 4) Daftarkan route (lihat §3)
-
-# 5) Uji
+# 3) Uji — tidak ada langkah edit manual lagi
 php console serve
 # buka http://localhost:8080/articles
 ```

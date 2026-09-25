@@ -237,7 +237,12 @@ abstract class Middleware implements MiddlewareInterface
             'samesite' => 'Strict'
         ]);
         
-        // Start session
+        // Start session (never re-start an active one: that triggers
+        // "save handler cannot be changed" style warnings)
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            return true;
+        }
+
         return session_start();
     }
     
