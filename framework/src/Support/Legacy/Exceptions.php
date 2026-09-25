@@ -1,5 +1,20 @@
 <?php namespace Kodhe\Framework\Support\Legacy;
 
+// Guarantee case-insensitive app path helpers are available even when this
+// class is loaded without composer's autoload "files" section (bundled copies,
+// manual includes) — e.g. when views/errors live in a renamed Views/ folder.
+if ( ! function_exists('app_realpath'))
+{
+    foreach (array(
+        dirname(__DIR__).'/../Support/app_path.php',
+        dirname(__DIR__, 3).'/framework/src/Support/app_path.php',
+        dirname(__DIR__, 3).'/../framework/src/Support/app_path.php',
+    ) as $__app_path_helper) {
+        if (is_file($__app_path_helper)) { require_once $__app_path_helper; break; }
+    }
+    unset($__app_path_helper);
+}
+
 class Exceptions
 {
 
@@ -117,6 +132,10 @@ class Exceptions
 			$templates_path = VIEWPATH.'errors'.DIRECTORY_SEPARATOR;
 		}
 
+		// Case-insensitive: proyek boleh memakai Views/ (Kodhe style) maupun
+		// views/ (CI3 legacy), termasuk subfolder errors/.
+		$templates_path = app_realpath($templates_path);
+
 		if (is_cli())
 		{
 			$message = "\t".(is_array($message) ? implode("\n\t", $message) : $message);
@@ -134,7 +153,16 @@ class Exceptions
 			ob_end_flush();
 		}
 		ob_start();
-		include($templates_path.$template.'.php');
+		// Fallback case-insensitive: template error boleh ada di Views/ maupun views/
+if ( ! file_exists($templates_path.$template.".php") && ($__evf = app_view_file("errors".DIRECTORY_SEPARATOR.$template.".php")) !== null)
+		{
+			$__efile = $__evf;
+		}
+		else
+		{
+			$__efile = $templates_path.$template.".php";
+		}
+		include($__efile);
 		$buffer = ob_get_contents();
 		ob_end_clean();
 		return $buffer;
@@ -149,6 +177,10 @@ class Exceptions
 		{
 			$templates_path = VIEWPATH.'errors'.DIRECTORY_SEPARATOR;
 		}
+
+		// Case-insensitive: proyek boleh memakai Views/ (Kodhe style) maupun
+		// views/ (CI3 legacy), termasuk subfolder errors/.
+		$templates_path = app_realpath($templates_path);
 
 		$message = $exception->getMessage();
 		if (empty($message))
@@ -171,7 +203,16 @@ class Exceptions
 		}
 
 		ob_start();
-		include($templates_path.'error_exception.php');
+		// Fallback case-insensitive: template error boleh ada di Views/ maupun views/
+if ( ! file_exists($templates_path.$template.".php") && ($__evf = app_view_file("errors".DIRECTORY_SEPARATOR.$template.".php")) !== null)
+		{
+			$__efile = $__evf;
+		}
+		else
+		{
+			$__efile = $templates_path.$template.".php";
+		}
+		include($__efile);
 		$buffer = ob_get_contents();
 		ob_end_clean();
 		echo $buffer;
@@ -195,6 +236,10 @@ class Exceptions
 		{
 			$templates_path = VIEWPATH.'errors'.DIRECTORY_SEPARATOR;
 		}
+
+		// Case-insensitive: proyek boleh memakai Views/ (Kodhe style) maupun
+		// views/ (CI3 legacy), termasuk subfolder errors/.
+		$templates_path = app_realpath($templates_path);
 		
 
 		$severity = isset($this->levels[$severity]) ? $this->levels[$severity] : $severity;
@@ -221,7 +266,16 @@ class Exceptions
 			ob_end_flush();
 		}
 		ob_start();
-		include($templates_path.$template.'.php');
+		// Fallback case-insensitive: template error boleh ada di Views/ maupun views/
+if ( ! file_exists($templates_path.$template.".php") && ($__evf = app_view_file("errors".DIRECTORY_SEPARATOR.$template.".php")) !== null)
+		{
+			$__efile = $__evf;
+		}
+		else
+		{
+			$__efile = $templates_path.$template.".php";
+		}
+		include($__efile);
 		$buffer = ob_get_contents();
 		ob_end_clean();
 		echo $buffer;
