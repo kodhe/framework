@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Kodhe\Framework\Console\Commands;
 
+use Kodhe\Framework\Console\Command;
+use Kodhe\Framework\Console\Console;
+
 /**
  * List Command - List all available commands
  */
