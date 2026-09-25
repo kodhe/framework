@@ -47,6 +47,12 @@ class Input implements InputInterface
             $startIndex = 1;
         }
 
+        // The command name may be preceded by option flags (e.g. running the
+        // entry point as `php console --version`); scan forward past them.
+        while ($startIndex < count($this->tokens) && str_starts_with($this->tokens[$startIndex], '-')) {
+            $startIndex++;
+        }
+
         // Get command name
         if (isset($this->tokens[$startIndex])) {
             $this->commandName = $this->tokens[$startIndex];
