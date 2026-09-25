@@ -1,10 +1,2 @@
-# Composer dependencies
-/vendor/
-
-# PHPUnit cache and reports
+# PHPUnit cache
 .phpunit.cache/
-coverage/
-phpunit.xml.bak
-
-# Application cache
-/cache/

@@ -37,8 +37,14 @@ class UrlValidator extends BaseValidator
             return false;
         }
         
-        // Handle IPv6 addresses within square brackets
-        if (preg_match('/^\[([^\]]+)\]/', $str, $matches) && !version_compare(PHP_VERSION, '7.0', '>=') && filter_var($matches[1], FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) !== false) {
+        // Handle IPv6 addresses within square brackets.
+        // NOTE: the legacy CI3 code guarded this with a PHP < 7.0 check that
+        // is dead under our PHP >= 8.1 requirement and was removed. However,
+        // the rewrite below is NOT dead code: FILTER_VALIDATE_URL does not
+        // accept bracketed IPv6 literals in the host part on any supported
+        // PHP version, so without this rewrite every IPv6 URL would be
+        // rejected. Do not remove it as "legacy".
+        if (preg_match('/^\[([^\]]+)\]/', $str, $matches) && filter_var($matches[1], FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) !== false) {
             $str = 'ipv6.host' . substr($str, strlen($matches[1]) + 2);
         }
         
