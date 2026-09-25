@@ -293,8 +293,8 @@ Facade::reset();                   // bersihkan singleton (testing)
 Helper global lain di `framework/src/Support/Helpers.php`:
 `session($key=null)`, `resolve_path()`, `csrf_token()/csrf_field()/csrf_meta()`,
 `active_module()`, `service()`. Fungsi `kodhe()` / `app()` disediakan oleh
-kernel/bootstrap aplikasi (lihat README `Foundation/Service` dan contoh stub
-`.phpstan/bootstrap.php`); pastikan versi aplikasi Anda mendefinisikannya —
+kernel/bootstrap aplikasi (lihat README `Foundation/Service`); pastikan versi
+aplikasi Anda mendefinisikannya —
 pada mode per-paket murni keduanya tidak otomatis ada.
 
 ## 7. Kapan Memakai Yang Mana?

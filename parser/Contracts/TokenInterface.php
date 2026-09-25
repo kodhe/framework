@@ -2,7 +2,7 @@
 /**
  * Token Interface
  *
- * @package CodeIgniter\Parser\Contracts
+ * @package Kodhe\Framework\Parser\Contracts
  */
 
 namespace Kodhe\Framework\Parser\Contracts;

@@ -261,7 +261,7 @@ class ImageLib
 	 * Destination image filename
 	 *
 	 * Diisi oleh initialize(); sebelumnya tidak dideklarasikan sehingga memicu
-	 * warning Undefined property saat runtime dan error PHPStan level 0.
+	 * warning Undefined property saat runtime (destructive deprecation di PHP 8.2+).
 	 *
 	 * @var string
 	 */

@@ -2,7 +2,7 @@
 /**
  * Template Helper - Utility functions
  *
- * @package CodeIgniter\Parser\Support
+ * @package Kodhe\Framework\Parser\Support
  */
 
 namespace Kodhe\Framework\Parser\Support;

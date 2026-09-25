@@ -37,5 +37,5 @@ Daftar lengkap + aturan custom: lihat [README paket](../../validation/README.md)
 
 - Pada controller CI3, `$this->form_validation` tetap tersedia via loader kernel —
   kode lama tidak perlu diubah.
-- Untuk PHPStan level tinggi, gunakan `set_value()` yang kini ber-docblock tipe
-  lengkap (`@return string|array`).
+- `set_value()` ber-docblock tipe lengkap (`@return string|array`) sehingga aman
+  untuk IDE dan analisis statis.
