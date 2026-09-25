@@ -84,30 +84,19 @@ class CookieManager
      */
     public function send(string $sessionId, int $expire): bool
     {
-        if (PHP_VERSION_ID >= 70300) {
-            return setcookie(
-                $this->name,
-                $sessionId,
-                [
-                    'expires' => $expire,
-                    'path' => $this->path,
-                    'domain' => $this->domain,
-                    'secure' => $this->secure,
-                    'httponly' => $this->httpOnly,
-                    'samesite' => $this->sameSite,
-                ]
-            );
-        }
-
-        // PHP < 7.3 compatibility
+        // The array API requires PHP >= 7.3; the package requires PHP >= 8.1,
+        // so the legacy positional-argument fallback was removed.
         return setcookie(
             $this->name,
             $sessionId,
-            $expire,
-            $this->path . '; samesite=' . $this->sameSite,
-            $this->domain,
-            $this->secure,
-            $this->httpOnly
+            [
+                'expires' => $expire,
+                'path' => $this->path,
+                'domain' => $this->domain,
+                'secure' => $this->secure,
+                'httponly' => $this->httpOnly,
+                'samesite' => $this->sameSite,
+            ]
         );
     }
 
@@ -118,30 +107,19 @@ class CookieManager
      */
     public function delete(): bool
     {
-        if (PHP_VERSION_ID >= 70300) {
-            return setcookie(
-                $this->name,
-                '',
-                [
-                    'expires' => 1,
-                    'path' => $this->path,
-                    'domain' => $this->domain,
-                    'secure' => $this->secure,
-                    'httponly' => $this->httpOnly,
-                    'samesite' => $this->sameSite,
-                ]
-            );
-        }
-
-        // PHP < 7.3 compatibility
+        // The array API requires PHP >= 7.3; the package requires PHP >= 8.1,
+        // so the legacy positional-argument fallback was removed.
         return setcookie(
             $this->name,
             '',
-            1,
-            $this->path . '; samesite=' . $this->sameSite,
-            $this->domain,
-            $this->secure,
-            $this->httpOnly
+            [
+                'expires' => 1,
+                'path' => $this->path,
+                'domain' => $this->domain,
+                'secure' => $this->secure,
+                'httponly' => $this->httpOnly,
+                'samesite' => $this->sameSite,
+            ]
         );
     }
 
