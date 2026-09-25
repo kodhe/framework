@@ -522,75 +522,146 @@ if ( ! function_exists('app_path_in'))
 
 if ( ! function_exists('app_class_file_in'))
 {
-        /**
-         * Locate a class file (library/model/driver) inside an arbitrary base
-         * path, trying every common naming convention used across CI3 and
-         * Kodhe-style projects, case-insensitively.
-         *
-         * Conventions probed, in order of likelihood:
-         *   Libraries/Auth.php          (Kodhe style: PascalCase, no suffix)
-         *   Libraries/Auth_lib.php      (CI3 MY_*-style lib suffix)
-         *   Libraries/auth_lib.php      (lowercase + suffix)
-         *   Libraries/auth.php          (plain lowercase)
-         * plus the caller-provided spelling first when it differs.
-         *
-         * Sub-directories inside the folder are resolved case-insensitively
-         * too (e.g. 'sub/Pdf' -> 'Sub/Pdf.php').
-         *
-         * @param       string  $base_path   Base directory (e.g. APPPATH)
-         * @param       string  $folder      Folder name ('libraries', 'models', ...)
-         * @param       string  $class       Class name WITHOUT .php (may include subdir)
-         * @return      string|null  Absolute existing file path or NULL
-         */
-        function app_class_file_in(string $base_path, string $folder, string $class): ?string
-        {
-                $base = rtrim(str_replace(array('\\', '/'), DIRECTORY_SEPARATOR, $base_path), DIRECTORY_SEPARATOR);
-                $class = str_replace('.php', '', trim($class, '/\\'));
+	/**
+	 * Locate a class file (library/model/driver) inside an arbitrary base
+	 * path, trying every common naming convention used across CI3 and
+	 * Kodhe-style projects, case-insensitively.
+	 *
+	 * Conventions probed, in order of likelihood:
+	 *   Libraries/Auth.php          (Kodhe style: PascalCase, no suffix)
+	 *   Libraries/AuthLib.php       (PascalCase + Lib suffix)
+	 *   Libraries/Auth_lib.php      (CI3 MY_*-style lib suffix)
+	 *   Libraries/auth_lib.php      (lowercase + suffix)
+	 *   Libraries/auth.php          (plain lowercase)
+	 *   Libraries/Pdf.php           (all-lowercase names collapse safely)
+	 * plus the caller-provided spelling first when it differs.
+	 *
+	 * "CamelCase/Lib" variants are derived by stripping underscores and
+	 * capitalising each remaining word boundary, so both 'auth_lib' and
+	 * 'AuthLib' inputs find either spelling on disk.
+	 *
+	 * Sub-directories inside the folder are resolved case-insensitively
+	 * too (e.g. 'sub/Pdf' -> 'Sub/Pdf.php').
+	 *
+	 * @param	string	$base_path	Base directory (e.g. APPPATH)
+	 * @param	string	$folder		Folder name ('libraries', 'models', ...)
+	 * @param	string	$class		Class name WITHOUT .php (may include subdir)
+	 * @return	string|null	Absolute existing file path or NULL
+	 */
+	function app_class_file_in(string $base_path, string $folder, string $class): ?string
+	{
+		if ( ! function_exists('app_class_name_variants'))
+		{
+			// Defensive bootstrap: plain-function file not autoloaded yet.
+			$__app_path = __DIR__.'/app_path.php';
+			is_file($__app_path) && require_once $__app_path;
+		}
 
-                if ($class === '')
-                {
-                        return null;
-                }
+		$base = rtrim(str_replace(array('\\', '/'), DIRECTORY_SEPARATOR, $base_path), DIRECTORY_SEPARATOR);
+		$class = str_replace('.php', '', trim($class, '/\\'));
 
-                // Split optional sub-directory from the class/file name
-                $subdir = '';
-                if (($slash = strrpos($class, '/')) !== FALSE)
-                {
-                        $subdir = substr($class, 0, $slash + 1);
-                        $name = substr($class, $slash + 1);
-                }
-                else
-                {
-                        $name = $class;
-                }
+		if ($class === '')
+		{
+			return null;
+		}
 
-                $ucfirst = ucfirst($name);
+		// Split optional sub-directory from the class/file name
+		$subdir = '';
+		if (($slash = strrpos($class, '/')) !== FALSE)
+		{
+			$subdir = substr($class, 0, $slash + 1);
+			$name = substr($class, $slash + 1);
+		}
+		else
+		{
+			$name = $class;
+		}
 
-                $file_variants = array(
-                        $ucfirst,            // Auth.php          (Kodhe PascalCase)
-                        $ucfirst.'_lib',     // Auth_lib.php      (CI3 lib suffix)
-                        strtolower($name).'_lib',
-                        strtolower($name),   // auth.php          (legacy lowercase)
-                        $name,               // caller's exact spelling
-                );
+		$candidates = array();
+		foreach (app_class_name_variants($name) as $variant)
+		{
+			$candidates[] = $folder.'/'.$subdir.$variant.'.php';
+		}
 
-                $candidates = array();
-                foreach (array_unique($file_variants) as $variant)
-                {
-                        $candidates[] = $folder.'/'.$subdir.$variant.'.php';
-                }
+		foreach ($candidates as $candidate)
+		{
+			$resolved = app_path_in($base, $candidate);
+			if (is_file($resolved))
+			{
+				return $resolved;
+			}
+		}
 
-                foreach ($candidates as $candidate)
-                {
-                        $resolved = app_path_in($base, $candidate);
-                        if (is_file($resolved))
-                        {
-                                return $resolved;
-                        }
-                }
+		return null;
+	}
+}
 
-                return null;
-        }
+if ( ! function_exists('app_class_name_variants'))
+{
+	/**
+	 * Every plausible on-disk spelling for a class/file name, ordered by
+	 * likelihood. Handles the "_lib"-suffix family AND its PascalCase
+	 * equivalents (auth_lib <-> AuthLib <-> authLib), because projects may
+	 * rename files to full CamelCase with capitalised words.
+	 *
+	 * Examples:
+	 *   'auth'     -> Auth, AuthLib, auth_lib, auth
+	 *   'AuthLib'  -> AuthLib, Auth, auth_lib, authlib, auth
+	 *   'auth_lib' -> AuthLib, Auth, auth_lib, authlib, auth
+	 *   'pdf'      -> Pdf, pdf (no bogus "Pdf_lib" probe added blindly;
+	 *                  callers that need MY_*_lib pass the suffixed name)
+	 *
+	 * @param	string	$name File/class name WITHOUT extension
+	 * @return	array	List of unique spellings (no extension)
+	 */
+	function app_class_name_variants(string $name): array
+	{
+		$name = str_replace('.php', '', trim($name));
+
+		if ($name === '')
+		{
+			return array();
+		}
+
+		// Strip a trailing _lib / Lib suffix (case-insensitive) to get the stem
+		$stem = $name;
+		$has_lib = FALSE;
+		if (preg_match('/^(.*?)[_]?lib$/i', $name, $m) && $m[1] !== '')
+		{
+			$stem = $m[1];
+			$has_lib = TRUE;
+		}
+
+		// Camelise the stem: split on underscores/hyphens, ucfirst every word,
+		// then implode. 'auth'->'Auth', 'my_auth'->'MyAuth'.
+		$camel_stem = str_replace(' ', '', ucwords(str_replace(array('_', '-'), ' ', strtolower($stem))));
+
+		$variants = array(
+			$camel_stem,				 // Auth.php / MyAuth.php (Kodhe PascalCase)
+			$camel_stem.'Lib',			 // AuthLib.php (PascalCase + Lib)
+			strtolower($stem).'_lib',	 // auth_lib.php (CI3 legacy suffix)
+			strtolower($camel_stem).'_lib', // myauth_lib style fallback
+			str_replace(' ', '', ucwords(str_replace(array('_', '-'), ' ', $stem))).'_lib', // Auth_lib.php
+			strtolower($stem),			 // auth.php (plain lowercase)
+			$stem,					 // caller's exact spelling
+			$name,					 // original input spelling
+		);
+
+		// When the input itself was PascalCase-with-Lib, also probe the
+		// underscore-split form (AuthLib -> auth_lib already covered; but
+		// Auth_Lib input should keep working verbatim).
+		if ($has_lib)
+		{
+			$variants[] = $camel_stem.'_lib';
+		}
+
+		$variants = array_values(array_unique(array_filter($variants, static function ($v)
+		{
+			return $v !== '' && $v !== null;
+		})));
+
+		return $variants;
+	}
 }
 
 if ( ! function_exists('app_controller_file'))
