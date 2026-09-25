@@ -12,7 +12,7 @@ use RuntimeException;
 // app_config_folder(), app_folder(), app_controller_file(), ...) are
 // available even when this package is loaded without composer's autoload
 // "files" section (manual includes, bundled copies, etc.).
-if ( ! function_exists('app_path_in'))
+if ( ! function_exists('app_path_in') || ! function_exists('app_file_in') || ! function_exists('app_realpath'))
 {
     foreach (array(
         dirname(__DIR__, 4).'/framework/src/Support/app_path.php',
@@ -412,7 +412,10 @@ class LegacyLoader
 
                 foreach (array_unique($check_files) as $file_name)
                 {
-                    $full_path = $mod_path.'models/'.$path.$file_name.'.php';
+                    // Case-insensitive: proyek boleh memakai Models/ (Kodhe
+                    // style) maupun models/ (CI3 legacy), termasuk nama file
+                    // dengan kapitalisasi berbeda (Auth_model vs auth_model).
+                    $full_path = app_path_in(rtrim($mod_path, '/\\'), 'models/'.$path.$file_name.'.php');
                     
                     if (file_exists($full_path))
                     {
@@ -654,9 +657,11 @@ class LegacyLoader
 			foreach ($this->_ci_helper_paths as $path)
 			{
 
-				if (file_exists($path.'helpers/'.$ext_helper.'.php'))
+				// Case-insensitive: Helpers/ (Kodhe) maupun helpers/ (CI3 legacy)
+				$_ext_file = app_path_in(rtrim($path, '/\\'), 'helpers/'.$ext_helper.'.php');
+				if (file_exists($_ext_file))
 				{
-					include_once($path.'helpers/'.$ext_helper.'.php');
+					include_once($_ext_file);
 					$ext_loaded = TRUE;
 				} 
 
@@ -688,7 +693,7 @@ class LegacyLoader
 				$path = rtrim($path, '/\\') . DIRECTORY_SEPARATOR;
 
 				$try = [
-					$path . 'helpers' . DIRECTORY_SEPARATOR . $helper . '.php',
+					app_path_in(rtrim($path, '/\\'), 'helpers' . DIRECTORY_SEPARATOR . $helper . '.php'),
 					$path . $helper . '.php',
 					// Framework package layouts
 					$path . 'src' . DIRECTORY_SEPARATOR . 'Support' . DIRECTORY_SEPARATOR . 'Helpers' . DIRECTORY_SEPARATOR . $helper . '.php',
@@ -870,7 +875,8 @@ class LegacyLoader
 		array_unshift($this->_ci_model_paths, $path);
 		array_unshift($this->_ci_helper_paths, $path);
 
-		$this->_ci_view_paths = array($path.'views/' => $view_cascade) + $this->_ci_view_paths;
+		// Case-insensitive: package boleh memakai Views/ (Kodhe) maupun views/ (CI3)
+		$this->_ci_view_paths = array(app_folder_in($path, 'views') => $view_cascade) + $this->_ci_view_paths;
 
 		// Add config file path
 		$config = $this->_ci_get_component('config');
@@ -929,9 +935,12 @@ class LegacyLoader
 				}
 			}
 
-			if (isset($this->_ci_view_paths[$path.'views/']))
+			foreach (array($path.'views/', $path.'Views/', app_folder_in($path, 'views')) as $__vk)
 			{
-				unset($this->_ci_view_paths[$path.'views/']);
+				if (isset($this->_ci_view_paths[$__vk]))
+				{
+					unset($this->_ci_view_paths[$__vk]);
+				}
 			}
 
 			if (($key = array_search($path, $config->_config_paths)) !== FALSE)
@@ -1322,6 +1331,19 @@ class LegacyLoader
 					{
 						include($config_file);
 						$found = TRUE;
+					}
+					// Case-insensitive fallback: proyek boleh menamai ulang folder
+					// views menjadi Views/ dan menyimpan view dengan kapitalisasi berbeda.
+					$__ci_try = rtrim($_ci_view_file, '/\\').DIRECTORY_SEPARATOR.$_ci_file;
+					if ( ! file_exists($__ci_try))
+					{
+						$__ci_resolved = app_realpath($__ci_try);
+						if ($__ci_resolved !== $__ci_try && file_exists($__ci_resolved))
+						{
+							$_ci_path = $__ci_resolved;
+							$file_exists = TRUE;
+							break;
+						}
 					}
 					elseif (file_exists($config_file = app_config_file_in($path, ucfirst(strtolower($class)).'.php')))
 					{
