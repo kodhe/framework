@@ -182,36 +182,68 @@ if (!function_exists('session')) {
 
 
 if (!function_exists('resolve_path')) {
-	/**
-	 * Resolve directory path dengan berbagai kemungkinan casing
-	 */
-	function resolve_path(string $basePath = '', ?string $directory = ''): string {
-		$basePath = rtrim($basePath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
-		
-		// Jika directory null atau kosong, return basePath saja
-		if (empty($directory)) {
-			return $basePath;
-		}
-		
-		// Prioritaskan direktori yang benar-benar ada
-		$variations = [
-			$basePath . $directory,                     // original
-			$basePath . strtolower($directory),         // lowercase
-			$basePath . ucfirst(strtolower($directory)), // ucfirst
-		];
-		
-		// Hapus duplikat
-		$variations = array_unique($variations);
-		
-		foreach ($variations as $path) {
-			if (is_dir($path)) {
-				return $path . DIRECTORY_SEPARATOR;
-			}
-		}
-		
-		// Default: return lowercase (konsisten dengan CI3 style)
-		return $variations[1] ?? $variations[0]. DIRECTORY_SEPARATOR;
-	}
+/**
+ * Resolve directory path dengan berbagai kemungkinan casing.
+ *
+ * Proyek CodeIgniter 3 memakai nama folder huruf kecil (config/,
+ * libraries/, core/, helpers/, views/, cache/, ...), tetapi proyek
+ * Kodhe-style boleh menamainya ulang (Config/, Libraries/, Core/,
+ * Helpers/, Views/, Cache/, dst). Pada filesystem case-sensitive
+ * (Linux) lookup hardcoded bisa meleset dan file/folder seolah hilang.
+ *
+ * Strategi (paling akurat -> fallback anggun):
+ *   1. exact-case match (nol overhead untuk proyek CI3 standar),
+ *   2. scan per-segmen case-insensitive lewat app_path_in() bila
+ *      helper tersedia (menangani UPPERCASE, PascalCase, mixed),
+ *   3. varian lowercase/ucfirst bila helper belum ter-load,
+ *   4. default: kembalikan input apa adanya sehingga pemeriksaan
+ *      file_exists()/is_dir() caller gagal anggun seperti semula.
+ *
+ * @param string      $basePath  Basis direktori (mis. APPPATH)
+ * @param string|null $directory Sub-folder relatif (mis. 'config')
+ * @return string Path dengan trailing DIRECTORY_SEPARATOR
+ */
+function resolve_path(string $basePath = '', ?string $directory = ''): string {
+$had_directory = ! empty($directory);
+		$directory = is_string($directory) ? trim(str_replace(chr(92), '/', $directory), '/') : '';
+$basePath  = rtrim($basePath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+
+// Tanpa direktori: tidak ada yang perlu di-resolve.
+if ($directory === '') {
+return $had_directory ? $basePath . DIRECTORY_SEPARATOR : $basePath;
+}
+
+// 1) Exact hit tercepat.
+if (is_dir($basePath . $directory)) {
+return $basePath . $directory . DIRECTORY_SEPARATOR;
+}
+
+// 2) Resolusi case-insensitive penuh per segmen.
+if ( ! function_exists('app_path_in')) {
+$__app_path_helper = __DIR__ . '/app_path.php';
+if (is_file($__app_path_helper)) {
+require_once $__app_path_helper; // idempoten; definisi dibungkus function_exists
+}
+}
+
+if (function_exists('app_path_in')) {
+$resolved = app_path_in(rtrim($basePath, DIRECTORY_SEPARATOR), $directory);
+
+if (is_dir($resolved)) {
+return rtrim($resolved, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+}
+}
+
+// 3) Fallback heuristik lama (lowercase & ucfirst) bila scan nihil.
+foreach (array_unique([$basePath . strtolower($directory), $basePath . ucfirst(strtolower($directory))]) as $path) {
+if (is_dir($path)) {
+return rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+}
+}
+
+// 4) Default: persis seperti perilaku lama terhadap input.
+return $basePath . $directory . DIRECTORY_SEPARATOR;
+}
 }
 
 if (!function_exists('csrf_token')) {
@@ -225,7 +257,9 @@ if (!function_exists('csrf_token')) {
 			return $ci->session->userdata('csrf_token');
 		}
 		
-		session_start();
+		if (session_status() === PHP_SESSION_NONE) {
+			session_start();
+		}
 		return $_SESSION['csrf_token'] ?? '';
 	}
 }

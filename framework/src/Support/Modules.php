@@ -8,6 +8,24 @@ global $CFG;
 use Kodhe\Framework\Http\Routing\Router;
 use Kodhe\Framework\Exceptions\Http\BadRequestException;
 
+// Guarantee the case-insensitive app path helpers (app_path_in(),
+// app_config_folder(), app_folder(), app_controller_file(), ...) are
+// available even when this package is loaded without composer's autoload
+// "files" section (manual includes, bundled copies, etc.).
+if ( ! function_exists('app_path_in'))
+{
+    foreach (array(
+        dirname(__DIR__, 2).'/framework/src/Support/app_path.php',
+        dirname(__DIR__, 2).'/../framework/src/Support/app_path.php',
+    ) as $__app_path_helper) {
+        if (is_file($__app_path_helper)) {
+            require_once $__app_path_helper;
+            break;
+        }
+    }
+}
+unset($__app_path_helper);
+
 class Modules
 {
     public static $routes = array();
@@ -385,7 +403,7 @@ class Modules
         $module_paths = self::$modulesCache[$module_name] ?? array();
         
         foreach ($module_paths as $module_path) {
-            $config_file = $module_path . 'config/config.php';
+            $config_file = app_config_file_in($module_path, 'config.php');
             if (is_file($config_file)) {
                 return $config_file;
             }

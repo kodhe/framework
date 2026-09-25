@@ -49,6 +49,21 @@
 
 // ------------------------------------------------------------------------
 
+// Guarantee the case-insensitive app path helpers (app_config_file_in(),
+// app_path_in(), ...) are available even when this helper is loaded without
+// composer's autoload "files" section.
+if ( ! function_exists('app_config_file_in'))
+{
+	$__kodhe_app_path = dirname(__DIR__).'/../Support/app_path.php';
+
+	if (is_file($__kodhe_app_path))
+	{
+		require_once $__kodhe_app_path;
+	}
+
+	unset($__kodhe_app_path);
+}
+
 if ( ! function_exists('smiley_js'))
 {
 	/**
@@ -230,14 +245,14 @@ if ( ! function_exists('_get_smiley_array'))
 
 		if ( ! is_array($_smileys))
 		{
-			if (file_exists(APPPATH.'config/smileys.php'))
+			if (file_exists($smileys_file = app_config_file_in(APPPATH, 'smileys.php')))
 			{
-				include(APPPATH.'config/smileys.php');
+				include($smileys_file);
 			}
 
-			if (file_exists(APPPATH.'config/'.ENVIRONMENT.'/smileys.php'))
+			if (file_exists($smileys_file = app_config_file_in(APPPATH, ENVIRONMENT.'/smileys.php')))
 			{
-				include(APPPATH.'config/'.ENVIRONMENT.'/smileys.php');
+				include($smileys_file);
 			}
 
 			if (empty($smileys) OR ! is_array($smileys))

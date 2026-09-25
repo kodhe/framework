@@ -7,6 +7,29 @@ namespace Kodhe\Framework\Http\Routing;
 use Kodhe\Framework\Http\Request;
 use Kodhe\Framework\Http\Response;
 use Kodhe\Framework\Support\Legacy\URI;
+
+// The case-insensitive path helpers (app_path_in(), app_config_folder(),
+// app_folder(), app_controller_file()) are plain global functions defined
+// in framework/src/Support/app_path.php. This package may be loaded via
+// composer autoload "files", but projects that include the router through
+// a manual loader must still find them, so we guarantee availability here.
+if ( ! function_exists('app_path_in'))
+{
+    foreach (array(
+        // Monorepo layout: ../../framework/src/Support/app_path.php
+        dirname(__DIR__, 3).'/framework/src/Support/app_path.php',
+        // Installed as standalone package alongside kodhe/framework-core
+        dirname(__DIR__, 4).'/kodhe/framework/framework/src/Support/app_path.php',
+        dirname(__DIR__, 4).'/framework/src/Support/app_path.php',
+    ) as $__app_path_helper) {
+        if (is_file($__app_path_helper)) {
+            require_once $__app_path_helper;
+            break;
+        }
+    }
+}
+unset($__app_path_helper);
+
 class LegacyRouter
 {
     public $routes = [];
@@ -66,14 +89,16 @@ class LegacyRouter
     {
         $route = [];
         
-        // Load main routes
-        if (file_exists(APPPATH.'config/routes.php')) {
-            include(APPPATH.'config/routes.php');
+        // Load main routes (case-insensitive: config/ or Config/, routes.php case too)
+        $routesFile = app_path_in(APPPATH.app_config_folder(), 'routes.php');
+        if (file_exists($routesFile)) {
+            include($routesFile);
         }
 
-        // Load environment routes
-        if (file_exists(APPPATH.'config/'.ENVIRONMENT.'/routes.php')) {
-            include(APPPATH.'config/'.ENVIRONMENT.'/routes.php');
+        // Load environment routes (e.g. Config/development/routes.php)
+        $envFile = app_path_in(APPPATH.app_config_folder(), ENVIRONMENT.'/routes.php');
+        if (is_dir(app_path_in(APPPATH.app_config_folder(), ENVIRONMENT)) && file_exists($envFile)) {
+            include($envFile);
         }
 
         // Validate & get reserved routes
@@ -258,48 +283,29 @@ class LegacyRouter
         $class = str_replace('.php', '', $class);
         
         log_message('debug', 'Parsed default controller - Class: ' . $class . ', Method: ' . $method);
-        log_message('debug', 'Looking for controller: ' . APPPATH.'controllers/'.$this->directory.ucfirst($class).'.php');
 
-        // Check if controller file exists
-        $controller_file = APPPATH.'controllers/'.$this->directory.ucfirst($class).'.php';
+        // Case-insensitive lookup: works with controllers/ or Controllers/,
+        // lowercase or PascalCase files, with or without the suffix.
+        $suffix = app()->config->item('controller_suffix');
+        $controller_file = app_controller_file($this->directory.$class, (string) $suffix);
+
+        log_message('debug', 'Looking for controller: ' . $controller_file);
+
         if ( ! file_exists($controller_file))
         {
-            log_message('error', 'Controller file not found: ' . $controller_file);
-            
-            // Coba dengan suffix
-            $suffix = app()->config->item('controller_suffix');
-            if ($suffix) {
-                $controller_file_with_suffix = APPPATH.'controllers/'.$this->directory.ucfirst($class).$suffix.'.php';
-                log_message('debug', 'Trying with suffix: ' . $controller_file_with_suffix);
-                
-                if (file_exists($controller_file_with_suffix)) {
-                    $controller_file = $controller_file_with_suffix;
-                    $class = $class . $suffix;
-                    log_message('debug', 'Found controller with suffix: ' . $controller_file);
-                }
-            }
-            
-            // Jika masih tidak ditemukan, coba lowercase
-            if (!file_exists($controller_file)) {
-                $controller_file_lower = APPPATH.'controllers/'.$this->directory.strtolower($class).'.php';
-                log_message('debug', 'Trying lowercase: ' . $controller_file_lower);
-                
-                if (file_exists($controller_file_lower)) {
-                    $controller_file = $controller_file_lower;
-                    $class = strtolower($class);
-                    log_message('debug', 'Found lowercase controller: ' . $controller_file);
-                }
-            }
-            
-            // Jika tetap tidak ditemukan, show error
-            if (!file_exists($controller_file)) {
-                log_message('error', 'Default controller not found after all attempts');
-                
-                // Jangan langsung show_error, biarkan system handle 404
-                $this->class = 'Kodhe\Framework\Controllers\Error\FileNotFound';
-                $this->method = 'index';
-                return;
-            }
+            log_message('error', 'Default controller not found after all attempts: ' . $controller_file);
+
+            // Jangan langsung show_error, biarkan system handle 404
+            $this->class = 'Kodhe\Framework\Controllers\Error\FileNotFound';
+            $this->method = 'index';
+            return;
+        }
+
+        // Adopt the on-disk spelling (e.g. file was found as WelcomeController.php)
+        $found = basename($controller_file, '.php');
+        if ($found !== $class && strcasecmp($found, $class) === 0)
+        {
+            $class = $found;
         }
 
         $this->set_class($class);
@@ -323,12 +329,16 @@ class LegacyRouter
 
         while ($c-- > 0)
         {
-            $test = $this->directory
-                .ucfirst($this->translate_uri_dashes === TRUE ? str_replace('-', '_', $segments[0]) : $segments[0]);
+            $probe = $this->translate_uri_dashes === TRUE ? str_replace('-', '_', $segments[0]) : $segments[0];
 
-            if ( ! file_exists(APPPATH.'controllers/'.$test.'.php')
+            // Case-insensitive checks so renamed folders (Controllers/, Admin/)
+            // and PascalCase files are found on Linux as well.
+            $controller_path = app_controller_file($this->directory.$probe);
+            $dir_path = app_path_in(APPPATH.'controllers', $this->directory.$probe);
+
+            if ( ! file_exists($controller_path)
                 && $directory_override === FALSE
-                && is_dir(APPPATH.'controllers/'.$this->directory.$segments[0])
+                && is_dir($dir_path)
             )
             {
                 $this->set_directory(array_shift($segments), TRUE);
@@ -444,9 +454,9 @@ class LegacyRouter
         $suffix = app()->config->item('controller_suffix');
         if ($suffix && strpos($class, $suffix) === FALSE)
         {
-            // Cek jika file dengan suffix ada
-            $controller_file = APPPATH.'controllers/'.$this->directory.ucfirst($class).$suffix.'.php';
-            if (file_exists($controller_file)) {
+            // Cek jika file dengan suffix ada (case-insensitive lookup)
+            $controller_file = app_controller_file($this->directory.$class, (string) $suffix);
+            if (is_file($controller_file)) {
                 $class .= $suffix;
                 log_message('debug', 'Adding suffix to class: ' . $class);
             }

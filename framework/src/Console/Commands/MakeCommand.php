@@ -246,15 +246,20 @@ class MakeCommand extends Command
         }
 
         // Route::resource (kodhe/http) membangun handler "Controller@method"
-        // per aksi; opsi 'actions' TIDAK dikenali (yang ada: only/except/names/
-        // parameters). Controller hasil generate memakai method `delete()`
-        // (konvensi CI3), sedangkan resource modern memanggil `destroy()`.
-        // Solusi tanpa mengubah http/: except destroy + satu route manual yang
-        // menunjuk langsung ke method delete(). update/store tetap standar
-        // resource (PUT /{res}/{id} via _method spoofing, POST /{res}).
+        // per aksi; opsi valid: only/except/names/parameters. Controller hasil
+        // generate memakai method `delete()` (konvensi CI3), sedangkan resource
+        // modern memanggil `destroy()` — jadi destroy di-exclude dan digantikan
+        // satu route DELETE manual yang menunjuk langsung ke @delete.
+        // Catatan edit: resource mendaftarkan PUT /{res}/{id}; view hasil
+        // generate memakai form POST ke /{res}/update/{id}, jadi rute tambahan
+        // itu didaftarkan eksplisit di bawah. store tetap POST /{res} standar.
+        // Placeholder parameter {articles} dibangun terpisah agar tidak tertafsir
+        // sebagai ekspresi variabel PHP saat stub digenerate.
+        $lc = '{' . $resourceSegment . '}';
         $block = "\n{$marker}\n"
             . "Route::resource('{$resourceSegment}', 'App\\\\Controllers\\\\{$controllerClass}', ['except' => ['destroy']]);\n"
-            . "Route::delete('/{$resourceSegment}/{{$resourceSegment}}', '\\\\Kodhe\\\\Framework\\\\Http\\\\Routing\\\\Route::delete handler')->name('placeholder');\n";
+            . "Route::post('/{$resourceSegment}/update/{$lc}', 'App\\\\Controllers\\\\{$controllerClass}@update')->name('{$resourceSegment}.update');\n"
+            . "Route::delete('/{$resourceSegment}/{$lc}', 'App\\\\Controllers\\\\{$controllerClass}@delete')->name('{$resourceSegment}.destroy');\n";
         file_put_contents($path, rtrim($contents) . "\n" . $block);
         $this->success("Updated: {$path} (Route::resource('{$resourceSegment}'))");
         return $path;

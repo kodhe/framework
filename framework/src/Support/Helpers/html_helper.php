@@ -48,6 +48,21 @@
 
 // ------------------------------------------------------------------------
 
+// Guarantee the case-insensitive app path helpers (app_config_file_in(),
+// app_path_in(), ...) are available even when this helper is loaded without
+// composer's autoload "files" section.
+if ( ! function_exists('app_config_file_in'))
+{
+	$__kodhe_app_path = dirname(__DIR__).'/../Support/app_path.php';
+
+	if (is_file($__kodhe_app_path))
+	{
+		require_once $__kodhe_app_path;
+	}
+
+	unset($__kodhe_app_path);
+}
+
 if ( ! function_exists('heading'))
 {
 	/**
@@ -234,14 +249,14 @@ if ( ! function_exists('doctype'))
 
 		if ( ! is_array($doctypes))
 		{
-			if (file_exists(APPPATH.'config/doctypes.php'))
+			if (file_exists($doctypes_file = app_config_file_in(APPPATH, 'doctypes.php')))
 			{
-				include(APPPATH.'config/doctypes.php');
+				include($doctypes_file);
 			}
 
-			if (file_exists(APPPATH.'config/'.ENVIRONMENT.'/doctypes.php'))
+			if (file_exists($doctypes_file = app_config_file_in(APPPATH, ENVIRONMENT.'/doctypes.php')))
 			{
-				include(APPPATH.'config/'.ENVIRONMENT.'/doctypes.php');
+				include($doctypes_file);
 			}
 
 			if (empty($_doctypes) OR ! is_array($_doctypes))

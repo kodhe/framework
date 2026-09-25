@@ -1,5 +1,19 @@
 <?php namespace Kodhe\Framework\Support\Legacy;
 
+// Guarantee the case-insensitive app folder helpers (app_folder(), ...) are
+// available even when this file is loaded before composer's autoload "files"
+// entry for framework/src/Support/app_path.php has run.
+if ( ! function_exists('app_folder'))
+{
+	$__app_path_helper = __DIR__.'/../app_path.php';
+	if (is_file($__app_path_helper))
+	{
+		require_once $__app_path_helper;
+	}
+	unset($__app_path_helper);
+}
+
+
 class Output
 {
 
@@ -605,7 +619,7 @@ class Output
 	 */
 	public function _display_cache(&$CFG, &$URI)
 	{
-		$cache_path = ($CFG->item('cache_path') === '') ? APPPATH.'cache/' : $CFG->item('cache_path');
+		$cache_path = ($CFG->item('cache_path') === '') ? APPPATH.app_folder('cache').DIRECTORY_SEPARATOR : $CFG->item('cache_path');
 
 		// Build the file path. The file name is an MD5 hash of the full URI
 		$uri = $CFG->item('base_url').$CFG->item('index_page').$URI->uri_string;
@@ -688,7 +702,7 @@ class Output
 		$cache_path = $CI->config->item('cache_path');
 		if ($cache_path === '')
 		{
-			$cache_path = APPPATH.'cache/';
+			$cache_path = APPPATH.app_folder('cache').DIRECTORY_SEPARATOR;
 		}
 
 		if ( ! is_dir($cache_path))
