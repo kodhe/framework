@@ -72,8 +72,12 @@
       "Kodhe\\Framework\\Xmlrpcs\\": "xmlrpcs/src/",
       "Kodhe\\Framework\\Zip\\": "zip/src/",
       "Kodhe\\Framework\\Driver\\": "driver/src/",
-      "Kodhe\\Framework\\View\\": "view/src/"
+      "Kodhe\\Framework\\View\\": "view/src/",
+      "Kodhe\\Framework\\Auth\\": "auth/src/"
     },
+    "classmap": [
+      "auth/src"
+    ],
     "files": [
       "framework/src/Support/app_path.php",
       "framework/src/Support/Legacy/common.php",
@@ -83,7 +87,8 @@
       "session/src/helpers.php",
       "view/src/helpers/template.php",
       "view/src/helpers/template_asset.php",
-      "validation/src/helpers/form.php"
+      "validation/src/helpers/form.php",
+      "auth/src/helpers.php"
     ]
   },
   "autoload-dev": {
