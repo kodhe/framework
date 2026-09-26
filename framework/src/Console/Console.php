@@ -166,6 +166,11 @@ class Console
      */
     public function run(?Input $input = null, ?Output $output = null): int
     {
+        // Padanan public/index.php untuk CLI: siapkan environment aplikasi
+        // (root project, autoloader App\, konstanta config, helper global
+        // kodhe()/app()/get_instance()) sebelum command apa pun dieksekusi.
+        Bootstrap::boot();
+
         $this->input = $input ?? new Input();
         $this->output = $output ?? new Output();
 
