@@ -20,7 +20,7 @@ use Kodhe\Framework\Console\Command;
  *   php console migrate --fresh      # rollback semua, lalu migrate up
  *
  * Opsi:
- *   --path=<dir>    folder migrasi (default: ./database/migrations)
+ *   --path=<dir>    folder migrasi (default: <project>/database/migrations)
  *   --table=<name>  tabel pelacak versi (default: migrations)
  */
 class MigrateCommand extends Command
@@ -37,76 +37,130 @@ class MigrateCommand extends Command
     public function handle(): int
     {
         // ----------------------------------------------------------
-        // 1. Tentukan root framework (SYSPATH) & root project
+        // 1. Root framework (SYSPATH) — deteksi lewat autoloader, bukan
+        //    menebak folder src/Core. File ini sendiri dimuat composer,
+        //    jadi lokasi class Console adalah sumber kebenaran.
         // ----------------------------------------------------------
-        $basePath = getcwd() . DIRECTORY_SEPARATOR;
-
-        $sysCandidates = [
-            // Project composer install: vendor/kodhe/framework
-            $basePath . 'vendor/kodhe/framework/',
-            // Monorepo/dev inline: repo induk di samping project (../framework/)
-            dirname($basePath) . '/framework/',
-            // Symlink path repository composer
-            $basePath . 'vendor/kodhe/framework/../kodhe/framework/',
-            // Jalankan langsung dari dalam folder framework itu sendiri
-            $basePath,
-        ];
-        $syspath = null;
-        foreach ($sysCandidates as $c) {
-            if (is_dir($c . 'src/Core')) { $syspath = rtrim($c, '/\\') . DIRECTORY_SEPARATOR; break; }
+        try {
+            $consoleFile = (new \ReflectionClass(Console::class))->getFileName();
+        } catch (\Throwable) {
+            $consoleFile = false;
         }
-        if ($syspath === null) {
-            $this->error('Framework (src/Core) tidak ditemukan — jalankan dari root project yang sudah `composer install`.');
+
+        if (!is_string($consoleFile)) {
+            $this->error('Framework tidak ditemukan via autoloader — jalankan dari project yang sudah `composer install`.');
             return 1;
         }
-        defined('SYSPATH') || define('SYSPATH', $syspath);
-        defined('BASEPATH') || define('BASEPATH', SYSPATH);
-        defined('APPPATH')  || define('APPPATH', $basePath . 'application' . DIRECTORY_SEPARATOR);
-        defined('VIEWPATH') || define('VIEWPATH', APPPATH . 'views' . DIRECTORY_SEPARATOR);
-        defined('STORAGEPATH') || define('STORAGEPATH', $basePath . 'storage' . DIRECTORY_SEPARATOR);
-        defined('ENVIRONMENT') || define('ENVIRONMENT', getenv('CI_ENV') ?: 'production');
 
-        // Composer autoload milik PROJECT (memuat config app + package lain).
-        $projectAutoload = $basePath . 'vendor/autoload.php';
-        if (!class_exists(\Kodhe\Framework\Database\Loader::class, false)) {
-            if (file_exists($projectAutoload)) {
-                require_once $projectAutoload;
-            } elseif (file_exists(SYSPATH . 'vendor/autoload.php')) {
-                require_once SYSPATH . 'vendor/autoload.php';
-            } else {
-                $this->error("vendor/autoload.php tidak ditemukan. Jalankan 'composer install' di project.");
-                return 1;
+        // vendor/kodhe/framework/src/Console/Console.php -> .../framework/
+        // framework/console.php                          -> .../src/
+        $syspath = null;
+        foreach ([dirname($consoleFile, 3), dirname($consoleFile, 2)] as $candidate) {
+            if (is_dir($candidate . DIRECTORY_SEPARATOR . 'src')) {
+                $syspath = $candidate . DIRECTORY_SEPARATOR;
+                break;
             }
         }
 
-        // Helper global kodhe()/get_instance()/config_item().
-        // Prioritas: bootstrap/app.php milik PROJECT (berisi definisi helper
-        // + inisialisasi sistem). File ini TIDAK memanggil die(), jadi aman
-        // dipakai dari CLI. Jika tidak ada, fallback ke common.php framework.
-        if (!function_exists('kodhe')) {
-            $bootCandidates = [
-                $basePath . 'bootstrap/app.php',
-                SYSPATH . 'bootstrap/app.php',
-                SYSPATH . 'src/Support/Legacy/common.php',
-            ];
-            foreach ($bootCandidates as $h) {
-                if (file_exists($h)) {
-                    require_once $h;
-                    if (function_exists('kodhe')) { break; }
+        if ($syspath === null) {
+            $this->error("Lokasi framework tidak dikenali dari {$consoleFile}");
+            return 1;
+        }
+
+        defined('SYSPATH')       || define('SYSPATH', $syspath);
+        defined('BASEPATH')      || define('BASEPATH', SYSPATH);
+        defined('ENVIRONMENT')   || define('ENVIRONMENT', getenv('CI_ENV') ?: 'production');
+
+        // ----------------------------------------------------------
+        // 2. Root project = folder aplikasi yang memanggil console.
+        //    Kandidat (berdasarkan CWD saat perintah dijalankan):
+        //      a) cwd          -> `cd kodhe && php bin/console ...`
+        //      b) cwd/bin      -> `php vendor/kodhe/framework/bin/console ...`
+        //      c) cwd/../      -> `php ../framework/bin/console ...`
+        //      d) cwd/../bin   -> variasi pemanggilan lain
+        //    Project ditandai oleh application/config/database.php dan/atau
+        //    folder database/migrations milik aplikasi.
+        // ----------------------------------------------------------
+        $cwd = rtrim(getcwd() ?: '.', '/\\') . DIRECTORY_SEPARATOR;
+
+        $candidates = [
+            $cwd,
+            $cwd . 'bin' . DIRECTORY_SEPARATOR,
+            dirname($cwd) . DIRECTORY_SEPARATOR,
+            dirname($cwd) . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR,
+        ];
+
+        $basePath = null;
+        foreach ($candidates as $c) {
+            if (file_exists($c . 'application' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'database.php')
+                || is_dir($c . 'database' . DIRECTORY_SEPARATOR . 'migrations')) {
+                $basePath = $c;
+                break;
+            }
+        }
+
+        if ($basePath === null) {
+            $this->error(
+                "Folder project tidak ditemukan dari CWD ({$cwd}).\n"
+                . "Jalankan dari root project, contoh:\n"
+                . "  cd kodhe && php bin/console migrate\n"
+                . "  php vendor/kodhe/framework/bin/console migrate"
+            );
+            return 1;
+        }
+
+        defined('APPPATH')     || define('APPPATH', $basePath . 'application' . DIRECTORY_SEPARATOR);
+        defined('VIEWPATH')    || define('VIEWPATH', APPPATH . 'views' . DIRECTORY_SEPARATOR);
+        defined('STORAGEPATH') || define('STORAGEPATH', $basePath . 'storage' . DIRECTORY_SEPARATOR);
+
+        // ----------------------------------------------------------
+        // 3. Autoload project (memuat package database, config app, dll.)
+        //    Kalau command dipanggil lewat vendor project, autoload ini
+        //    sebenarnya sudah terdaftar — cek class-nya dulu.
+        // ----------------------------------------------------------
+        if (!class_exists(\Kodhe\Framework\Database\Loader::class)) {
+            foreach ([
+                $basePath . 'vendor/autoload.php',
+                SYSPATH . 'vendor/autoload.php',
+                dirname($consoleFile, 4) . '/autoload.php', // vendor/<author>/<pkg>/bin -> vendor/autoload.php
+            ] as $autoload) {
+                if (is_file($autoload)) {
+                    require_once $autoload;
+                    break;
                 }
             }
         }
+
+        if (!class_exists(\Kodhe\Framework\Database\Loader::class)) {
+            $this->error(
+                "Komponen database (kodhe/database) belum ter-install di project.\n"
+                . "Tambahkan di composer.json project lalu jalankan 'composer update':"
+                . "\n    \"kodhe/database\": \"dev-main\""
+            );
+            return 1;
+        }
+
+        // Helper global kodhe()/config_item() — seharusnya ikut ter-load
+        // lewat composer "files" autoload milik framework.
         if (!function_exists('kodhe')) {
-            $this->error('Helper kodhe() tidak tersedia — periksa bootstrap/app.php project.');
+            foreach ([
+                SYSPATH . 'src/Support/Legacy/common.php',
+                SYSPATH . 'src/Support/Helpers.php',
+                SYSPATH . 'src/Support/app_path.php',
+            ] as $h) {
+                if (file_exists($h)) {
+                    require_once $h;
+                }
+            }
+        }
+
+        if (!function_exists('kodhe')) {
+            $this->error('Helper kodhe() tidak tersedia — jalankan dari root project yang sudah `composer install`.');
             return 1;
         }
 
         // ----------------------------------------------------------
-        // 2. Koneksi database
-        //    Loader::database() memakai helper kodhe()/config_item()
-        //    yang tersedia begitu autoloader + konstanta di atas siap;
-        //    bootstrap/app.php sengaja TIDAK di-require penuh di sini
-        //    agar tidak memicu header() warning pada SAPI CLI.
+        // 4. Koneksi database (config: <project>/application/config/database.php)
         // ----------------------------------------------------------
         try {
             \Kodhe\Framework\Database\Loader::database();
@@ -121,15 +175,18 @@ class MigrateCommand extends Command
             return 1;
         }
 
-        $table = is_string($t = $this->option('table')) ? $t : 'migrations';
+        $table  = is_string($t = $this->option('table')) ? $t : 'migrations';
         $migDir = is_string($p = $this->option('path'))
             ? rtrim($p, '/\\') . DIRECTORY_SEPARATOR
             : $basePath . 'database' . DIRECTORY_SEPARATOR . 'migrations' . DIRECTORY_SEPARATOR;
 
         if (!is_dir($migDir)) {
-            $this->error("Folder migrasi tidak ada: {$migDir}");
+            $this->error("Folder migrasi tidak ada: {$migDir}\nBuat dengan: php console make:migration <nama_table>");
             return 1;
         }
+
+        $this->writeln('<comment>Project:</comment> ' . rtrim($basePath, '/\\'));
+        $this->writeln('<comment>Migrations:</comment> ' . rtrim($migDir, '/\\'));
 
         // Tabel pelacak versi (kolom mengikuti konvensi CI3 migration_table).
         $db->query(
@@ -146,7 +203,7 @@ class MigrateCommand extends Command
         sort($files, SORT_NATURAL);
 
         // ----------------------------------------------------------
-        // 3. --status
+        // 5. --status
         // ----------------------------------------------------------
         if ($this->option('status')) {
             $applied = $this->appliedVersions($db, $table);
@@ -162,7 +219,7 @@ class MigrateCommand extends Command
         }
 
         // ----------------------------------------------------------
-        // 4. --rollback (undo 1 batch terakhir)
+        // 6. --rollback (undo 1 batch terakhir)
         // ----------------------------------------------------------
         if ($this->option('rollback')) {
             $row = $db->query('SELECT MAX(batch) AS b FROM ' . $db->protect_identifiers($table))->row();
@@ -195,7 +252,7 @@ class MigrateCommand extends Command
         }
 
         // ----------------------------------------------------------
-        // 5. --fresh (rollback semua lalu up)
+        // 7. --fresh (rollback semua lalu up)
         // ----------------------------------------------------------
         if ($this->option('fresh')) {
             for ($i = 0; $i < 1000; $i++) {
@@ -212,7 +269,7 @@ class MigrateCommand extends Command
         }
 
         // ----------------------------------------------------------
-        // 6. Migrate UP (default)
+        // 8. Migrate UP (default)
         // ----------------------------------------------------------
         $applied = $this->appliedVersions($db, $table);
         $row = $db->query('SELECT MAX(batch) AS b FROM ' . $db->protect_identifiers($table))->row();
@@ -254,7 +311,7 @@ class MigrateCommand extends Command
             $this->writeln('  <comment>↑</comment> ' . $version);
         }
 
-        $this->writeln('<info>Selesai.</info> Versi aktif: ' . array_pop(array_column($pending, 0)));
+        $this->writeln('<info>Selesai.</info> Versi aktif: ' . $pending[count($pending) - 1][0]);
         return 0;
     }
 
@@ -275,11 +332,13 @@ class MigrateCommand extends Command
 
         foreach ($rows as $r) {
             $file = $migDir . $r['version'] . '.php';
-            if (is_file($file)) {
-                $migration = require $file;
-                if (is_object($migration) && method_exists($migration, 'down')) {
-                    $migration->down();
-                }
+            if (!is_file($file)) {
+                $this->error('File migrasi hilang saat rollback: ' . $r['version']);
+                return 1;
+            }
+            $migration = require $file;
+            if (is_object($migration) && method_exists($migration, 'down')) {
+                $migration->down();
             }
             $db->query('DELETE FROM ' . $db->protect_identifiers($table) . ' WHERE version = ' . $db->escape($r['version']));
             $this->writeln('  <comment>↓</comment> ' . $r['version']);
@@ -292,10 +351,11 @@ class MigrateCommand extends Command
      */
     private function appliedVersions($db, string $table): array
     {
-        $out = [];
-        foreach ($db->query('SELECT version FROM ' . $db->protect_identifiers($table))->result_array() as $r) {
-            $out[$r['version']] = true;
+        $applied = [];
+        $rows = $db->query('SELECT version FROM ' . $db->protect_identifiers($table))->result_array();
+        foreach ($rows as $r) {
+            $applied[$r['version']] = true;
         }
-        return $out;
+        return $applied;
     }
 }
