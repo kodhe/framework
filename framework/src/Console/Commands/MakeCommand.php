@@ -673,7 +673,7 @@ return new class {
     public function up(): void
     {
         // Ambil forge dari koneksi aktif via Kodhe Database Loader (modern stack).
-        \$forge = Loader::dbforge(kodhe()->db, true);
+        \$forge = Loader::dbforge(null, true);
 
         \$forge->add_field([
 {$columnLines}        ]);
@@ -684,7 +684,7 @@ return new class {
 
     public function down(): void
     {
-        \$forge = Loader::dbforge(kodhe()->db, true);
+        \$forge = Loader::dbforge(null, true);
         \$forge->drop_table('{$table}', TRUE);
     }
 };

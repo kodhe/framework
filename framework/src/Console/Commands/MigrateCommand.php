@@ -196,15 +196,9 @@ class MigrateCommand extends Command
         $this->writeln('<comment>Migrations:</comment> ' . rtrim($migDir, '/\\'));
 
         // Tabel pelacak versi (kolom mengikuti konvensi CI3 migration_table).
-        $db->query(
-            'CREATE TABLE IF NOT EXISTS ' . $db->protect_identifiers($table) . ' ('
-            . 'id INTEGER PRIMARY KEY AUTOINCREMENT,'
-            . 'version VARCHAR(55) NOT NULL DEFAULT 0,'
-            . 'class VARCHAR(255) NOT NULL,'
-            . 'group_name VARCHAR(255) NOT NULL DEFAULT \'default\','
-            . 'batch INTEGER NOT NULL DEFAULT 0'
-            . ')'
-        );
+        // SQL dibuat per-dialect: sintaks SQLite (AUTOINCREMENT) tidak valid
+        // di MySQL/MariaDB, dan sebaliknya.
+        $this->ensureMigrationsTable($db, $table);
 
         $files = glob($migDir . '*.php');
         sort($files, SORT_NATURAL);
@@ -354,8 +348,65 @@ class MigrateCommand extends Command
     }
 
     /**
-     * Daftar versi yang sudah diterapkan => true.
+     * Buat tabel pelacak migrasi bila belum ada, dengan dialek yang sesuai
+     * driver koneksi aktif (sqlite / pdo-sqlite vs mysql / mysqli / lainnya).
      */
+    private function ensureMigrationsTable($db, string $table): void
+    {
+        $dialect = strtolower((string) ($db->dbdriver ?? ''));
+        if ($dialect === 'pdo') {
+            $dialect = 'pdo-' . strtolower((string) ($db->subdriver ?? ''));
+        }
+
+        $t = $db->protect_identifiers($table);
+
+        if (str_contains($dialect, 'sqlite')) {
+            $db->query('CREATE TABLE IF NOT EXISTS ' . $t . ' ('
+                . 'id INTEGER PRIMARY KEY AUTOINCREMENT,'
+                . 'version VARCHAR(55) NOT NULL DEFAULT 0,'
+                . 'class VARCHAR(255) NOT NULL,'
+                . "group_name VARCHAR(255) NOT NULL DEFAULT 'default',"
+                . 'batch INTEGER NOT NULL DEFAULT 0'
+                . ')');
+            return;
+        }
+
+        if (in_array($dialect, ['mysql', 'mysqli', 'pdo-mysql'], true)) {
+            $db->query('CREATE TABLE IF NOT EXISTS ' . $t . ' ('
+                . 'id INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,'
+                . 'version VARCHAR(55) NOT NULL DEFAULT 0,'
+                . 'class VARCHAR(255) NOT NULL,'
+                . "group_name VARCHAR(255) NOT NULL DEFAULT 'default',"
+                . 'batch INT(11) NOT NULL DEFAULT 0,'
+                . 'PRIMARY KEY (id),'
+                . 'KEY `batch` (batch)'
+                . ') DEFAULT CHARSET=utf8');
+            return;
+        }
+
+        // Fallback ANSI — coba PostgreSQL lebih dulu, lalu generic.
+        try {
+            $db->query('CREATE TABLE IF NOT EXISTS ' . $t . ' ('
+                . 'id SERIAL PRIMARY KEY,'
+                . 'version VARCHAR(55) NOT NULL DEFAULT 0,'
+                . 'class VARCHAR(255) NOT NULL,'
+                . "group_name VARCHAR(255) NOT NULL DEFAULT 'default',"
+                . 'batch INTEGER NOT NULL DEFAULT 0'
+                . ')');
+            return;
+        } catch (\Throwable) {
+            // bukan postgres — lanjut ke variasi generic di bawah
+        }
+
+        $db->query('CREATE TABLE IF NOT EXISTS ' . $t . ' ('
+            . 'id INTEGER PRIMARY KEY,'
+            . 'version VARCHAR(55) NOT NULL DEFAULT 0,'
+            . 'class VARCHAR(255) NOT NULL,'
+            . "group_name VARCHAR(255) NOT NULL DEFAULT 'default',"
+            . 'batch INTEGER NOT NULL DEFAULT 0'
+            . ')');
+    }
+
     private function appliedVersions($db, string $table): array
     {
         $applied = [];

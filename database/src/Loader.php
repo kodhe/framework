@@ -42,13 +42,18 @@ class Loader
     /**
      * Load database utility class
      *
-     * @param Builder|null $db Database connection instance
+     * NOTE: parameter $db menerima instance koneksi driver (class Driver
+     * pada Mysqli/Pdo/Sqlite3 yang extends Query\Builder), BUKAN class
+     * Kodhe\Framework\Database\Builder. Type-hint lama (?Builder) salah
+     * dan memicu TypeError saat dipanggil Loader::dbforge(kodhe()->db).
+     *
+     * @param mixed $db Database connection (driver) instance
      * @param bool $return Whether to return the utility instance
      * @return Utility|void Returns utility instance or void
      */
-    public static function dbutil(?Builder $db = null, $return = false)
+    public static function dbutil($db = null, $return = false)
     {
-        if (!is_object($db) || !($db instanceof Builder)) {
+        if (!is_object($db) || !($db instanceof \Kodhe\Framework\Database\Query\Builder)) {
             class_exists('Kodhe\Framework\Database\Query\Builder', false) || self::database();
             $db = &kodhe()->db;
         }
@@ -75,13 +80,17 @@ class Loader
     /**
      * Load database forge class
      *
-     * @param Builder|null $db Database connection instance
+     * NOTE: sama seperti dbutil() — $db adalah instance koneksi driver
+     * (extends Query\Builder). Jika argumen dilewatkan tapi bukan koneksi
+     * valid, kembalikan ke koneksi aktif dari container kodhe().
+     *
+     * @param mixed $db Database connection (driver) instance
      * @param bool $return Whether to return the forge instance
      * @return Forge|void Returns forge instance or void
      */
-    public static function dbforge(?Builder $db = null, $return = false)
+    public static function dbforge($db = null, $return = false)
     {
-        if (!is_object($db) || !($db instanceof Builder)) {
+        if (!is_object($db) || !($db instanceof \Kodhe\Framework\Database\Query\Builder)) {
             class_exists('Kodhe\Framework\Database\Query\Builder', false) || self::database();
             $db = &kodhe()->db;
         }
@@ -89,7 +98,18 @@ class Loader
         $driver = ucwords($db->dbdriver ?? '');
         
         if (!empty($db->subdriver)) {
-            $subdriver = ucwords($db->subdriver);
+            // Samakan normalisasi dengan ConnectionManager::normalize_subdriver()
+            // (mis. subdriver 'sqlite3' -> folder class 'Sqlite') agar Forge
+            // yang dicari tidak salah nama / tidak ditemukan.
+            static $submap = array(
+                '4d' => 'Fourd', 'cubrid' => 'Cubrid', 'dblib' => 'Dblib',
+                'firebird' => 'Firebird', 'ibm' => 'Ibm', 'informix' => 'Informix',
+                'mysql' => 'Mysql', 'oci' => 'Oci', 'odbc' => 'Odbc',
+                'pgsql' => 'Pgsql', 'sqlite' => 'Sqlite', 'sqlite3' => 'Sqlite',
+                'sqlsrv' => 'Sqlsrv',
+            );
+            $key = strtolower($db->subdriver);
+            $subdriver = $submap[$key] ?? ucwords($db->subdriver);
             $className = 'Kodhe\Framework\Database\Connection\Drivers\\' . $driver . '\Subdrivers\\' . $subdriver . '\Forge';
         } else {
             $className = 'Kodhe\Framework\Database\Connection\Drivers\\' . $driver . '\Forge';
