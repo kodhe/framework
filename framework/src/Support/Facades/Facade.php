@@ -44,6 +44,24 @@ class Facade
 
     public function __get(string $name): mixed
     {
+        // Lazy-load layanan bawaan ala CI3: `$kodhe->db`, `$kodhe->session`,
+        // dst. Tanpa ini, property yang belum di-set() akan melempar
+        // InvalidArgumentException dan `Loader::database()` tidak bisa
+        // dipanggil dua kali (mis. dari command `migrate`).
+        if (!$this->has($name) && in_array($name, ['db', 'dbforge', 'dbutil'], true)) {
+            if ($name === 'db') {
+                $loader = '\\Kodhe\\Framework\\Database\\Loader';
+                if (class_exists($loader)) {
+                    $loader::database();
+                }
+            } else {
+                $forgeLoader = '\\Kodhe\\Framework\\Database\\Loader';
+                if ($this->has('db') && class_exists($forgeLoader)) {
+                    $forgeLoader::{$name}($this->loaded['db']);
+                }
+            }
+        }
+
         return $this->get($name);
     }
 
