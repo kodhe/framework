@@ -26,6 +26,14 @@ class Exceptions
 	protected $ob_level;
 
 	/**
+	 * Guard against recursive exception handling (e.g. when rendering an
+	 * error template itself throws, the handler must not loop forever).
+	 *
+	 * @var	bool
+	 */
+	protected $handling = FALSE;
+
+	/**
 	 * List of available error levels
 	 *
 	 * @var	array
@@ -171,52 +179,83 @@ if ( ! file_exists($templates_path.$template.".php") && ($__evf = app_view_file(
 	// --------------------------------------------------------------------
 
 	public function show_exception($exception)
-	{
-		$templates_path = config_item('error_views_path');
-		if (empty($templates_path))
-		{
-			$templates_path = VIEWPATH.'errors'.DIRECTORY_SEPARATOR;
-		}
+        {
+           // Guard against recursive exception handling: if rendering the error
+           // template itself throws, fall back to a plain message instead of
+           // looping through this handler again.
+           if ($this->handling === TRUE)
+           {
+                while (ob_get_level() > $this->ob_level) { ob_end_clean(); }
+                echo '<h1>An unrecoverable error occurred while rendering the error page.</h1>'
+                    .'<p>'.htmlentities($exception->getMessage(), ENT_QUOTES, 'UTF-8').'</p>';
+                return;
+           }
 
-		// Case-insensitive: proyek boleh memakai Views/ (Kodhe style) maupun
-		// views/ (CI3 legacy), termasuk subfolder errors/.
-		$templates_path = app_realpath($templates_path);
+           $this->handling = TRUE;
 
-		$message = $exception->getMessage();
-		if (empty($message))
-		{
-			$message = '(null)';
-		}
+           try
+           {
+                $templates_path = config_item('error_views_path');
+                if (empty($templates_path))
+                {
+                     $templates_path = VIEWPATH.'errors'.DIRECTORY_SEPARATOR;
+                }
 
-		if (is_cli())
-		{
-			$templates_path .= 'cli'.DIRECTORY_SEPARATOR;
-		}
-		else
-		{
-			$templates_path .= 'html'.DIRECTORY_SEPARATOR;
-		}
+                // Case-insensitive: proyek boleh memakai Views/ (Kodhe style) maupun
+                // views/ (CI3 legacy), termasuk subfolder errors/.
+                $templates_path = app_realpath($templates_path);
 
-		if (ob_get_level() > $this->ob_level + 1)
-		{
-			ob_end_flush();
-		}
+                $message = $exception->getMessage();
+                if (empty($message))
+                {
+                     $message = '(null)';
+                }
 
-		ob_start();
-		// Fallback case-insensitive: template error boleh ada di Views/ maupun views/
-if ( ! file_exists($templates_path.$template.".php") && ($__evf = app_view_file("errors".DIRECTORY_SEPARATOR.$template.".php")) !== null)
-		{
-			$__efile = $__evf;
-		}
-		else
-		{
-			$__efile = $templates_path.$template.".php";
-		}
-		include($__efile);
-		$buffer = ob_get_contents();
-		ob_end_clean();
-		echo $buffer;
-	}
+                // BUGFIX: $template was previously left undefined here, which made
+                // the include resolve to "html/.php" and render an empty page.
+                $template = 'error_exception';
+
+                if (is_cli())
+                {
+                     $templates_path .= 'cli'.DIRECTORY_SEPARATOR;
+                }
+                else
+                {
+                     $templates_path .= 'html'.DIRECTORY_SEPARATOR;
+                }
+
+                if (ob_get_level() > $this->ob_level + 1)
+                {
+                     ob_end_flush();
+                }
+
+                ob_start();
+                // Fallback case-insensitive: template error boleh ada di Views/ maupun views/
+                if ( ! file_exists($templates_path.$template.".php") && ($__evf = app_view_file("errors".DIRECTORY_SEPARATOR.$template.".php")) !== null)
+                {
+                     $__efile = $__evf;
+                }
+                else
+                {
+                     $__efile = $templates_path.$template.".php";
+                }
+
+                // Last-resort fallback: framework-bundled template so errors are never silent.
+                if ( ! is_file($__efile) && is_file($f = dirname(__DIR__).'/../Http/Views/errors/'.(is_cli() ? 'cli' : 'html').'/'.$template.'.php'))
+                {
+                     $__efile = $f;
+                }
+
+                include($__efile);
+                $buffer = ob_get_contents();
+                ob_end_clean();
+                echo $buffer;
+           }
+           finally
+           {
+                $this->handling = FALSE;
+           }
+        }
 
 	// --------------------------------------------------------------------
 

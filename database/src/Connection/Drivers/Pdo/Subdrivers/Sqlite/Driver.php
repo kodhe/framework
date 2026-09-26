@@ -53,6 +53,7 @@ class Driver extends \Kodhe\Framework\Database\Connection\Drivers\Pdo\Driver
 
 		if (empty($this->dsn))
 		{
+			// Modern PDO SQLite DSN scheme is "sqlite:" (not the legacy "sqlite3:").
 			$this->dsn = 'sqlite:';
 
 			if (empty($this->database) && empty($this->hostname))
@@ -61,6 +62,12 @@ class Driver extends \Kodhe\Framework\Database\Connection\Drivers\Pdo\Driver
 			}
 
 			$this->database = empty($this->database) ? $this->hostname : $this->database;
+		}
+		elseif (strpos($this->dsn, 'sqlite3:') === 0)
+		{
+			// Backward compatibility: config files written for CI3-era docs may
+			// use the obsolete "sqlite3:" prefix; normalize to "sqlite:".
+			$this->dsn = 'sqlite:' . substr($this->dsn, strlen('sqlite3:'));
 		}
 	}
 
