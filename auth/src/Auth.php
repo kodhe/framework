@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kodhe\Framework\Auth;
 
 use Kodhe\Framework\Auth\Contracts\AuthEventDispatcherInterface;
+use Kodhe\Framework\Auth\Contracts\AuthorizableProviderInterface;
 use Kodhe\Framework\Auth\Contracts\RegisterableProviderInterface;
 use Kodhe\Framework\Auth\Contracts\UpdatableProviderInterface;
 use Kodhe\Framework\Auth\Contracts\UserProviderInterface;
@@ -52,6 +53,18 @@ class Auth implements AuthInterface
     /** @var callable|null Rate limiter: fn(string $key): int — returns recent-attempt count. */
     protected $rateLimiter = null;
 
+    /** @var RoleHierarchy|null Lazily built from config['roles']. */
+    protected ?RoleHierarchy $hierarchy = null;
+
+    /** @var Acl|null Lazily assembled ACL (config rules + provider rules). */
+    protected ?Acl $acl = null;
+
+    /** @var array<int,string[]> Per-request memo: user id => role names. */
+    protected array $roleCache = [];
+
+    /** @var array<int,string[]> Per-request memo: user id => permission names. */
+    protected array $permissionCache = [];
+
     public function __construct(?array $config = null, ?UserProviderInterface $provider = null)
     {
         $this->config  = array_merge(self::defaultConfig(), $config ?? self::readAppConfig());
@@ -98,8 +111,35 @@ class Auth implements AuthInterface
             'reset_ttl'         => 3600,                 // password-reset link lifetime (1 h)
             'verify_ttl'        => 86400 * 3,            // email-verification link lifetime (3 d)
             'verify_column'     => 'email_verified_at',  // non-null => verified
+            // Storage columns for the single-use reset/verification tokens.
+            // Only SHA-256(token) + expiry are persisted; rename here if your
+            // schema uses different column names.
+            'reset_hash_column'    => 'password_reset_hash',
+            'reset_expiry_column'  => 'password_reset_expires',
+            'verify_hash_column'   => 'verification_hash',
+            'verify_expiry_column' => 'verification_expires',
             'register_auto_login' => false,              // log the user straight in after register()
             'register_columns'  => [],                   // extra columns copied from input into the new record
+
+            // ---- Authorization (roles / permissions / hierarchy / ACL) ----
+            // Column on the user record holding a single role name or an
+            // array/comma-separated list of roles (fallback when the provider
+            // does not implement AuthorizableProviderInterface).
+            'role_column'       => 'role',
+            // Optional column listing explicit per-user permission names.
+            'permission_column' => 'permissions',
+            // Role hierarchy definition: role => ['level' => int, 'inherits' => [..]]
+            // Lower level = more power (0 = superadmin). Empty = flat model.
+            'roles'             => [],
+            // Static ACL rules (merged with rules loaded by setAclRules() and
+            // rules fetched from an AuthorizableProviderInterface).
+            'acl_rules'         => [],
+            // Decision when NO ACL rule matches a request (false = fail closed).
+            'acl_default'       => false,
+            // Hierarchical user groups: GroupTree instance or definitions
+            // array (['news' => ['members' => [3]], 'editors' => ['parent' => 'news']]).
+            // Rules can then address subjects like '@news/editors'.
+            'groups'            => [],
         ];
     }
 
@@ -357,8 +397,8 @@ class Auth implements AuthInterface
         $ttl   = (int) $this->config['reset_ttl'];
 
         $this->updateProviderColumns($id, [
-            'password_reset_hash'    => hash('sha256', $token),
-            'password_reset_expires' => time() + $ttl,
+            (string) $this->config['reset_hash_column']   => hash('sha256', $token),
+            (string) $this->config['reset_expiry_column'] => time() + $ttl,
         ]);
 
         $this->fire(AuthEvents::PASSWORD_RESET_REQUESTED, ['email' => $identifierValue, 'token' => $token]);
@@ -375,8 +415,8 @@ class Auth implements AuthInterface
             return false;
         }
 
-        $stored = (string) ($user['password_reset_hash'] ?? '');
-        $expires = (int) ($user['password_reset_expires'] ?? 0);
+        $stored  = (string) ($user[(string) $this->config['reset_hash_column']] ?? '');
+        $expires = (int) ($user[(string) $this->config['reset_expiry_column']] ?? 0);
 
         if ($stored === '' || $expires < time() || !hash_equals($stored, hash('sha256', $token))) {
             $this->fire(AuthEvents::FAILED, ['identifier' => $identifierValue, 'reason' => 'bad_reset_token']);
@@ -386,7 +426,10 @@ class Auth implements AuthInterface
         $id = $user[$this->config['id_column']];
         $this->applyPassword($id, $newPassword);
         // Invalidate the used token.
-        $this->updateProviderColumns($id, ['password_reset_hash' => null, 'password_reset_expires' => null]);
+        $this->updateProviderColumns($id, [
+            (string) $this->config['reset_hash_column']   => null,
+            (string) $this->config['reset_expiry_column'] => null,
+        ]);
         // And force re-logins everywhere: revoking the remember token logs
         // other sessions out on their next auto-login attempt.
         $this->provider->updateRememberToken($id, null);
@@ -410,8 +453,8 @@ class Auth implements AuthInterface
         $id    = $user[$this->config['id_column']];
 
         $this->updateProviderColumns($id, [
-            'verification_hash'    => hash('sha256', $token),
-            'verification_expires' => time() + (int) $this->config['verify_ttl'],
+            (string) $this->config['verify_hash_column']   => hash('sha256', $token),
+            (string) $this->config['verify_expiry_column'] => time() + (int) $this->config['verify_ttl'],
         ]);
 
         $this->fire(AuthEvents::VERIFICATION_REQUESTED, ['email' => $identifierValue, 'token' => $token]);
@@ -433,8 +476,8 @@ class Auth implements AuthInterface
             return true; // already verified
         }
 
-        $stored  = (string) ($user['verification_hash'] ?? '');
-        $expires = (int) ($user['verification_expires'] ?? 0);
+        $stored  = (string) ($user[(string) $this->config['verify_hash_column']] ?? '');
+        $expires = (int) ($user[(string) $this->config['verify_expiry_column']] ?? 0);
 
         if ($stored === '' || $expires < time() || !hash_equals($stored, hash('sha256', $token))) {
             $this->fire(AuthEvents::FAILED, ['identifier' => $identifierValue, 'reason' => 'bad_verification_token']);
@@ -443,9 +486,9 @@ class Auth implements AuthInterface
 
         $id = $user[$this->config['id_column']];
         $this->updateProviderColumns($id, [
-            $column               => date('Y-m-d H:i:s'),
-            'verification_hash'    => null,
-            'verification_expires' => null,
+            $column => date('Y-m-d H:i:s'),
+            (string) $this->config['verify_hash_column']   => null,
+            (string) $this->config['verify_expiry_column'] => null,
         ]);
         $this->refreshCachedUser($id);
 
@@ -551,6 +594,460 @@ class Auth implements AuthInterface
     {
         $this->rateLimiter = $limiter;
         return $this;
+    }
+
+    // ------------------------------------------------------------------
+    // Authorization: roles, permissions, hierarchy, ACL (multi-rule)
+    // ------------------------------------------------------------------
+
+    /**
+     * Role names of the current (or given) user record.
+     *
+     * Resolution order: AuthorizableProviderInterface::rolesForUser() when
+     * the provider supports it, otherwise the configured role column
+     * (string, comma-separated string or array all accepted).
+     *
+     * @return string[]
+     */
+    public function roles(?array $user = null): array
+    {
+        $user ??= $this->user();
+        if ($user === null) {
+            return [];
+        }
+        $id = $user[$this->config['id_column']] ?? null;
+        if ($id === null) {
+            return [];
+        }
+        $cacheKey = (string) $id;
+        if (isset($this->roleCache[$cacheKey])) {
+            return $this->roleCache[$cacheKey];
+        }
+
+        $roles = [];
+        if ($this->provider instanceof AuthorizableProviderInterface) {
+            $roles = array_values(array_map('strval', $this->provider->rolesForUser($id)));
+        }
+        if ($roles === []) {
+            $roles = self::parseList($user[(string) $this->config['role_column']] ?? null);
+        }
+        return $this->roleCache[$cacheKey] = $roles;
+    }
+
+    /**
+     * Primary role name (first in priority order), or null for guests.
+     */
+    public function role(?array $user = null): ?string
+    {
+        return $this->roles($user)[0] ?? null;
+    }
+
+    /**
+     * Flat permission names granted directly to the user (explicit per-user
+     * grants from config['permission_column'] and/or the provider). These
+     * are separate from role-derived permissions — can() merges everything.
+     *
+     * @return string[]
+     */
+    public function userPermissions(?array $user = null): array
+    {
+        $user ??= $this->user();
+        if ($user === null) {
+            return [];
+        }
+        return self::parseList($user[(string) $this->config['permission_column']] ?? null);
+    }
+
+    /**
+     * All permission names effectively available to the current (or given)
+     * user: direct grants + every role's grants expanded through the
+     * hierarchy (a senior role absorbs its subordinates' permissions).
+     *
+     * @return string[]
+     */
+    public function permissions(?array $user = null): array
+    {
+        $user ??= $this->user();
+        if ($user === null) {
+            return [];
+        }
+        $id       = $user[$this->config['id_column']] ?? null;
+        $cacheKey = (string) $id;
+        if ($id !== null && isset($this->permissionCache[$cacheKey])) {
+            return $this->permissionCache[$cacheKey];
+        }
+
+        $perms = $this->userPermissions($user);
+
+        if ($this->provider instanceof AuthorizableProviderInterface) {
+            foreach ($this->roles($user) as $role) {
+                foreach ($this->hierarchy()->expandsTo($role) as $expanded) {
+                    foreach ($this->provider->permissionsForRole($expanded) as $p) {
+                        $perms[] = (string) $p;
+                    }
+                }
+            }
+        }
+
+        $perms = array_values(array_unique($perms));
+        if ($id !== null) {
+            $this->permissionCache[$cacheKey] = $perms;
+        }
+        return $perms;
+    }
+
+    /**
+     * Single-rule permission check (grants + hierarchy + explicit '*' / '!'
+     * wildcards on grants). Does NOT consult the ACL — use allows()/can().
+     */
+    public function hasPermission(string $permission, ?array $user = null): bool
+    {
+        foreach ($this->permissions($user) as $granted) {
+            if ($granted === '*' || $granted === $permission) {
+                return true;
+            }
+            if (str_ends_with($granted, '.*')
+                && str_starts_with($permission, substr($granted, 0, -1))) {
+                return true;
+            }
+            if (str_starts_with($granted, '!') && $granted === '!' . $permission) {
+                return false; // explicit revocation wins over earlier grants
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Multi-rule check: true only when EVERY permission passes.
+     *
+     * @param string|string[] $permissions
+     */
+    public function hasAllPermissions(string|array $permissions, ?array $user = null, array $context = []): bool
+    {
+        foreach ((array) $permissions as $p) {
+            if (!$this->allows((string) $p, $user, $context)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Multi-rule check: true when AT LEAST ONE permission passes.
+     *
+     * @param string|string[] $permissions
+     */
+    public function hasAnyPermission(string|array $permissions, ?array $user = null, array $context = []): bool
+    {
+        foreach ((array) $permissions as $p) {
+            if ($this->allows((string) $p, $user, $context)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Whether the current (or given) user holds a role. Works purely off the
+     * user record — no authorizable provider required.
+     */
+    public function hasRole(string $role, ?array $user = null): bool
+    {
+        return in_array($role, $this->roles($user), true);
+    }
+
+    /**
+     * Holds at least one of the given roles.
+     *
+     * @param string|string[] $roles
+     */
+    public function anyRole(string|array $roles, ?array $user = null): bool
+    {
+        $held = $this->roles($user);
+        foreach ((array) $roles as $r) {
+            if (in_array((string) $r, $held, true)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Holds every given role.
+     *
+     * @param string|string[] $roles
+     */
+    public function allRoles(string|array $roles, ?array $user = null): bool
+    {
+        $held = $this->roles($user);
+        foreach ((array) $roles as $r) {
+            if (!in_array((string) $r, $held, true)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * The role hierarchy built from config['roles'].
+     */
+    public function hierarchy(): RoleHierarchy
+    {
+        return $this->hierarchy ??= new RoleHierarchy((array) $this->config['roles']);
+    }
+
+    /**
+     * Effective level of the current (or given) user in the hierarchy.
+     * Lower = more powerful; PHP_INT_MAX when no hierarchy is configured
+     * or the user has no known role.
+     */
+    public function level(?array $user = null): int
+    {
+        return $this->hierarchy()->bestLevel($this->roles($user));
+    }
+
+    /**
+     * Hierarchy guard: may the CURRENT user act upon the target user?
+     * Peers (equal level) and seniors are protected; requires at least one
+     * configured role on the actor.
+     */
+    public function canActOn(array|object|int|string $target, ?array $actor = null): bool
+    {
+        $actor ??= $this->user();
+        if ($actor === null) {
+            return false;
+        }
+
+        $targetUser = $this->resolveUserRecord($target);
+        if ($targetUser === null) {
+            return false;
+        }
+
+        // Never above yourself via ACL either: strict hierarchy comparison.
+        $hier  = $this->hierarchy();
+        $roles = $this->roles($actor);
+        if ($roles === []) {
+            return false;
+        }
+        return $hier->canActOn($roles, $this->roles($targetUser));
+    }
+
+    /**
+     * Full multi-rule authorization: direct/hierarchical permission grants
+     * OR an allow-winning ACL rule (deny rules always override plain
+     * grants when they match with higher priority).
+     *
+     * @param array $context free-form keys consumed by ACL scope matching
+     *                       (e.g. ['own' => true, 'section' => 'news']).
+     */
+    public function allows(string $permission, ?array $user = null, array $context = []): bool
+    {
+        $user ??= $this->user();
+        if ($user === null) {
+            return $this->acl()->isAllowed(null, $permission, [], $context);
+        }
+
+        $id      = $user[$this->config['id_column']] ?? null;
+        $roles   = $this->roles($user);
+        $granted = $this->hasPermission($permission, $user);
+
+        // ACL gets the final say when a rule matches (deny overrides grant,
+        // allow extends beyond grants).
+        $explain = $this->acl()->explain($id === null ? null : $id, $permission, $roles, $context);
+        if ($explain['via'] !== null) {
+            return $explain['allowed'];
+        }
+        return $granted;
+    }
+
+    /**
+     * Laravel-flavoured alias of allows().
+     */
+    public function can(string $permission, array $context = []): bool
+    {
+        return $this->allows($permission, null, $context);
+    }
+
+    /**
+     * Deny-first convenience: !allows().
+     */
+    public function cannot(string $permission, array $context = []): bool
+    {
+        return !$this->allows($permission, null, $context);
+    }
+
+    /**
+     * Throwing variant for controllers/middleware: raises AuthException
+     * instead of returning false.
+     */
+    public function authorize(string $permission, ?string $message = null, array $context = []): void
+    {
+        if (!$this->allows($permission, null, $context)) {
+            $this->fire(AuthEvents::DENIED, [
+                'id'         => $this->id(),
+                'permission' => $permission,
+                'context'    => $context,
+            ]);
+            throw new AuthException($message ?? 'Unauthorized: missing permission "' . $permission . '".');
+        }
+    }
+
+    /**
+     * Assemble the ACL: config['acl_rules'] + runtime rules + provider rows.
+     */
+    public function acl(): Acl
+    {
+        if ($this->acl !== null) {
+            return $this->acl;
+        }
+        $rules = (array) $this->config['acl_rules'];
+        if ($this->provider instanceof AuthorizableProviderInterface) {
+            foreach ($this->provider->aclRules() as $rule) {
+                $rules[] = $rule;
+            }
+        }
+        foreach ($this->runtimeAclRules as $rule) {
+            $rules[] = $rule;
+        }
+        return $this->acl = new Acl(
+            $rules,
+            (bool) $this->config['acl_default'],
+            function (string $group, int|string|null $userId): bool {
+                return $this->inGroup($userId, $group);
+            }
+        );
+    }
+
+    /** Lazily built hierarchical group tree (config['groups']). */
+    protected ?GroupTree $groupTree = null;
+
+    /**
+     * The configured group hierarchy (empty tree when none configured).
+     */
+    public function groups(): GroupTree
+    {
+        if ($this->groupTree === null) {
+            $g = $this->config['groups'] ?? [];
+            $this->groupTree = $g instanceof GroupTree ? $g : new GroupTree((array) $g);
+        }
+        return $this->groupTree;
+    }
+
+    /**
+     * Does the given user (id or record; null = current user) belong to the
+     * group? Subtree-aware: membership in any descendant node also counts.
+     */
+    public function inGroup(int|string|array|null $user, string $group): bool
+    {
+        if (is_array($user)) {
+            $user = $user[$this->config['id_column']] ?? null;
+        }
+        return $this->groups()->memberBelongs($user ?? $this->id(), $group);
+    }
+
+    /**
+     * All group paths the given user belongs to (ancestors included).
+     *
+     * @return string[]
+     */
+    public function userGroups(int|string|array|null $user = null): array
+    {
+        if (is_array($user)) {
+            $user = $user[$this->config['id_column']] ?? null;
+        }
+        return $this->groups()->groupsOf($user ?? $this->id());
+    }
+
+    /** @var array<int,array> Rules added at runtime (before first acl() call). */
+    protected array $runtimeAclRules = [];
+
+    /**
+     * Add one runtime ACL rule (useful in tests / dynamic contexts).
+     */
+    public function addAclRule(array $rule): static
+    {
+        $this->runtimeAclRules[] = $rule;
+        $this->acl = null; // force rebuild
+        return $this;
+    }
+
+    /**
+     * Replace the runtime ACL rules entirely.
+     *
+     * @param array<int,array> $rules
+     */
+    public function setAclRules(array $rules): static
+    {
+        $this->runtimeAclRules = array_values($rules);
+        $this->acl = null;
+        return $this;
+    }
+
+    /**
+     * Debug helper: why was $permission allowed/denied for the current user?
+     *
+     * @return array{matched: array, allowed: bool, via: ?array}
+     */
+    public function explain(string $permission, array $context = []): array
+    {
+        $user = $this->user();
+        $id   = $user[$this->config['id_column']] ?? null;
+        return $this->acl()->explain(
+            $id === null ? null : $id,
+            $permission,
+            $this->roles($user),
+            $context
+        );
+    }
+
+    /**
+     * Flush memoized roles/permissions/ACL (call after editing grants mid-request).
+     */
+    public function forgetAuthorizationCache(): static
+    {
+        $this->roleCache       = [];
+        $this->permissionCache = [];
+        $this->acl             = null;
+        $this->groupTree       = null;
+        return $this;
+    }
+
+    /**
+     * Accepts null | scalar | "a,b,c" | ["a","b"] into a clean string list.
+     *
+     * @return string[]
+     */
+    protected static function parseList(mixed $value): array
+    {
+        if ($value === null || $value === '' || $value === []) {
+            return [];
+        }
+        $items = is_array($value) ? $value : (preg_split('/[,\s]+/', (string) $value) ?: []);
+        $out   = [];
+        foreach ($items as $item) {
+            $item = trim((string) $item);
+            if ($item !== '') {
+                $out[] = $item;
+            }
+        }
+        return $out;
+    }
+
+    /**
+     * Normalize a target reference (record / id) into a fresh user record.
+     */
+    protected function resolveUserRecord(array|object|int|string $target): ?array
+    {
+        if (is_array($target) || is_object($target)) {
+            $record = (array) $target;
+            // Treat arrays lacking the id column as already-resolved records.
+            return $record;
+        }
+        $current = $this->user();
+        if ($current !== null && (string) ($current[$this->config['id_column']] ?? '') === (string) $target) {
+            return $current;
+        }
+        return $this->provider->retrieveById($target);
     }
 
     // ------------------------------------------------------------------

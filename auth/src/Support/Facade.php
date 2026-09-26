@@ -136,6 +136,109 @@ if (!class_exists('Kodhe\\Framework\\Auth\\Facade', false)) {
             self::guard()->clearFailedAttempts($identifier);
         }
 
+        // ---- Authorization (roles / permissions / hierarchy / ACL) ----
+
+        public static function roles(?array $user = null): array
+        {
+            return self::guard()->roles($user);
+        }
+
+        public static function role(?array $user = null): ?string
+        {
+            return self::guard()->role($user);
+        }
+
+        public static function permissions(?array $user = null): array
+        {
+            return self::guard()->permissions($user);
+        }
+
+        public static function hasPermission(string $permission, ?array $user = null): bool
+        {
+            return self::guard()->hasPermission($permission, $user);
+        }
+
+        public static function hasAllPermissions(string|array $permissions, ?array $user = null, array $context = []): bool
+        {
+            return self::guard()->hasAllPermissions($permissions, $user, $context);
+        }
+
+        public static function hasAnyPermission(string|array $permissions, ?array $user = null, array $context = []): bool
+        {
+            return self::guard()->hasAnyPermission($permissions, $user, $context);
+        }
+
+        public static function hasRole(string $role, ?array $user = null): bool
+        {
+            return self::guard()->hasRole($role, $user);
+        }
+
+        public static function anyRole(string|array $roles, ?array $user = null): bool
+        {
+            return self::guard()->anyRole($roles, $user);
+        }
+
+        public static function allRoles(string|array $roles, ?array $user = null): bool
+        {
+            return self::guard()->allRoles($roles, $user);
+        }
+
+        public static function allows(string $permission, ?array $user = null, array $context = []): bool
+        {
+            return self::guard()->allows($permission, $user, $context);
+        }
+
+        public static function can(string $permission, array $context = []): bool
+        {
+            return self::guard()->can($permission, $context);
+        }
+
+        public static function cannot(string $permission, array $context = []): bool
+        {
+            return self::guard()->cannot($permission, $context);
+        }
+
+        public static function authorize(string $permission, ?string $message = null, array $context = []): void
+        {
+            self::guard()->authorize($permission, $message, $context);
+        }
+
+        public static function canActOn(array|object|int|string $target, ?array $actor = null): bool
+        {
+            return self::guard()->canActOn($target, $actor);
+        }
+
+        public static function level(?array $user = null): int
+        {
+            return self::guard()->level($user);
+        }
+
+        public static function addAclRule(array $rule): void
+        {
+            self::guard()->addAclRule($rule);
+        }
+
+        public static function setAclRules(array $rules): void
+        {
+            self::guard()->setAclRules($rules);
+        }
+
+        public static function groups(): \Kodhe\Framework\Auth\GroupTree
+        {
+            return self::guard()->groups();
+        }
+
+        public static function inGroup(array|int|string|null $user, string $group): bool
+        {
+            return self::guard()->inGroup($user, $group);
+        }
+
+        /** @return string[] */
+        public static function userGroups(array|int|string|null $user = null): array
+        {
+            return self::guard()->userGroups($user);
+        }
+
         /**
          * Pass-through to the configured UserProvider (registration etc.).
          */

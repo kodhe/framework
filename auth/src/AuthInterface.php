@@ -108,4 +108,66 @@ interface AuthInterface
      * Reset the failed-attempt counter for the identifier.
      */
     public function clearFailedAttempts(string $identifier): void;
+
+    // ---- Authorization (roles / permissions / hierarchy / ACL) ----
+
+    /**
+     * Role names held by the current (or given) user record.
+     *
+     * @return string[]
+     */
+    public function roles(?array $user = null): array;
+
+    /**
+     * Primary role name, or null.
+     */
+    public function role(?array $user = null): ?string;
+
+    /**
+     * All effective permission names (direct grants + roles expanded via the
+     * hierarchy).
+     *
+     * @return string[]
+     */
+    public function permissions(?array $user = null): array;
+
+    /**
+     * Plain permission check against grants (no ACL consulted).
+     */
+    public function hasPermission(string $permission, ?array $user = null): bool;
+
+    /**
+     * Multi-rule check: every listed permission must pass.
+     */
+    public function hasAllPermissions(string|array $permissions, ?array $user = null, array $context = []): bool;
+
+    /**
+     * Multi-rule check: at least one listed permission must pass.
+     */
+    public function hasAnyPermission(string|array $permissions, ?array $user = null, array $context = []): bool;
+
+    public function hasRole(string $role, ?array $user = null): bool;
+
+    public function anyRole(string|array $roles, ?array $user = null): bool;
+
+    public function allRoles(string|array $roles, ?array $user = null): bool;
+
+    /**
+     * Full multi-rule authorization (grants + hierarchy + ACL rules).
+     */
+    public function allows(string $permission, ?array $user = null, array $context = []): bool;
+
+    public function can(string $permission, array $context = []): bool;
+
+    public function cannot(string $permission, array $context = []): bool;
+
+    /**
+     * Throwing variant of allows(): raises AuthException on denial.
+     */
+    public function authorize(string $permission, ?string $message = null, array $context = []): void;
+
+    /**
+     * Hierarchy guard: may the current user act upon the target user?
+     */
+    public function canActOn(array|object|int|string $target, ?array $actor = null): bool;
 }

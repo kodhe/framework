@@ -37,6 +37,9 @@ final class AuthEvents
     /** Email verified. payload: {id} */
     public const VERIFIED = 'auth.verified';
 
+    /** Fired by Auth::authorize() when a permission check fails. */
+    public const DENIED = 'auth.denied';
+
     private function __construct()
     {
         // Not instantiable — pure constant container.
