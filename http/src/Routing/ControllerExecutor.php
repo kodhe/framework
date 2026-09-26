@@ -154,21 +154,38 @@ class ControllerExecutor
         // Fallback ke 404 default
         throw NotFoundException::endpoint();
     }
-    
+
+    /**
+     * Normalisasi routing array agar selalu punya 'route' (RouteItem)
+     * bila '_route_item' tersedia. Mencegah BadRequestException di
+     * Router::execute() dan loop fallback berkepanjangan di
+     * executeWithModernRouter().
+     */
+    protected function normalizeRouting(array $routing): array
+    {
+        if (!isset($routing['route']) && isset($routing['_route_item']) && $routing['_route_item'] instanceof RouteItem) {
+            $routing['route'] = $routing['_route_item'];
+        }
+
+        return $routing;
+    }
+
     protected function executeModernController(array $routing): void
     {
+        $routing = $this->normalizeRouting($routing);
+
         // Priority: Jika ada modern router, gunakan itu
         if ($this->modernRouter && isset($routing['route'])) {
             $this->executeWithModernRouter($routing);
             return;
         }
-        
+
         // Fallback: Cek jika routing berasal dari route item
         if (isset($routing['_route_item']) && $routing['_route_item'] instanceof RouteItem) {
             $this->executeFromRouteItem($routing);
             return;
         }
-        
+
         // Fallback ke eksekusi controller langsung
         $this->executeModernControllerDirect($routing);
     }
@@ -195,6 +212,12 @@ class ControllerExecutor
                 $this->handleResponseFromResult($result);
             }
         } catch (\Exception $e) {
+            // Jangan telan HTTP exception (404/400/dst) — lempar agar
+            // ditangani error handler dan status code-nya tidak salah.
+            if ($e instanceof \Kodhe\Framework\Exceptions\Http\HttpException) {
+                throw $e;
+            }
+
             // Fallback to direct execution
             try {
                 $this->executeModernControllerDirect($routing);
@@ -358,6 +381,14 @@ class ControllerExecutor
      */
     protected function handleResponse(Response $response): void
     {
+        // Sinkronkan status yang sudah di-set via http_response_code()
+        // (mis. ControllerExecutor::handle404()) ke objek Response agar
+        // tidak tertimpa default 200 saat dikirim.
+        $code = http_response_code();
+        if ($response->getStatus() === 200 && is_int($code) && $code >= 100 && $code !== 200) {
+            $response->setStatus($code);
+        }
+
         // Update facade response jika ada
         if ($this->facade->has('response')) {
             $facadeResponse = $this->facade->get('response');
@@ -385,6 +416,16 @@ class ControllerExecutor
      */
     protected function handleResponseFromResult($result): void
     {
+        // Sinkronkan status yang sudah di-set via http_response_code()
+        // (mis. handle404()) ke facade Response agar tidak tertimpa 200
+        // saat response dikirim dari jalur hasil controller string.
+        if ($this->facade->has('response')) {
+            $code = http_response_code();
+            if (is_int($code) && $code >= 100 && $code !== 200) {
+                $this->facade->get('response')->setStatus($code);
+            }
+        }
+
         if (is_string($result) || is_numeric($result) || (is_object($result) && method_exists($result, '__toString'))) {
             // Legacy output handling
             if (isset($GLOBALS['OUT'])) {

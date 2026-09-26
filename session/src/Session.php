@@ -95,6 +95,12 @@ class Session implements SessionInterface
             return;
         }
 
+        // Normalize CI3-style "sess_*" config items into constructor params
+        // so the app's config.php values (e.g. sess_save_path) are honoured
+        // instead of silently falling back to php.ini defaults. Explicit
+        // keys passed via $params always win over the mapped ones.
+        $params = array_merge($this->ciConfigParams(), $params);
+
         // Determine driver
         $driver = $this->resolveDriver($params);
 
@@ -134,6 +140,46 @@ class Session implements SessionInterface
 
         $this->initialized = true;
         $this->log('info', "Session: Class initialized using '{$driver}' driver.");
+    }
+
+    /**
+     * Map CI3-style "sess_*" config items to SessionConfig keys.
+     *
+     * The framework instantiates Session without constructor arguments, so
+     * application configuration (config.php) must be picked up from the
+     * global config_item() helper. Only non-null values are mapped so that
+     * SessionConfig defaults remain for anything not configured.
+     *
+     * @return array<string, mixed>
+     */
+    private function ciConfigParams(): array
+    {
+        $map = [
+            'driver'                 => 'sess_driver',
+            'cookie_name'            => 'sess_cookie_name',
+            'expiration'             => 'sess_expiration',
+            'save_path'              => 'sess_save_path',
+            'match_ip'               => 'sess_match_ip',
+            'time_to_update'         => 'sess_time_to_update',
+            'regenerate_destroy'     => 'sess_regenerate_destroy',
+            'cookie_path'            => 'sess_cookie_path',
+            'cookie_domain'          => 'sess_cookie_domain',
+            'cookie_secure'          => 'sess_cookie_secure',
+            'cookie_httponly'        => 'sess_cookie_httponly',
+            'cookie_samesite'        => 'sess_cookie_samesite',
+            'sid_length'             => 'sess_sid_length',
+            'sid_bits_per_character' => 'sess_sid_bits_per_character',
+        ];
+
+        $params = [];
+        foreach ($map as $key => $item) {
+            $value = $this->configItem($item);
+            if ($value !== null && $value !== '') {
+                $params[$key] = $value;
+            }
+        }
+
+        return $params;
     }
 
     /**
@@ -222,7 +268,19 @@ class Session implements SessionInterface
         @ini_set('session.use_cookies', '1');
         @ini_set('session.use_only_cookies', '1');
 
-        @session_start();
+        // Own the session cookie name explicitly. If a previous native
+        // session_start() (e.g. started by middleware before this class was
+        // resolved) used a different name, PHP would keep writing under that
+        // stale name; re-issuing it here guarantees ci_session is used.
+        @session_name($cookieName);
+
+        @session_start([
+            'cookie_lifetime' => (int) $this->config->get('expiration'),
+            'cookie_path'     => (string) $this->config->get('cookie_path', '/'),
+            'cookie_domain'   => (string) $this->config->get('cookie_domain', ''),
+            'cookie_secure'   => (bool) $this->config->get('cookie_secure', false),
+            'cookie_httponly' => true,
+        ]);
 
         // Ensure cookie is sent
         if (isset($_COOKIE[$cookieName]) && $_COOKIE[$cookieName] === session_id()) {

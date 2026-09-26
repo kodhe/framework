@@ -629,6 +629,17 @@ class UnifiedRouter
                 $routing['fqcn'] = rtrim($routing['namespace'], '\\') . '\\' . $routing['class'];
             }
         }
+
+        // Tambahkan FQCN untuk tipe routing lain (mis. 'error' dari getErrorRouting)
+        // agar ControllerExecutor::handle404() bisa mengeksekusi controller 404
+        // via executeModernController(), bukan melempar NotFoundException mentah.
+        if ($type !== 'modern' && !empty($routing['class']) && empty($routing['fqcn'])) {
+            if (strpos($routing['class'], '\\') !== false) {
+                $routing['fqcn'] = $routing['class'];
+            } elseif (!empty($routing['namespace'])) {
+                $routing['fqcn'] = rtrim($routing['namespace'], '\\') . '\\' . $routing['class'];
+            }
+        }
         
         // Untuk legacy routing, tambahkan file path
         if ($type === 'legacy' && !empty($routing['class']) && empty($routing['file'])) {

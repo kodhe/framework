@@ -1,0 +1,19 @@
+{
+  "name": "karyakode/auth",
+  "description": "Session-based authentication component (guard + remember-me) for the Kodhe framework",
+  "type": "library",
+  "license": "MIT",
+  "require": {
+    "php": ">=8.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "Kodhe\\Framework\\Auth\\": "src/"
+    },
+    "files": [
+      "src/helpers.php"
+    ]
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true
+}
