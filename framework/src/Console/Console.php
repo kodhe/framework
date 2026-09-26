@@ -62,6 +62,7 @@ class Console
         $this->addCommand(new Commands\MakeCommand());
         $this->addCommand(new Commands\NewProjectCommand());
         $this->addCommand(new Commands\ServeCommand());
+        $this->addCommand(new Commands\MigrateCommand());
     }
 
     /**
