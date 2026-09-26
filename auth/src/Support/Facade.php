@@ -4,9 +4,15 @@ declare(strict_types=1);
 
 namespace Kodhe\Framework\Auth;
 
+// Note: this file lives in src/Support/, so a PSR-4-only autoloader would
+// look for it under the name Kodhe\Framework\Auth\Support\Facade and fail to
+// find the documented class Kodhe\Framework\Auth\Facade. The root composer.json
+// therefore includes "auth/src" in its classmap so the correct class is found;
+// the class_exists() guard below keeps things safe if both aliases are ever
+// autoloaded within one request.
 use Kodhe\Framework\Auth\Auth;
 
-if (!class_exists('Kodhe\\Framework\\Auth\\Facade')) {
+if (!class_exists('Kodhe\\Framework\\Auth\\Facade', false)) {
     /**
      * Static facade for the auth guard.
      *
@@ -73,6 +79,61 @@ if (!class_exists('Kodhe\\Framework\\Auth\\Facade')) {
         public static function hashPassword(string $password): string
         {
             return Auth::hashPassword($password);
+        }
+
+        public static function register(array $input): int|string
+        {
+            return self::guard()->register($input);
+        }
+
+        public static function changePassword(string $current, string $new): bool
+        {
+            return self::guard()->changePassword($current, $new);
+        }
+
+        public static function sendPasswordReset(string $identifierValue): ?string
+        {
+            return self::guard()->sendPasswordReset($identifierValue);
+        }
+
+        public static function resetPassword(string $identifierValue, string $token, string $newPassword): bool
+        {
+            return self::guard()->resetPassword($identifierValue, $token, $newPassword);
+        }
+
+        public static function requestVerification(string $identifierValue): ?string
+        {
+            return self::guard()->requestVerification($identifierValue);
+        }
+
+        public static function verifyEmail(string $identifierValue, string $token): bool
+        {
+            return self::guard()->verifyEmail($identifierValue, $token);
+        }
+
+        public static function isVerified(?array $user = null): bool
+        {
+            return self::guard()->isVerified($user);
+        }
+
+        public static function attempts(string $identifier): int
+        {
+            return self::guard()->attempts($identifier);
+        }
+
+        public static function retryAfter(string $identifier): int
+        {
+            return self::guard()->retryAfter($identifier);
+        }
+
+        public static function tooManyAttempts(string $identifier): bool
+        {
+            return self::guard()->tooManyAttempts($identifier);
+        }
+
+        public static function clearFailedAttempts(string $identifier): void
+        {
+            self::guard()->clearFailedAttempts($identifier);
         }
 
         /**

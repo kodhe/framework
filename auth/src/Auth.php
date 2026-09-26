@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Kodhe\Framework\Auth;
 
+use Kodhe\Framework\Auth\Contracts\AuthEventDispatcherInterface;
+use Kodhe\Framework\Auth\Contracts\RegisterableProviderInterface;
+use Kodhe\Framework\Auth\Contracts\UpdatableProviderInterface;
 use Kodhe\Framework\Auth\Contracts\UserProviderInterface;
 
 /**
@@ -19,6 +22,9 @@ use Kodhe\Framework\Auth\Contracts\UserProviderInterface;
  *  - "Remember me" issues a random token stored in a cookie; only its
  *    SHA-256 hash is persisted server side so a DB leak cannot be
  *    replayed as a cookie.
+ *  - Optional features (registration, password reset/change, email
+ *    verification, throttling, events) activate automatically when the
+ *    configured provider implements the matching optional contract.
  */
 class Auth implements AuthInterface
 {
@@ -39,6 +45,12 @@ class Auth implements AuthInterface
 
     /** @var bool Whether we already tried to resolve the user this request. */
     protected bool $resolved = false;
+
+    /** @var AuthEventDispatcherInterface|null Optional event bridge (hooks/PSR-14...). */
+    protected ?AuthEventDispatcherInterface $events = null;
+
+    /** @var callable|null Rate limiter: fn(string $key): int — returns recent-attempt count. */
+    protected $rateLimiter = null;
 
     public function __construct(?array $config = null, ?UserProviderInterface $provider = null)
     {
@@ -81,6 +93,13 @@ class Auth implements AuthInterface
             'algo'              => PASSWORD_BCRYPT,
             'options'           => ['cost' => 11],
             'hash_remember'     => true,                 // store sha256(token) server-side
+            'max_attempts'      => 5,                    // failed logins allowed per window (0 = no throttle)
+            'lockout_seconds'   => 900,                  // throttle window in seconds
+            'reset_ttl'         => 3600,                 // password-reset link lifetime (1 h)
+            'verify_ttl'        => 86400 * 3,            // email-verification link lifetime (3 d)
+            'verify_column'     => 'email_verified_at',  // non-null => verified
+            'register_auto_login' => false,              // log the user straight in after register()
+            'register_columns'  => [],                   // extra columns copied from input into the new record
         ];
     }
 
@@ -89,6 +108,11 @@ class Auth implements AuthInterface
      */
     public function attempt(string $identifier, string $password, bool $remember = false, array $extra = []): bool
     {
+        if ($this->tooManyAttempts($identifier)) {
+            $this->fire(AuthEvents::FAILED, ['identifier' => $identifier, 'reason' => 'throttled']);
+            return false;
+        }
+
         $user = $this->provider->retrieveByIdentifier(
             (string) $this->config['identifier_column'],
             $identifier,
@@ -102,12 +126,16 @@ class Auth implements AuthInterface
             // password_verify() returns instantly and the timing
             // equalization silently fails.
             password_verify($password, '$2y$11$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy');
+            $this->addFailedAttempt($identifier);
+            $this->fire(AuthEvents::FAILED, ['identifier' => $identifier, 'reason' => 'unknown_user']);
             return false;
         }
 
         $hash = (string) ($user[$this->config['password_column']] ?? '');
 
         if ($hash === '' || !password_verify($password, $hash)) {
+            $this->addFailedAttempt($identifier);
+            $this->fire(AuthEvents::FAILED, ['identifier' => $identifier, 'reason' => 'bad_password']);
             return false;
         }
 
@@ -116,7 +144,9 @@ class Auth implements AuthInterface
             $this->setPassword((int) $user[$this->config['id_column']], $password);
         }
 
+        $this->clearFailedAttempts($identifier);
         $this->login($user, $remember);
+        $this->fire(AuthEvents::LOGIN, ['user' => $user, 'remember' => $remember]);
         return true;
     }
 
@@ -142,6 +172,8 @@ class Auth implements AuthInterface
         if ($remember) {
             $this->issueRememberToken($user[$idKey] ?? null);
         }
+
+        $this->fire(AuthEvents::USER_LOGGED_IN, ['user' => $user]);
     }
 
     /**
@@ -174,6 +206,8 @@ class Auth implements AuthInterface
         $this->forgetRememberCookie();
         $this->user     = null;
         $this->resolved = true;
+
+        $this->fire(AuthEvents::LOGOUT, ['id' => $id]);
     }
 
     public function check(): bool
@@ -225,8 +259,359 @@ class Auth implements AuthInterface
     }
 
     // ------------------------------------------------------------------
+    // Registration / password management / email verification
+    // ------------------------------------------------------------------
+
+    /**
+     * Register a new user through a RegisterableProviderInterface.
+     *
+     * @param array $input Must contain the identifier column (e.g. "email")
+     *                     and the plain-text password column. Extra columns
+     *                     listed in config "register_columns" are copied.
+     * @return int|string  The new user's id.
+     * @throws AuthException When the provider cannot register, the account
+     *                       already exists, or the password is empty.
+     */
+    public function register(array $input): int|string
+    {
+        if (!$this->provider instanceof RegisterableProviderInterface) {
+            throw new AuthException(
+                'register() requires a provider implementing ' . RegisterableProviderInterface::class
+            );
+        }
+
+        $idCol  = (string) $this->config['identifier_column'];
+        $pwCol  = (string) $this->config['password_column'];
+        $plain  = (string) ($input[$pwCol] ?? '');
+
+        if (!is_array($input) || count($input) === 0) {
+            throw new AuthException('register(): input must be a non-empty array.');
+        }
+        if ($plain === '') {
+            throw new AuthException('register(): a non-empty "' . $pwCol . '" is required.');
+        }
+        if (($input[$idCol] ?? null) === null || (string) $input[$idCol] === '') {
+            throw new AuthException('register(): missing "' . $idCol . '" in input.');
+        }
+
+        if ($this->provider->hasIdentifier($idCol, (string) $input[$idCol])) {
+            throw new AuthException('register(): an account with that ' . $idCol . ' already exists.');
+        }
+
+        $attributes = [];
+        foreach ((array) $this->config['register_columns'] as $col) {
+            if (array_key_exists($col, $input)) {
+                $attributes[$col] = $input[$col];
+            }
+        }
+        $attributes[$idCol] = $input[$idCol];
+
+        $id = $this->provider->createUser($attributes, self::hashPassword($plain, $this->config['algo'], $this->config['options']));
+
+        if (!empty($this->config['register_auto_login'])) {
+            $user = $this->provider->retrieveById($id);
+            if ($user !== null) {
+                $this->login($user);
+            }
+        }
+
+        return $id;
+    }
+
+    /**
+     * Change the CURRENT user's password: old password must match.
+     */
+    public function changePassword(string $current, string $new): bool
+    {
+        $user = $this->user();
+        if ($user === null) {
+            throw new AuthException('changePassword(): no authenticated user.');
+        }
+
+        $record = $this->provider->retrieveById($user[$this->config['id_column']] ?? '');
+        $hash   = (string) (($record[$this->config['password_column']] ?? ''));
+        if ($record === null || $hash === '' || !password_verify($current, $hash)) {
+            return false;
+        }
+
+        $this->applyPassword((int) $user[$this->config['id_column']], $new);
+        return true;
+    }
+
+    /**
+     * Start a password-reset flow: generates a single-use token, stores only
+     * its hash (+ expiry) via the provider and returns the RAW token so the
+     * application can e-mail it inside a reset link. Returns null when the
+     * account does not exist — callers should show a generic message to
+     * avoid user enumeration.
+     */
+    public function sendPasswordReset(string $identifierValue): ?string
+    {
+        $user = $this->provider->retrieveByIdentifier((string) $this->config['identifier_column'], $identifierValue);
+        if (!is_array($user)) {
+            return null;
+        }
+
+        $token = bin2hex(random_bytes(32));
+        $id    = $user[$this->config['id_column']];
+        $ttl   = (int) $this->config['reset_ttl'];
+
+        $this->updateProviderColumns($id, [
+            'password_reset_hash'    => hash('sha256', $token),
+            'password_reset_expires' => time() + $ttl,
+        ]);
+
+        $this->fire(AuthEvents::PASSWORD_RESET_REQUESTED, ['email' => $identifierValue, 'token' => $token]);
+        return $token;
+    }
+
+    /**
+     * Complete a password reset with the raw token from the e-mail link.
+     */
+    public function resetPassword(string $identifierValue, string $token, string $newPassword): bool
+    {
+        $user = $this->provider->retrieveByIdentifier((string) $this->config['identifier_column'], $identifierValue);
+        if (!is_array($user) || $newPassword === '') {
+            return false;
+        }
+
+        $stored = (string) ($user['password_reset_hash'] ?? '');
+        $expires = (int) ($user['password_reset_expires'] ?? 0);
+
+        if ($stored === '' || $expires < time() || !hash_equals($stored, hash('sha256', $token))) {
+            $this->fire(AuthEvents::FAILED, ['identifier' => $identifierValue, 'reason' => 'bad_reset_token']);
+            return false;
+        }
+
+        $id = $user[$this->config['id_column']];
+        $this->applyPassword($id, $newPassword);
+        // Invalidate the used token.
+        $this->updateProviderColumns($id, ['password_reset_hash' => null, 'password_reset_expires' => null]);
+        // And force re-logins everywhere: revoking the remember token logs
+        // other sessions out on their next auto-login attempt.
+        $this->provider->updateRememberToken($id, null);
+
+        $this->fire(AuthEvents::PASSWORD_RESET, ['id' => $id]);
+        return true;
+    }
+
+    /**
+     * Issue an e-mail-verification token (raw value returned for the mail
+     * link; only its hash + expiry are stored). Null when unknown account.
+     */
+    public function requestVerification(string $identifierValue): ?string
+    {
+        $user = $this->provider->retrieveByIdentifier((string) $this->config['identifier_column'], $identifierValue);
+        if (!is_array($user)) {
+            return null;
+        }
+
+        $token = bin2hex(random_bytes(32));
+        $id    = $user[$this->config['id_column']];
+
+        $this->updateProviderColumns($id, [
+            'verification_hash'    => hash('sha256', $token),
+            'verification_expires' => time() + (int) $this->config['verify_ttl'],
+        ]);
+
+        $this->fire(AuthEvents::VERIFICATION_REQUESTED, ['email' => $identifierValue, 'token' => $token]);
+        return $token;
+    }
+
+    /**
+     * Verify an e-mail address using the token from the verification link.
+     */
+    public function verifyEmail(string $identifierValue, string $token): bool
+    {
+        $user = $this->provider->retrieveByIdentifier((string) $this->config['identifier_column'], $identifierValue);
+        if (!is_array($user)) {
+            return false;
+        }
+
+        $column  = (string) $this->config['verify_column'];
+        if (!empty($user[$column])) {
+            return true; // already verified
+        }
+
+        $stored  = (string) ($user['verification_hash'] ?? '');
+        $expires = (int) ($user['verification_expires'] ?? 0);
+
+        if ($stored === '' || $expires < time() || !hash_equals($stored, hash('sha256', $token))) {
+            $this->fire(AuthEvents::FAILED, ['identifier' => $identifierValue, 'reason' => 'bad_verification_token']);
+            return false;
+        }
+
+        $id = $user[$this->config['id_column']];
+        $this->updateProviderColumns($id, [
+            $column               => date('Y-m-d H:i:s'),
+            'verification_hash'    => null,
+            'verification_expires' => null,
+        ]);
+        $this->refreshCachedUser($id);
+
+        $this->fire(AuthEvents::VERIFIED, ['id' => $id]);
+        return true;
+    }
+
+    /**
+     * Whether the current (or given) user record has a verified e-mail.
+     */
+    public function isVerified(?array $user = null): bool
+    {
+        $user ??= $this->user();
+        if ($user === null) {
+            return false;
+        }
+        return !empty($user[(string) $this->config['verify_column']]);
+    }
+
+    // ------------------------------------------------------------------
+    // Throttling / events wiring
+    // ------------------------------------------------------------------
+
+    /**
+     * Failed-login attempts recorded for an identifier within the window.
+     */
+    public function attempts(string $identifier): int
+    {
+        $key = $this->throttleKey($identifier);
+        if ($this->rateLimiter !== null) {
+            return (int) ($this->rateLimiter)($key);
+        }
+        return (int) ($this->session?->userdata($key) ?? 0);
+    }
+
+    /**
+     * Seconds left before the identifier may attempt login again (0 = free).
+     */
+    public function retryAfter(string $identifier): int
+    {
+        if ((int) $this->config['max_attempts'] <= 0 || !$this->tooManyAttempts($identifier)) {
+            return 0;
+        }
+        $resetAt = (int) ($this->session?->userdata($this->throttleKey($identifier) . '_reset') ?? 0);
+        return max(0, $resetAt - time());
+    }
+
+    public function tooManyAttempts(string $identifier): bool
+    {
+        $max = (int) $this->config['max_attempts'];
+        if ($max <= 0) {
+            return false;
+        }
+        if ($this->attempts($identifier) < $max) {
+            return false;
+        }
+        // Lockout expired? Reset the counter lazily.
+        $resetAt = (int) ($this->session?->userdata($this->throttleKey($identifier) . '_reset') ?? 0);
+        if ($resetAt > 0 && $resetAt < time()) {
+            $this->clearFailedAttempts($identifier);
+            return false;
+        }
+        return true;
+    }
+
+    public function addFailedAttempt(string $identifier): void
+    {
+        $key = $this->throttleKey($identifier);
+        $n   = $this->attempts($identifier) + 1;
+
+        if ($this->rateLimiter !== null) {
+            // The external limiter owns counting; nothing else to do here.
+            return;
+        }
+        if ($this->session !== null) {
+            $this->session->set_userdata([
+                $key            => $n,
+                $key . '_reset' => time() + (int) $this->config['lockout_seconds'],
+            ]);
+        }
+    }
+
+    public function clearFailedAttempts(string $identifier): void
+    {
+        $key = $this->throttleKey($identifier);
+        $this->session?->unset_userdata([$key, $key . '_reset']);
+    }
+
+    /**
+     * Plug in an event dispatcher (hooks, PSR-14 adapter, ...).
+     */
+    public function setEventDispatcher(?AuthEventDispatcherInterface $dispatcher): static
+    {
+        $this->events = $dispatcher;
+        return $this;
+    }
+
+    /**
+     * Replace the default session-backed throttle counter with your own
+     * cache/DB limiter: fn(string $key): int returning recent attempts.
+     */
+    public function setRateLimiter(?callable $limiter): static
+    {
+        $this->rateLimiter = $limiter;
+        return $this;
+    }
+
+    // ------------------------------------------------------------------
     // Internals
     // ------------------------------------------------------------------
+
+    /**
+     * Emit an auth event through the optional dispatcher; never let a
+     * broken listener take down authentication itself.
+     */
+    protected function fire(string $event, array $payload = []): void
+    {
+        try {
+            $this->events?->dispatch($event, $payload);
+        } catch (\Throwable) {
+            // Swallow listener errors by design; wire logging in your app.
+        }
+    }
+
+    protected function throttleKey(string $identifier): string
+    {
+        // mb_* may be unavailable (no mbstring ext); fall back to ASCII strtolower.
+        $normalized = function_exists('mb_strtolower') ? mb_strtolower($identifier) : strtolower($identifier);
+        return 'auth_throttle_' . hash('sha256', $normalized);
+    }
+
+    /**
+     * Hash + persist a new password, requiring UpdatableProviderInterface.
+     */
+    protected function applyPassword(int|string $id, string $plain): void
+    {
+        $this->updateProviderColumns($id, [
+            (string) $this->config['password_column'] => self::hashPassword($plain, $this->config['algo'], $this->config['options']),
+        ]);
+        $this->refreshCachedUser($id);
+    }
+
+    protected function updateProviderColumns(int|string $id, array $columns): void
+    {
+        if (!$this->provider instanceof UpdatableProviderInterface) {
+            throw new AuthException(
+                'This feature requires a provider implementing ' . UpdatableProviderInterface::class
+            );
+        }
+        $this->provider->updateUser($id, $columns);
+    }
+
+    /**
+     * Keep the in-session copy of the user fresh after a storage update.
+     */
+    protected function refreshCachedUser(int|string $id): void
+    {
+        if ($this->id() == $id) {
+            $fresh = $this->provider->retrieveById($id);
+            if ($fresh !== null) {
+                unset($fresh[$this->config['password_column']]);
+                $this->setUser($fresh);
+                $this->session?->set_userdata([$this->config['session_key'] => ['id' => $id, 'attributes' => $fresh]]);
+            }
+        }
+    }
 
     /**
      * Resolve the logged-in user from session, falling back to remember-me.
@@ -243,6 +628,7 @@ class Auth implements AuthInterface
             $user = $this->provider->retrieveById($payload['id']);
             if ($user !== null) {
                 unset($user[$this->config['password_column']]); // never expose hashes via user()
+                $this->fire(AuthEvents::USER_RETRIEVED, ['user' => $user]);
                 return $user;
             }
             // Stale session (user deleted) — clean up.
