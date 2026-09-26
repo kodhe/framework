@@ -43,4 +43,69 @@ interface AuthInterface
      * A single attribute of the authenticated user, or null.
      */
     public function id(?string $key = null): mixed;
+
+    /**
+     * Register a new user (provider must implement RegisterableProviderInterface).
+     *
+     * @return int|string The new user's primary key.
+     * @throws AuthException On invalid input / duplicate account / unsupported provider.
+     */
+    public function register(array $input): int|string;
+
+    /**
+     * Change the current user's password after verifying the old one.
+     */
+    public function changePassword(string $current, string $new): bool;
+
+    /**
+     * Generate + persist a password-reset token; returns the RAW token for
+     * the e-mail link, or null when the account does not exist.
+     */
+    public function sendPasswordReset(string $identifierValue): ?string;
+
+    /**
+     * Complete a password reset using the raw token from the e-mail link.
+     */
+    public function resetPassword(string $identifierValue, string $token, string $newPassword): bool;
+
+    /**
+     * Generate + persist an email-verification token; returns the RAW token
+     * for the e-mail link, or null when the account does not exist.
+     */
+    public function requestVerification(string $identifierValue): ?string;
+
+    /**
+     * Mark an e-mail as verified using the token from the verification link.
+     */
+    public function verifyEmail(string $identifierValue, string $token): bool;
+
+    /**
+     * Whether the current (or given) user record has a verified e-mail.
+     */
+    public function isVerified(?array $user = null): bool;
+
+    /**
+     * Failed login attempts recorded for an identifier within the window.
+     */
+    public function attempts(string $identifier): int;
+
+    /**
+     * Seconds until the identifier may attempt login again (0 = free).
+     */
+    public function retryAfter(string $identifier): int;
+
+    /**
+     * Whether the identifier is currently locked out by throttling.
+     */
+    public function tooManyAttempts(string $identifier): bool;
+
+    /**
+     * Record one failed login attempt for the identifier.
+     */
+    public function addFailedAttempt(string $identifier): void;
+
+    /**
+     * Reset the failed-attempt counter for the identifier.
+     */
+    public function clearFailedAttempts(string $identifier): void;
 }
