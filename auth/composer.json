@@ -1,6 +1,6 @@
 {
   "name": "kodhe/auth",
-  "description": "Session-based authentication component (guard + remember-me) for the Kodhe framework",
+  "description": "Session-based authentication component for the Kodhe framework, with a native Socialite (OAuth) bridge for unified password + social login",
   "type": "library",
   "license": "MIT",
   "require": {
@@ -11,9 +11,13 @@
       "Kodhe\\Framework\\Auth\\": "src/"
     },
     "files": [
-      "src/helpers.php"
+      "src/helpers.php",
+      "src/SocialiteAuth.php"
     ]
   },
   "minimum-stability": "dev",
-  "prefer-stable": true
+  "prefer-stable": true,
+  "suggest": {
+    "kodhe/socialite": "Enables SocialiteAuth: unified login via Google, GitHub, Facebook, GitLab, LinkedIn and Twitter"
+  }
 }

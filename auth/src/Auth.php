@@ -298,6 +298,23 @@ class Auth implements AuthInterface
         return $this->provider;
     }
 
+    /**
+     * Read one resolved config value (used by companion components such as
+     * SocialiteAuth so they never duplicate the guard's defaults).
+     */
+    public function getConfigValue(string $key, mixed $default = null): mixed
+    {
+        return $this->config[$key] ?? $default;
+    }
+
+    /**
+     * Emit an auth event from outside the guard (companion components).
+     */
+    public function firePublic(string $event, array $payload = []): void
+    {
+        $this->fire($event, $payload);
+    }
+
     // ------------------------------------------------------------------
     // Registration / password management / email verification
     // ------------------------------------------------------------------
@@ -789,11 +806,22 @@ class Auth implements AuthInterface
     }
 
     /**
-     * The role hierarchy built from config['roles'].
+     * The role hierarchy built from config['roles'], merged with the role
+     * definitions reported by an AuthorizableProviderInterface (storage
+     * definitions win over config on conflict).
      */
     public function hierarchy(): RoleHierarchy
     {
-        return $this->hierarchy ??= new RoleHierarchy((array) $this->config['roles']);
+        if ($this->hierarchy !== null) {
+            return $this->hierarchy;
+        }
+        $roles = (array) $this->config['roles'];
+        if ($this->provider instanceof AuthorizableProviderInterface) {
+            foreach ($this->provider->allRoles() as $name => $def) {
+                $roles[(string) $name] = is_array($def) ? $def : (int) $def;
+            }
+        }
+        return $this->hierarchy = new RoleHierarchy($roles);
     }
 
     /**

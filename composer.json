@@ -1,109 +1,112 @@
 {
-  "description": "The Kodhe framework",
-  "name": "kodhe/framework",
-  "type": "project",
-  "homepage": "https://github.com/kodhe/kodhe",
-  "license": "MIT",
-  "support": {
-    "forum": "https://github.com/kodhe/kodhe/issues",
-    "wiki": "https://github.com/kodhe/kodhe/wiki",
-    "slack": "https://kodhechat.slack.com",
-    "source": "https://github.com/kodhe/kodhe"
-  },
-  "require": {
-    "php": ">=8.1",
-    "paragonie/random_compat": "^9.99",
-    "eftec/bladeone": "^4.19"
-  },
-  "suggest": {
-    "paragonie/random_compat": "Provides better randomness in PHP 5.x",
-    "ext-apc": "APC cache driver",
-    "ext-memcached": "Memcached cache/session driver",
-    "ext-redis": "Redis cache/session driver",
-    "ext-openssl": "Required for encryption libraries",
-    "ext-hash": "Required for encryption libraries"
-  },
-  "scripts": {
-    "test:coverage": [
-      "@putenv XDEBUG_MODE=coverage",
-      "phpunit --color=always --coverage-text --configuration tests/travis/sqlite.phpunit.xml"
-    ],
-    "test": "phpunit --colors=always",
-    "lint": "find . -name '*.php' -not -path './vendor/*' -exec php -l {} \\;",
-    "post-install-cmd": [
-      "sed -i s/name{0}/name[0]/ vendor/mikey179/vfsstream/src/main/php/org/bovigo/vfs/vfsStream.php"
-    ],
-    "post-update-cmd": [
-      "sed -i s/name{0}/name[0]/ vendor/mikey179/vfsstream/src/main/php/org/bovigo/vfs/vfsStream.php"
-    ]
-  },
-  "require-dev": {
-    "mikey179/vfsstream": "1.6.*",
-    "phpunit/phpunit": "^9.0|^10.0"
-  },
-  "autoload": {
-    "psr-4": {
-      "Kodhe\\Framework\\": "framework/src/",
-      "Kodhe\\Framework\\Routing\\": "routing/src/",
-      "Kodhe\\Framework\\Database\\": "database/src/",
-      "Kodhe\\Framework\\Http\\": "http/src/",
-      "Kodhe\\Framework\\Session\\": "session/src/",
-      "Kodhe\\Framework\\Cache\\": "cache/src/",
-      "Kodhe\\Framework\\Email\\": "email/src/",
-      "Kodhe\\Framework\\Encryption\\": "encryption/src/",
-      "Kodhe\\Framework\\Encrypt\\": "encrypt/src/",
-      "Kodhe\\Framework\\Validation\\": "validation/src/",
-      "Kodhe\\Framework\\Upload\\": "upload/src/",
-      "Kodhe\\Framework\\Image\\": "image/src/",
-      "Kodhe\\Framework\\Pagination\\": "pagination/src/",
-      "Kodhe\\Framework\\Parser\\": "parser/",
-      "Kodhe\\Framework\\Profiler\\": "profiler/src/",
-      "Kodhe\\Framework\\Migration\\": "migration/src/",
-      "Kodhe\\Framework\\Cart\\": "cart/src/",
-      "Kodhe\\Framework\\Calendar\\": "calendar/src/",
-      "Kodhe\\Framework\\Agent\\": "agent/src/",
-      "Kodhe\\Framework\\Ftp\\": "ftp/src/",
-      "Kodhe\\Framework\\Javascript\\": "javascript/src/",
-      "Kodhe\\Framework\\Table\\": "table/src/",
-      "Kodhe\\Framework\\Test\\": "test/src/",
-      "Kodhe\\Framework\\Trackback\\": "trackback/src/",
-      "Kodhe\\Framework\\Typography\\": "typography/src/",
-      "Kodhe\\Framework\\Xmlrpc\\": "xmlrpc/src/",
-      "Kodhe\\Framework\\Xmlrpcs\\": "xmlrpcs/src/",
-      "Kodhe\\Framework\\Zip\\": "zip/src/",
-      "Kodhe\\Framework\\Driver\\": "driver/src/",
-      "Kodhe\\Framework\\View\\": "view/src/",
-      "Kodhe\\Framework\\Auth\\": "auth/src/"
+    "description": "The Kodhe framework",
+    "name": "kodhe/framework",
+    "type": "project",
+    "homepage": "https://github.com/kodhe/kodhe",
+    "license": "MIT",
+    "support": {
+        "forum": "https://github.com/kodhe/kodhe/issues",
+        "wiki": "https://github.com/kodhe/kodhe/wiki",
+        "slack": "https://kodhechat.slack.com",
+        "source": "https://github.com/kodhe/kodhe"
     },
-    "classmap": [
-      "auth/src"
-    ],
-    "files": [
-      "framework/src/Support/app_path.php",
-      "framework/src/Support/Legacy/common.php",
-      "framework/src/Support/Helpers.php",
-      "http/src/helpers/url.php",
-      "http/src/helpers/routing.php",
-      "session/src/helpers.php",
-      "view/src/helpers/template.php",
-      "view/src/helpers/template_asset.php",
-      "validation/src/helpers/form.php",
-      "auth/src/helpers.php"
-    ]
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "Kodhe\\Framework\\Tests\\": "framework/tests/",
-      "Kodhe\\Framework\\Http\\Tests\\": "http/tests/",
-      "Kodhe\\Framework\\Email\\Tests\\": "email/tests/",
-      "Kodhe\\Framework\\Encryption\\Tests\\": "encryption/tests/",
-      "Kodhe\\Framework\\Validation\\Tests\\": "validation/tests/",
-      "Kodhe\\Framework\\Cache\\Tests\\": "cache/tests/",
-      "Kodhe\\Framework\\Parser\\Tests\\": "parser/tests/",
-      "Kodhe\\Framework\\Cart\\Tests\\": "cart/tests/",
-      "Kodhe\\Framework\\Agent\\Tests\\": "agent/tests/"
-    }
-  },
-  "minimum-stability": "dev",
-  "prefer-stable": true
+    "require": {
+        "php": ">=8.1",
+        "paragonie/random_compat": "^9.99",
+        "eftec/bladeone": "^4.19"
+    },
+    "suggest": {
+        "paragonie/random_compat": "Provides better randomness in PHP 5.x",
+        "ext-apc": "APC cache driver",
+        "ext-memcached": "Memcached cache/session driver",
+        "ext-redis": "Redis cache/session driver",
+        "ext-openssl": "Required for encryption libraries",
+        "ext-hash": "Required for encryption libraries",
+        "kodhe/socialite": "Native OAuth social login (Google, GitHub, Facebook, ...) unified with kodhe/auth via SocialiteAuth"
+    },
+    "scripts": {
+        "test:coverage": [
+            "@putenv XDEBUG_MODE=coverage",
+            "phpunit --color=always --coverage-text --configuration tests/travis/sqlite.phpunit.xml"
+        ],
+        "test": "phpunit --colors=always",
+        "lint": "find . -name '*.php' -not -path './vendor/*' -exec php -l {} \\;",
+        "post-install-cmd": [
+            "sed -i s/name{0}/name[0]/ vendor/mikey179/vfsstream/src/main/php/org/bovigo/vfs/vfsStream.php"
+        ],
+        "post-update-cmd": [
+            "sed -i s/name{0}/name[0]/ vendor/mikey179/vfsstream/src/main/php/org/bovigo/vfs/vfsStream.php"
+        ]
+    },
+    "require-dev": {
+        "mikey179/vfsstream": "1.6.*",
+        "phpunit/phpunit": "^9.0|^10.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Kodhe\\Framework\\": "framework/src/",
+            "Kodhe\\Framework\\Routing\\": "routing/src/",
+            "Kodhe\\Framework\\Database\\": "database/src/",
+            "Kodhe\\Framework\\Http\\": "http/src/",
+            "Kodhe\\Framework\\Session\\": "session/src/",
+            "Kodhe\\Framework\\Cache\\": "cache/src/",
+            "Kodhe\\Framework\\Email\\": "email/src/",
+            "Kodhe\\Framework\\Encryption\\": "encryption/src/",
+            "Kodhe\\Framework\\Encrypt\\": "encrypt/src/",
+            "Kodhe\\Framework\\Validation\\": "validation/src/",
+            "Kodhe\\Framework\\Upload\\": "upload/src/",
+            "Kodhe\\Framework\\Image\\": "image/src/",
+            "Kodhe\\Framework\\Pagination\\": "pagination/src/",
+            "Kodhe\\Framework\\Parser\\": "parser/",
+            "Kodhe\\Framework\\Profiler\\": "profiler/src/",
+            "Kodhe\\Framework\\Migration\\": "migration/src/",
+            "Kodhe\\Framework\\Cart\\": "cart/src/",
+            "Kodhe\\Framework\\Calendar\\": "calendar/src/",
+            "Kodhe\\Framework\\Agent\\": "agent/src/",
+            "Kodhe\\Framework\\Ftp\\": "ftp/src/",
+            "Kodhe\\Framework\\Javascript\\": "javascript/src/",
+            "Kodhe\\Framework\\Table\\": "table/src/",
+            "Kodhe\\Framework\\Test\\": "test/src/",
+            "Kodhe\\Framework\\Trackback\\": "trackback/src/",
+            "Kodhe\\Framework\\Typography\\": "typography/src/",
+            "Kodhe\\Framework\\Xmlrpc\\": "xmlrpc/src/",
+            "Kodhe\\Framework\\Xmlrpcs\\": "xmlrpcs/src/",
+            "Kodhe\\Framework\\Zip\\": "zip/src/",
+            "Kodhe\\Framework\\Driver\\": "driver/src/",
+            "Kodhe\\Framework\\View\\": "view/src/",
+            "Kodhe\\Framework\\Auth\\": "auth/src/",
+            "Kodhe\\Framework\\Socialite\\": "socialite/src/"
+        },
+        "classmap": [
+            "auth/src"
+        ],
+        "files": [
+            "framework/src/Support/app_path.php",
+            "framework/src/Support/Legacy/common.php",
+            "framework/src/Support/Helpers.php",
+            "http/src/helpers/url.php",
+            "http/src/helpers/routing.php",
+            "session/src/helpers.php",
+            "view/src/helpers/template.php",
+            "view/src/helpers/template_asset.php",
+            "validation/src/helpers/form.php",
+            "auth/src/helpers.php",
+            "socialite/src/helpers.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Kodhe\\Framework\\Tests\\": "framework/tests/",
+            "Kodhe\\Framework\\Http\\Tests\\": "http/tests/",
+            "Kodhe\\Framework\\Email\\Tests\\": "email/tests/",
+            "Kodhe\\Framework\\Encryption\\Tests\\": "encryption/tests/",
+            "Kodhe\\Framework\\Validation\\Tests\\": "validation/tests/",
+            "Kodhe\\Framework\\Cache\\Tests\\": "cache/tests/",
+            "Kodhe\\Framework\\Parser\\Tests\\": "parser/tests/",
+            "Kodhe\\Framework\\Cart\\Tests\\": "cart/tests/",
+            "Kodhe\\Framework\\Agent\\Tests\\": "agent/tests/"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }

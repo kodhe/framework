@@ -37,6 +37,15 @@ final class AuthEvents
     /** Email verified. payload: {id} */
     public const VERIFIED = 'auth.verified';
 
+    /** A social (OAuth) login succeeded. payload: {user, provider, social_id, created, linked} */
+    public const SOCIAL_LOGIN = 'auth.social_login';
+
+    /** Fired when a social identity is linked to an existing account. */
+    public const SOCIAL_LINK = 'auth.social_link';
+
+    /** Fired when a social identity is detached (settings page). */
+    public const SOCIAL_DISCONNECT = 'auth.social_disconnect';
+
     /** Fired by Auth::authorize() when a permission check fails. */
     public const DENIED = 'auth.denied';
 

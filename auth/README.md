@@ -214,18 +214,70 @@ $auth = new \Kodhe\Framework\Auth\Auth(['provider' => FakeProvider::class]);
   reveal whether the account exists.
 - The deletion variant of the remember cookie sets the `secure` flag over HTTPS.
 
+## Social Login (Auth <-> Socialite integration)
+
+Password login and social login are ONE system: `SocialiteAuth` wraps the
+native `kodhe/socialite` component and pipes every social identity through
+this very guard — same session payload, same remember-me tokens, same roles /
+permissions / ACL stack.
+
+```php
+// classic channel
+auth()->attempt('budi@example.com', $password);
+
+// social channel (helper from auth/src/helpers.php)
+social_auth()->redirect('google');            // step 1: bounce to provider
+$user = social_auth()->login('google');       // step 2 (callback): find/link/create + log in
+header('Location: ' . social_auth()->successUrl());   // intended URL wins over config
+```
+
+Resolution order on callback: linked `<provider>:<id>` ref -> same verified
+e-mail (auto-link, no duplicate accounts) -> auto-registration with a random
+password (claimable later via password reset). Extras:
+
+| API | Purpose |
+|---|---|
+| `handle($provider, 'start'\|'callback', $opts)` | one entry point for both endpoints; always returns a `RedirectResponse` |
+| `connect('google')` / `disconnect('google')` | link/unlink a social identity to the LOGGED-IN account (nonce-protected against cross-account hijack; refuses to remove your last login channel) |
+| `linkedProviders()` / `isLinked()` | profile-page helpers reading the `social_accounts` column |
+| `accessTokenPayload('google')` | raw OAuth token payload of the current callback (store refresh tokens) |
+| `storeTokens('google')` / `storedTokens()` / `accessTokenFor('google')` | **token vault**: OAuth tokens are saved automatically on every social login into a `social_tokens` column (`ALTER TABLE users ADD COLUMN social_tokens TEXT NULL;`) and `accessTokenFor()` returns a usable token, renewing it transparently via the stored refresh token when expired. Disable with `'store_tokens' => false`; `disconnect()` clears the provider's tokens. |
+| `rememberIntended('/checkout')` | post-login destination override, consumed once |
+
+Events: `AuthEvents::SOCIAL_LOGIN`, `SOCIAL_LINK`, `SOCIAL_DISCONNECT` fire
+alongside the shared `USER_LOGGED_IN`, so listeners can distinguish channels.
+
+Ready-made routes (framework-agnostic table, mountable on any dispatcher):
+
+```php
+foreach (require __DIR__ . '/vendor/kodhe/auth/routes/socialite.php' as $route) {
+    // GET /auth/socialite/{provider}          -> start
+    // GET /auth/socialite/{provider}/connect  -> link-to-profile flow
+    // GET /auth/socialite/{provider}/callback -> complete login
+}
+```
+
+Configuration lives in `config/socialite_auth.php` (column names,
+`register_new_users`, `link_by_email`, `require_verified_email_for_link`,
+`redirect_after_login`, `throw_on_error`, ...). Credentials themselves stay
+in `config/socialite.php`. Add the link column first:
+`ALTER TABLE users ADD COLUMN social_accounts TEXT NULL;`
+
 ## Project Structure
 
 ```
 auth/
 ├── composer.json
 ├── README.md
+├── routes/
+│   └── socialite.php                     # ready-mounted social login endpoints
 └── src/
     ├── Auth.php                          # the session guard (+ register/reset/verify/throttle)
     ├── AuthInterface.php                 # guard contract
     ├── AuthEvents.php                    # event-name constants emitted by the guard
     ├── AuthException.php                 # feature/config errors (unsupported provider etc.)
-    ├── helpers.php                       # global auth() helper
+    ├── SocialiteAuth.php                 # unified password+social login bridge
+    ├── helpers.php                       # global auth() + social_auth() helpers
     ├── Contracts/
     │   ├── UserProviderInterface.php     # storage bridge to implement
     │   ├── RegisterableProviderInterface.php  # optional: create users
