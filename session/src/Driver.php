@@ -67,32 +67,41 @@ abstract class Driver implements SessionHandlerInterface {
 	{
 		$this->_config =& $params;
 
-		if (is_php('7'))
-		{
-			$this->_success = TRUE;
-			$this->_failure = FALSE;
-		}
-		else
-		{
-			$this->_success = 0;
-			$this->_failure = -1;
-		}
+		// PHP >= 8.1 is required by this package, so the legacy PHP 5
+		// return-value workaround (_success = 0 / _failure = -1) was removed:
+		// userspace session handlers must return booleans.
+		$this->_success = TRUE;
+		$this->_failure = FALSE;
 	}
 
 	// ------------------------------------------------------------------------
 
 	/**
-	 * PHP 5.x validate ID
+	 * Validate a cookie-supplied session ID
 	 *
-	 * Enforces session.use_strict_mode
+	 * Enforces session.use_strict_mode by checking the ID against the configured
+	 * SID pattern. The previous implementation called validateSessionId(),
+	 * which for the files driver builds the filename from $this->file_path -
+	 * still NULL at open() time - so every existing session failed validation
+	 * and login state was wiped on each request.
 	 *
 	 * @return	void
 	 */
 	public function php5_validate_id()
 	{
-		if (isset($_COOKIE[$this->_config['cookie_name']]) && ! $this->validateSessionId($_COOKIE[$this->_config['cookie_name']]))
+		$cookie_name = $this->_config['cookie_name'];
+
+		if ( ! isset($_COOKIE[$cookie_name]))
 		{
-			unset($_COOKIE[$this->_config['cookie_name']]);
+			return;
+		}
+
+		$sid = $_COOKIE[$cookie_name];
+		$regexp = isset($this->_config['_sid_regexp']) ? $this->_config['_sid_regexp'] : NULL;
+
+		if ( ! is_string($sid) OR $regexp === NULL OR ! preg_match('#\A'.$regexp.'\z#', $sid))
+		{
+			unset($_COOKIE[$cookie_name]);
 		}
 	}
 
@@ -108,14 +117,20 @@ abstract class Driver implements SessionHandlerInterface {
 	 */
 	protected function _cookie_destroy()
 	{
+		// The array API requires PHP >= 7.3 (package minimum is 8.1) and it
+		// is the only way to pass the SameSite attribute, which browsers now
+		// default to Lax when omitted.
 		return setcookie(
 			$this->_config['cookie_name'],
 			'',
-			1,
-			$this->_config['cookie_path'],
-			$this->_config['cookie_domain'],
-			$this->_config['cookie_secure'],
-			TRUE
+			array(
+				'expires' => 1,
+				'path' => $this->_config['cookie_path'],
+				'domain' => $this->_config['cookie_domain'],
+				'secure' => $this->_config['cookie_secure'],
+				'httponly' => TRUE,
+				'samesite' => $this->_config['cookie_samesite'] ?? 'Lax',
+			)
 		);
 	}
 

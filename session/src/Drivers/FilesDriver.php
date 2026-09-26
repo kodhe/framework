@@ -79,8 +79,20 @@ class FilesDriver extends Driver
      */
     public function open(string $save_path, string $name): bool
     {
+        // The files driver MUST store sessions in its own configured directory.
+        // PHP passes the *effective* ini save_path to open(); when it differs
+        // from our configured one (e.g. an empty sess_save_path fell back to a
+        // php.ini value that changed afterwards), align the ini setting so
+        // read()/write() and gc() all operate on the same directory. Without
+        // this, data written under one path is never found under the other and
+        // sessions silently fail to persist.
+        if ($this->_config['save_path'] !== '' && rtrim($this->_config['save_path'], '/\\') !== rtrim($save_path, '/\\')) {
+            $save_path = rtrim($this->_config['save_path'], '/\\');
+            @ini_set('session.save_path', $save_path);
+        }
+
         if (!is_dir($save_path)) {
-            if (!mkdir($save_path, 0700, true)) {
+            if (!@mkdir($save_path, 0700, true)) {
                 log_message('error', "Session: Configured save path '" . $save_path . "' cannot be created.");
                 return false;
             }

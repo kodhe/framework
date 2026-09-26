@@ -35,14 +35,19 @@ if (!class_exists('Kodhe\\Framework\\Auth\\Facade')) {
             self::$guard = $guard;
         }
 
-        public static function attempt(string $identifier, string $password, bool $remember = false): bool
+        public static function attempt(string $identifier, string $password, bool $remember = false, array $extra = []): bool
         {
-            return self::guard()->attempt($identifier, $password, $remember);
+            return self::guard()->attempt($identifier, $password, $remember, $extra);
         }
 
         public static function login(array|object $user, bool $remember = false): void
         {
             self::guard()->login($user, $remember);
+        }
+
+        public static function setUser(array|object|null $user): void
+        {
+            self::guard()->setUser($user);
         }
 
         public static function logout(bool $destroySession = true): void

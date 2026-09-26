@@ -1,5 +1,5 @@
 {
-  "name": "karyakode/auth",
+  "name": "kodhe/auth",
   "description": "Session-based authentication component (guard + remember-me) for the Kodhe framework",
   "type": "library",
   "license": "MIT",

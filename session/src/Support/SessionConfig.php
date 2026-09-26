@@ -45,7 +45,38 @@ class SessionConfig
     public function __construct(array $config = [])
     {
         $this->config = array_merge(self::DEFAULTS, $config);
+
+        // CI3 semantics: "sess_expiration = 0" means "until browser close".
+        // Keep the raw value available and use a positive placeholder for
+        // validation so the session can still be started.
+        if (isset($this->config['expiration']) && (int) $this->config['expiration'] === 0) {
+            $this->originalExpiration = 0;
+            $this->config['expiration'] = 60 * 60 * 24 * 365;
+        }
+
         $this->validate();
+    }
+
+    /**
+     * @var int|null Raw expiration before normalization (0 = until close)
+     */
+    private ?int $originalExpiration = null;
+
+    /**
+     * Get the effective cookie lifetime in seconds.
+     *
+     * Returns 0 when expiration was configured as 0 (browser-session
+     * cookie), otherwise the normalized positive lifetime.
+     *
+     * @return int
+     */
+    public function getCookieLifetime(): int
+    {
+        if ($this->originalExpiration === 0) {
+            return 0;
+        }
+
+        return (int) ($this->config['cookie_lifetime'] ?? $this->config['expiration']);
     }
 
     /**

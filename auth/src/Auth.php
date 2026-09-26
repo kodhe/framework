@@ -87,17 +87,21 @@ class Auth implements AuthInterface
     /**
      * Attempt login with identifier + plain password.
      */
-    public function attempt(string $identifier, string $password, bool $remember = false): bool
+    public function attempt(string $identifier, string $password, bool $remember = false, array $extra = []): bool
     {
         $user = $this->provider->retrieveByIdentifier(
             (string) $this->config['identifier_column'],
-            $identifier
+            $identifier,
+            $extra
         );
 
         if (!is_array($user)) {
             // Equalize timing with the verify() branch below to reduce
-            // user-enumeration through response-time probing.
-            password_verify($password, '$2y$11$invalidinvalidinvalidinvalidinvalidinvalidinvalidinva');
+            // user-enumeration through response-time probing. The dummy
+            // hash must be a syntactically valid bcrypt digest, otherwise
+            // password_verify() returns instantly and the timing
+            // equalization silently fails.
+            password_verify($password, '$2y$11$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy');
             return false;
         }
 
@@ -138,6 +142,16 @@ class Auth implements AuthInterface
         if ($remember) {
             $this->issueRememberToken($user[$idKey] ?? null);
         }
+    }
+
+    /**
+     * Refresh the cached user for the current request without touching
+     * storage (useful after the application updates the user record).
+     */
+    public function setUser(array|object|null $user): void
+    {
+        $this->user     = $user === null ? null : array_diff_key((array) $user, [$this->config['password_column'] => null]);
+        $this->resolved = true;
     }
 
     /**
@@ -228,11 +242,19 @@ class Auth implements AuthInterface
             // Re-fetch from storage so revoked/changed users are honoured.
             $user = $this->provider->retrieveById($payload['id']);
             if ($user !== null) {
+                unset($user[$this->config['password_column']]); // never expose hashes via user()
                 return $user;
             }
             // Stale session (user deleted) — clean up.
             $this->session?->unset_userdata($this->config['session_key']);
             return null;
+        }
+
+        // No (valid) session payload: a remember-me cookie may still log in.
+        // Drop any stale payload first so login() re-seeds the session and
+        // subsequent requests don't short-circuit on the old id.
+        if ($this->session !== null) {
+            $this->session->unset_userdata($this->config['session_key']);
         }
 
         return $this->loginViaRememberCookie();
@@ -250,11 +272,18 @@ class Auth implements AuthInterface
         }
 
         [$id, $token] = array_pad(explode(':', $raw, 2), 2, null);
-        if ($id === null || $token === null) {
+        if ($id === null || $token === null || $id === '' || $token === '') {
             return null;
         }
 
-        $user = $this->provider->retrieveById($id);
+        // Only accept well-formed ids/tokens: the id is looked up in storage
+        // (keep it numeric-safe) and the token is a 64-char hex string.
+        if (!preg_match('/^\d{1,20}$/', (string) $id) || !preg_match('/^[a-f0-9]{64}$/', $token)) {
+            $this->forgetRememberCookie();
+            return null;
+        }
+
+        $user = $this->provider->retrieveById((int) $id);
         if ($user === null) {
             $this->forgetRememberCookie();
             return null;
@@ -270,7 +299,8 @@ class Auth implements AuthInterface
         }
 
         // Rotate the token on every auto-login (single-use tokens).
-        $this->issueRememberToken($id);
+        $this->issueRememberToken((int) $id);
+        unset($user[$this->config['password_column']]); // never keep hashes in memory/session
         $this->login($user, false);
         return $user;
     }
@@ -307,11 +337,12 @@ class Auth implements AuthInterface
                 'path'     => '/',
                 'httponly' => true,
                 'samesite' => 'Lax',
+                'secure'   => $this->runningOverHttps(),
             ]);
         }
     }
 
-    protected function setPassword(int $id, string $plain): void
+    protected function setPassword(int|string $id, string $plain): void
     {
         // Best-effort transparent rehash; providers may ignore if unsupported.
         try {

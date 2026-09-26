@@ -83,6 +83,14 @@ class Security
 	protected $_csrf_cookie_name =	'ci_csrf_token';
 
 	/**
+	 * BUG FIX (CSRF): shared instance agar semua `new Security()` memakai
+	 * hash token yang sama; lihat komentar di __construct().
+	 *
+	 * @var	self|null
+	 */
+	protected static $kodheShared = NULL;
+
+	/**
 	 * List of never allowed strings
 	 *
 	 * @var	array
@@ -126,6 +134,26 @@ class Security
 	 */
     public function __construct()
     {
+        // BUG FIX: instance Security harus bersifat shared (singleton).
+        // Sebelumnya setiap `new Security()` menghasilkan hash CSRF baru,
+        // sehingga token yang dirender ke form (instance A) tidak pernah
+        // cocok dengan cookie yang di-set instance B saat verifikasi POST
+        // (login selalu 403 "The action you have requested is not allowed").
+        // CI3 menghindari ini lewat load_class(); Kodhe menirunya lewat
+        // registry statis di bawah — panggilan konstruktor berikutnya cukup
+        // membaca ulang properti dari instance pertama (konstruktor PHP tidak
+        // bisa mengembalikan objek lain, jadi kita short-circuit init-nya).
+        if (self::$kodheShared !== NULL)
+        {
+            $shared              = self::$kodheShared;
+            $this->_csrf_hash    = $shared->_csrf_hash;
+            $this->_csrf_expire  = $shared->_csrf_expire;
+            $this->_csrf_token_name  = $shared->_csrf_token_name;
+            $this->_csrf_cookie_name = $shared->_csrf_cookie_name;
+            $this->charset       = $shared->charset;
+            return;
+        }
+
         // Is CSRF protection enabled?
         if (config_item('csrf_protection'))
         {
@@ -142,6 +170,8 @@ class Security
         }
 
         $this->charset = strtoupper(config_item('charset'));
+
+        self::$kodheShared = $this;
 
         log_message('info', 'Security Class Initialized');
     }
