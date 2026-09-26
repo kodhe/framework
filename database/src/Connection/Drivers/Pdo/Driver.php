@@ -117,7 +117,45 @@ class Driver extends \Kodhe\Framework\Database\Query\Builder
 			}
 		}
 
-		$this->dsn = NULL;
+		// Build a DSN from the legacy components (hostname/database/etc.)
+		// when no full DSN string was supplied. Without this, configs that
+		// only set hostname+database would attempt `new PDO('')` and fail
+		// with "could not find driver".
+		$this->dsn = $this->build_dsn();
+	}
+
+	/**
+	 * Compose a PDO DSN from the legacy config properties based on the
+	 * resolved subdriver. Returns NULL when nothing usable is configured.
+	 *
+	 * @return string|null
+	 */
+	protected function build_dsn()
+	{
+		switch ($this->subdriver)
+		{
+			case 'sqlite':
+				$path = ! empty($this->database) ? $this->database : (! empty($this->hostname) ? $this->hostname : NULL);
+				return $path === NULL ? NULL : 'sqlite:'.$path;
+
+			case 'mysql':
+				$host = ! empty($this->hostname) ? $this->hostname : '127.0.0.1';
+				$dsn  = 'mysql:host='.$host;
+				if ( ! empty($this->port)) $dsn .= ';port='.$this->port;
+				if ( ! empty($this->database)) $dsn .= ';dbname='.$this->database;
+				$dsn .= ';charset=utf8';
+				return $dsn;
+
+			case 'pgsql':
+				$host = ! empty($this->hostname) ? $this->hostname : '127.0.0.1';
+				$dsn  = 'pgsql:host='.$host;
+				if ( ! empty($this->port)) $dsn .= ';port='.$this->port;
+				if ( ! empty($this->database)) $dsn .= ';dbname='.$this->database;
+				return $dsn;
+
+			default:
+				return isset($this->dsn) ? $this->dsn : NULL;
+		}
 	}
 
 	// --------------------------------------------------------------------
@@ -133,6 +171,16 @@ class Driver extends \Kodhe\Framework\Database\Query\Builder
 		if ($persistent === TRUE)
 		{
 			$this->options[PDO::ATTR_PERSISTENT] = TRUE;
+		}
+
+		if (empty($this->dsn))
+		{
+			if ($this->db_debug && empty($this->failover))
+			{
+				$this->display_error('A valid PDO DSN could not be built from the database configuration.', '', TRUE);
+			}
+
+			return FALSE;
 		}
 
 		try
