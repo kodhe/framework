@@ -34,77 +34,116 @@ class MigrateCommand extends Command
         'migrate --fresh',
     ];
 
+    /**
+     * Lokasi file MigrateCommand.php ini berada — dipakai untuk menelusuri
+     * root package / root project tanpa bergantung pada CWD.
+     */
+    private string $selfFile;
+
+    public function __construct()
+    {
+        $this->selfFile = (new \ReflectionClass(self::class))->getFileName();
+    }
+
     public function handle(): int
     {
         // ----------------------------------------------------------
-        // 1. Root framework (SYSPATH) — deteksi lewat autoloader, bukan
-        //    menebak folder src/Core. File ini sendiri dimuat composer,
-        //    jadi lokasi class Console adalah sumber kebenaran.
+        // 1. Root framework (SYSPATH) — telusuri dari posisi file INI
+        //    (realpath mengikuti symlink composer path-repository),
+        //    bukan dari CWD dan bukan dari tebakan folder src/Core.
+        //
+        //    Kasus yang didukung:
+        //      a) monorepo : <root>/framework/src/Console/Commands/...
+        //      b) install  : <project>/vendor/kodhe/framework/src/...
+        //         (symlink ke ../framework juga beres karena realpath)
         // ----------------------------------------------------------
-        try {
-            $consoleFile = (new \ReflectionClass(Console::class))->getFileName();
-        } catch (\Throwable) {
-            $consoleFile = false;
-        }
-
-        if (!is_string($consoleFile)) {
-            $this->error('Framework tidak ditemukan via autoloader — jalankan dari project yang sudah `composer install`.');
-            return 1;
-        }
-
-        // vendor/kodhe/framework/src/Console/Console.php -> .../framework/
-        // framework/console.php                          -> .../src/
         $syspath = null;
-        foreach ([dirname($consoleFile, 3), dirname($consoleFile, 2)] as $candidate) {
-            if (is_dir($candidate . DIRECTORY_SEPARATOR . 'src')) {
-                $syspath = $candidate . DIRECTORY_SEPARATOR;
+        for ($dir = dirname($this->selfFile); $dir !== '' && $dir !== DIRECTORY_SEPARATOR; $dir = dirname($dir)) {
+            // root package  : .../framework          (punya composer.json + src/)
+            // atau langsung : .../framework/src      (jarang)
+            if (is_file($dir . '/composer.json') && is_dir($dir . '/src')) {
+                $syspath = rtrim($dir, '/\\') . DIRECTORY_SEPARATOR;
                 break;
             }
         }
 
         if ($syspath === null) {
-            $this->error("Lokasi framework tidak dikenali dari {$consoleFile}");
+            $this->error(
+                "Root framework (composer.json + src/) tidak ditemukan di atas file:\n  {$this->selfFile}\n"
+                . "Pastikan instalasi composer utuh (`composer install` / `composer dump-autoload`)."
+            );
             return 1;
         }
 
-        defined('SYSPATH')       || define('SYSPATH', $syspath);
-        defined('BASEPATH')      || define('BASEPATH', SYSPATH);
-        defined('ENVIRONMENT')   || define('ENVIRONMENT', getenv('CI_ENV') ?: 'production');
+        defined('SYSPATH')     || define('SYSPATH', $syspath);
+        defined('BASEPATH')    || define('BASEPATH', SYSPATH);
+        defined('ENVIRONMENT') || define('ENVIRONMENT', getenv('CI_ENV') ?: 'production');
 
         // ----------------------------------------------------------
         // 2. Root project = folder aplikasi yang memanggil console.
-        //    Kandidat (berdasarkan CWD saat perintah dijalankan):
-        //      a) cwd          -> `cd kodhe && php bin/console ...`
-        //      b) cwd/bin      -> `php vendor/kodhe/framework/bin/console ...`
-        //      c) cwd/../      -> `php ../framework/bin/console ...`
-        //      d) cwd/../bin   -> variasi pemanggilan lain
-        //    Project ditandai oleh application/config/database.php dan/atau
-        //    folder database/migrations milik aplikasi.
+        //    Prioritas:
+        //      a) KODHE_PROJECT_ROOT (di-set oleh bootstrap/bin/console)
+        //      b) argv[0] — folder script yang benar-benar dipanggil,
+        //         mis. `php bin/console migrate` atau
+        //         `php /path/project/bin/console ...` (tidak peduli CWD!)
+        //      c) CWD dan variasinya (fallback lama)
+        //      d) monorepo: <syspath>/../kodhe
+        //    Project ditandai oleh application/config/database.php
+        //    dan/atau folder database/migrations milik aplikasi.
         // ----------------------------------------------------------
-        $cwd = rtrim(getcwd() ?: '.', '/\\') . DIRECTORY_SEPARATOR;
+        $isProject = function (string $dir): bool {
+            $dir = rtrim($dir, '/\\') . DIRECTORY_SEPARATOR;
+            return file_exists($dir . 'application' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'database.php')
+                || is_dir($dir . 'database' . DIRECTORY_SEPARATOR . 'migrations');
+        };
 
-        $candidates = [
-            $cwd,
-            $cwd . 'bin' . DIRECTORY_SEPARATOR,
-            dirname($cwd) . DIRECTORY_SEPARATOR,
-            dirname($cwd) . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR,
-        ];
+        /** @var list<string> $candidates */
+        $candidates = [];
+
+        if (($envRoot = getenv('KODHE_PROJECT_ROOT')) !== false && $envRoot !== '') {
+            $candidates[] = $envRoot;
+        }
+
+        // argv[0]: coba apa adanya (relatif thd CWD), lalu absolut dari
+        // lokasi script via get_included_files(), lalu dari CWD.
+        $argv0 = $_SERVER['argv'][0] ?? '';
+        if ($argv0 !== '') {
+            $candidates[] = dirname($argv0);                       // bin/ -> project
+            $candidates[] = dirname(dirname($argv0));              // ./bin/console dsb.
+            foreach (get_included_files() as $inc) {               // script entry-point asli
+                if (str_ends_with($inc, 'console') || str_ends_with($inc, 'console.php')) {
+                    $candidates[] = dirname($inc);
+                    $candidates[] = dirname(dirname($inc));
+                }
+            }
+        }
+
+        $cwd = rtrim(getcwd() ?: '.', '/\\') . DIRECTORY_SEPARATOR;
+        $candidates[] = $cwd;
+        $candidates[] = dirname($cwd);
+        $candidates[] = SYSPATH;                                   // kebetulan project itu sendiri?
+
+        // monorepo: framework berada di <root>/framework, project contoh di <root>/kodhe
+        $candidates[] = dirname(rtrim(SYSPATH, '/\\'));
+        $candidates[] = dirname(rtrim(SYSPATH, '/\\')) . DIRECTORY_SEPARATOR . 'kodhe';
 
         $basePath = null;
         foreach ($candidates as $c) {
-            if (file_exists($c . 'application' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'database.php')
-                || is_dir($c . 'database' . DIRECTORY_SEPARATOR . 'migrations')) {
-                $basePath = $c;
+            $real = realpath($c);
+            if ($real !== false && $isProject($real)) {
+                $basePath = rtrim($real, '/\\') . DIRECTORY_SEPARATOR;
                 break;
             }
         }
 
         if ($basePath === null) {
             $this->error(
-                "Folder project tidak ditemukan dari CWD ({$cwd}).\n"
-                . "Jalankan dari root project, contoh:\n"
-                . "  cd kodhe && php bin/console migrate\n"
-                . "  php vendor/kodhe/framework/bin/console migrate"
+                "Folder project (application/config/database.php atau database/migrations/) tidak ditemukan.\n"
+                . "Dicari dari: " . implode('; ', array_filter(array_map('strval', $candidates))) . "\n"
+                . "Solusi:\n"
+                . "  1) Jalankan dari root project : cd <project> && php bin/console migrate\n"
+                . "  2) Atau tunjuk eksplisit     : KODHE_PROJECT_ROOT=/path/project php bin/console migrate\n"
+                . "  3) Atau lewat vendor project : php vendor/kodhe/framework/bin/console migrate"
             );
             return 1;
         }
@@ -115,15 +154,24 @@ class MigrateCommand extends Command
 
         // ----------------------------------------------------------
         // 3. Autoload project (memuat package database, config app, dll.)
-        //    Kalau command dipanggil lewat vendor project, autoload ini
-        //    sebenarnya sudah terdaftar — cek class-nya dulu.
+        //    Urutan pencarian: project vendor -> framework vendor ->
+        //    monorepo root vendor -> autoload composer dari file command.
         // ----------------------------------------------------------
         if (!class_exists(\Kodhe\Framework\Database\Loader::class)) {
-            foreach ([
+            $autoloaders = [
                 $basePath . 'vendor/autoload.php',
                 SYSPATH . 'vendor/autoload.php',
-                dirname($consoleFile, 4) . '/autoload.php', // vendor/<author>/<pkg>/bin -> vendor/autoload.php
-            ] as $autoload) {
+                dirname(rtrim(SYSPATH, '/\\')) . '/vendor/autoload.php', // monorepo root
+            ];
+
+            // vendor/<author>/<pkg>/src/Console/Commands/MigrateCommand.php
+            //   -> dirname(selfFile, 5) = vendor/autoload.php
+            // monorepo <root>/framework/src/... -> dirname(selfFile, 4) = <root>/vendor/
+            foreach ([dirname($this->selfFile, 5), dirname($this->selfFile, 4)] as $d) {
+                $autoloaders[] = rtrim($d, '/\\') . '/autoload.php';
+            }
+
+            foreach ($autoloaders as $autoload) {
                 if (is_file($autoload)) {
                     require_once $autoload;
                     break;
@@ -140,9 +188,23 @@ class MigrateCommand extends Command
             return 1;
         }
 
-        // Helper global kodhe()/config_item() — seharusnya ikut ter-load
-        // lewat composer "files" autoload milik framework.
-        if (!function_exists('kodhe')) {
+        // Helper global kodhe()/config_item() — dimuat lewat composer
+        // "files" autoload milik framework. Bila belum ada, definisikan
+        // shim singleton Facade DULU (agar require helper bawaan dapat
+        // memakai function_exists('kodhe') tanpa mendefinisikan ulang),
+        // baru muat file support legacy.
+        if (!function_exists('kodhe') && class_exists(\Kodhe\Framework\Support\Facades\Facade::class)) {
+            /**
+             * Singleton accessor setara helper CI `get_instance()` —
+             * mengembalikan service container Facade ($GLOBALS['kodhe']).
+             */
+            function kodhe()
+            {
+                return \Kodhe\Framework\Support\Facades\Facade::getInstance();
+            }
+        }
+
+        if (!function_exists('config_item')) {
             foreach ([
                 SYSPATH . 'src/Support/Legacy/common.php',
                 SYSPATH . 'src/Support/Helpers.php',
@@ -155,7 +217,11 @@ class MigrateCommand extends Command
         }
 
         if (!function_exists('kodhe')) {
-            $this->error('Helper kodhe() tidak tersedia — jalankan dari root project yang sudah `composer install`.');
+            $this->error(
+                "Helper kodhe() tidak tersedia dan class Facade tidak ditemukan.\n"
+                . "Kemungkinan instalasi composer rusak/stale di project:\n  {$basePath}\n"
+                . "Jalankan ulang: composer install (atau composer dump-autoload -o)"
+            );
             return 1;
         }
 
