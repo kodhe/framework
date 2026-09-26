@@ -17,7 +17,8 @@
     "kodhe/database": "Database & ORM",
     "kodhe/view": "REQUIRED for templating / app('view') / ViewFactory",
     "kodhe/validation": "Form validation",
-    "kodhe/agent": "User agent library (loaded by BaseController)"
+    "kodhe/agent": "User agent library (loaded by BaseController)",
+    "kodhe/auth": "Session-based authentication guard with remember-me (Kodhe\\Framework\\Auth\\Auth)"
   },
   "require-dev": {
     "phpunit/phpunit": "^9.0"
