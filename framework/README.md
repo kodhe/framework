@@ -574,12 +574,12 @@ Kodhe Framework dilisensikan di bawah [MIT License](LICENSE).
 Untuk pertanyaan, issue, atau request fitur:
 
 - 📧 Email: support@kodhe.com
-- 💬 GitHub Issues: https://github.com/karyakode/kodhe/issues
+- 💬 GitHub Issues: https://github.com/kodhe/kodhe/issues
 - 📖 Dokumentasi: https://kodhe.com/docs
 
 ## 🙏 Credits
 
-Dibuat dan maintained oleh [Karya Kode Team](https://github.com/karyakode).
+Dibuat dan maintained oleh [Karya Kode Team](https://github.com/kodhe).
 
 Special thanks to:
 - CodeIgniter 3 team untuk inspiration legacy compatibility

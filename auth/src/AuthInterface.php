@@ -12,9 +12,12 @@ interface AuthInterface
     /**
      * Attempt to authenticate a user by identifier + password.
      *
+     * @param array $extra Additional columns the provider must match when
+     *                     looking the user up (e.g. ['is_active' => 1]).
+     *
      * @return bool True on success.
      */
-    public function attempt(string $identifier, string $password, bool $remember = false): bool;
+    public function attempt(string $identifier, string $password, bool $remember = false, array $extra = []): bool;
 
     /**
      * Log in a user object (or array) directly.

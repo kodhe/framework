@@ -367,5 +367,5 @@ Contributions are welcome! Please read our contributing guidelines before submit
 
 ## 📞 Support
 
-- GitHub Issues: https://github.com/karyakode/kodhe/issues
+- GitHub Issues: https://github.com/kodhe/kodhe/issues
 - Documentation: https://kodhe.dev/docs

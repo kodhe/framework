@@ -104,11 +104,22 @@ class Session implements SessionInterface
         // Determine driver
         $driver = $this->resolveDriver($params);
 
-        // Build configuration
+        // Build configuration. SessionConfig normalizes CI3's
+        // "sess_expiration = 0" (cookie until browser close) internally so
+        // validation does not abort session startup entirely — a very common
+        // cause of "login always fails / session never persists".
         $this->config = new SessionConfig(array_merge($params, ['driver' => $driver]));
-        
+
         // Configure SID pattern
         $this->sidRegexp = $this->config->getSidPattern();
+
+        // Align PHP's native session settings with our config BEFORE any
+        // session_start(). Without this, PHP generates IDs using php.ini's
+        // session.sid_length / session.sid_bits_per_character, which do not
+        // match our SID regex — every returning ci_session cookie is then
+        // discarded on the next request and session data never persists.
+        @ini_set('session.sid_length', (string) $this->config->get('sid_length'));
+        @ini_set('session.sid_bits_per_character', (string) $this->config->get('sid_bits_per_character'));
 
         // Initialize components
         $this->idGenerator = new SessionIdGenerator(
@@ -116,10 +127,19 @@ class Session implements SessionInterface
             $this->config->get('sid_bits_per_character')
         );
 
+        // Fall back to "/" when no cookie path is configured: an empty path
+        // would scope the session cookie to the current script directory
+        // only, so it stops being sent on other routes and login appears to
+        // "fail" immediately after redirect.
+        $cookiePath = $this->config->get('cookie_path');
+        if (!is_string($cookiePath) || $cookiePath === '') {
+            $cookiePath = '/';
+        }
+
         $this->cookieManager = new CookieManager([
             'cookie_name' => $this->config->get('cookie_name'),
             'cookie_lifetime' => $this->config->get('cookie_lifetime', $this->config->get('expiration')),
-            'cookie_path' => $this->config->get('cookie_path'),
+            'cookie_path' => $cookiePath,
             'cookie_domain' => $this->config->get('cookie_domain'),
             'cookie_secure' => $this->config->get('cookie_secure'),
             'cookie_httponly' => true,
@@ -274,18 +294,33 @@ class Session implements SessionInterface
         // stale name; re-issuing it here guarantees ci_session is used.
         @session_name($cookieName);
 
+        // Cookie path must never be empty for the session cookie either —
+        // an empty value scopes it to the current directory and the browser
+        // stops sending it back on other routes (login "fails").
+        $cookiePath = $this->config->get('cookie_path');
+        if (!is_string($cookiePath) || $cookiePath === '') {
+            $cookiePath = '/';
+        }
+
+        // CI3 semantics: expiration 0 => browser-session cookie (lifetime 0).
+        $lifetime = $this->config->getCookieLifetime();
+
         @session_start([
-            'cookie_lifetime' => (int) $this->config->get('expiration'),
-            'cookie_path'     => (string) $this->config->get('cookie_path', '/'),
+            'cookie_lifetime' => $lifetime,
+            'cookie_path'     => $cookiePath,
             'cookie_domain'   => (string) $this->config->get('cookie_domain', ''),
             'cookie_secure'   => (bool) $this->config->get('cookie_secure', false),
             'cookie_httponly' => true,
+            'cookie_samesite' => (string) $this->config->get('cookie_samesite', 'Lax'),
         ]);
 
-        // Ensure cookie is sent
-        if (isset($_COOKIE[$cookieName]) && $_COOKIE[$cookieName] === session_id()) {
-            $this->cookieManager->send(session_id(), time() + $this->config->get('expiration'));
-        }
+        // NOTE: Do NOT re-send the session cookie via setcookie() here.
+        // session_start() already issues the cookie with the correct value,
+        // path, domain and flags. Re-issuing it (as previously done) could
+        // overwrite the fresh cookie with a wrong/expired one — e.g. when
+        // expiration is 0, time()+0 expires the cookie immediately, so the
+        // browser never returns the session ID and every request starts a
+        // brand-new session (login always fails, session never persists).
     }
 
     /**

@@ -4,7 +4,7 @@
   "type": "library",
   "version": "1.1.1",
   "license": "MIT",
-  "homepage": "https://github.com/karyakode/kodhe",
+  "homepage": "https://github.com/kodhe/kodhe",
   "require": {
     "php": ">=8.1",
     "paragonie/random_compat": "^9.99",
