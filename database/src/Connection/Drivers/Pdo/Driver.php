@@ -77,11 +77,18 @@ class Driver extends \Kodhe\Framework\Database\Query\Builder
 	{
 		parent::__construct($params);
 
+		// NOTE: parent::__construct() assigns every config key to a property,
+		// including 'subdriver'. The concrete subclass's declared subdriver
+		// (e.g. Pdo\Subdrivers\Sqlite => 'sqlite') must win over whatever the
+		// user put in config, otherwise the DSN builder picks the wrong PDO
+		// scheme and connection fails with "could not find driver".
+		$declaredSubdriver = isset($this->subdriver) ? $this->subdriver : NULL;
+
 		if (preg_match('/([^:]+):/', $this->dsn, $match) && count($match) === 2)
 		{
 			// If there is a minimum valid dsn string pattern found, we're done
 			// This is for general PDO users, who tend to have a full DSN string.
-			$this->subdriver = $match[1];
+			$this->subdriver = empty($declaredSubdriver) ? $match[1] : $declaredSubdriver;
 			return;
 		}
 		// Legacy support for DSN specified in the hostname field

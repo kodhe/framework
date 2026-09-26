@@ -127,18 +127,56 @@ class ConnectionManager
 
   private static function load_driver($params){
 
-	$driver = 'Kodhe\Framework\Database\Connection\Drivers\\'.ucwords($params['dbdriver']).'\Driver';
-  	$DB = new $driver($params);
+        $driver = 'Kodhe\Framework\Database\Connection\Drivers\\'.ucwords($params['dbdriver']).'\Driver';
+        $DB = new $driver($params);
 
-  	// Check for a subdriver
-  	if ( ! empty($DB->subdriver))
-  	{
-			$driver = 'Kodhe\Framework\Database\Connection\Drivers\\'.ucwords($params['dbdriver']).'\Subdrivers\\'.ucwords($DB->subdriver).'\Driver';
+        // Check for a subdriver.
+        //
+        // NOTE: ucwords() alone produces wrong class names for some subdriver
+        // identifiers (e.g. '4d' must map to the 'Fourd' directory), and a
+        // missing class would previously surface as a fatal "Class not found".
+        // We normalize the identifier via an explicit map and fail with a
+        // readable error when the subdriver cannot be located.
+        if ( ! empty($DB->subdriver))
+        {
+                $subdriver = self::normalize_subdriver($DB->subdriver);
+                $driver = 'Kodhe\Framework\Database\Connection\Drivers\\'.ucwords($params['dbdriver']).'\Subdrivers\\'.$subdriver.'\Driver';
 
-			$DB = new $driver($params);
-  	}
+                if ( ! class_exists($driver))
+                {
+                        show_error('Unable to locate the DB '.$params['dbdriver'].' subdriver: '.$subdriver);
+                }
 
-  	return $DB;
+                $DB = new $driver($params);
+        }
+
+        return $DB;
+  }
+
+  /**
+   * Map a subdriver identifier (e.g. 'sqlite', '4d', 'mssql') to its
+   * PSR-4 directory name under Drivers/<Driver>/Subdrivers/.
+   */
+  private static function normalize_subdriver($subdriver)
+  {
+        static $map = array(
+            '4d'       => 'Fourd',
+            'cubrid'   => 'Cubrid',
+            'dblib'    => 'Dblib',
+            'firebird' => 'Firebird',
+            'ibm'      => 'Ibm',
+            'informix' => 'Informix',
+            'mysql'    => 'Mysql',
+            'oci'      => 'Oci',
+            'odbc'     => 'Odbc',
+            'pgsql'    => 'Pgsql',
+            'sqlite'   => 'Sqlite',
+            'sqlsrv'   => 'Sqlsrv',
+        );
+
+        $key = strtolower($subdriver);
+
+        return isset($map[$key]) ? $map[$key] : ucwords($subdriver);
   }
 
 }
