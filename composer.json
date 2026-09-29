@@ -8,12 +8,17 @@
   "require": {
     "php": ">=8.1",
     "paragonie/random_compat": "^9.99",
-    "kodhe/session": "^1.0",
-    "kodhe/cache": "^1.0",
-    "kodhe/validation": "^1.0"
+    "kodhe/session": "^1.0 || ^2.0",
+    "kodhe/cache": "^1.0 || ^2.0",
+    "kodhe/validation": "^1.0 || ^2.0"
   },
   "suggest": {
     "kodhe/view": "REQUIRED for templating / app('view') / ViewFactory (resolved at runtime)",
+    "kodhe/cart": "Resolved by the container service `cart` (Kodhe\\Framework\\Cart\\Cart)",
+    "kodhe/driver": "Resolved by the container service `driver` (Kodhe\\Framework\\Driver\\Driver)",
+    "kodhe/pagination": "Resolved by the container service `pagination` (Kodhe\\Framework\\Pagination\\Pagination)",
+    "kodhe/test": "Resolved by the container service `unit_test` (Kodhe\\Framework\\Test\\UnitTest)",
+    "kodhe/agent": "Resolved by the container service `agent` (Kodhe\\Framework\\Agent\\UserAgent)",
     "kodhe/auth": "Session-based authentication guard with remember-me (Kodhe\\Framework\\Auth\\Auth)"
   },
   "require-dev": {
