@@ -1017,6 +1017,17 @@ class LegacyLoader
 		{
 			$_ci_x = explode('/', $_ci_path);
 			$_ci_file = end($_ci_x);
+
+			// Case-insensitive resolution on disk (e.g. views/ vs Views/ on Linux)
+			// prevents an unresolved path from reaching include() below.
+			if ( ! file_exists($_ci_path) && function_exists('app_realpath'))
+			{
+				$_ci_resolved = app_realpath($_ci_path);
+				if ($_ci_resolved !== '' && file_exists($_ci_resolved))
+				{
+					$_ci_path = $_ci_resolved;
+				}
+			}
 		}
 		else
 		{
@@ -1032,6 +1043,18 @@ class LegacyLoader
 					break;
 				}
 
+				// Fallback: resolve the view path case-insensitively before giving up
+				if (function_exists('app_realpath'))
+				{
+					$_ci_resolved = app_realpath($_ci_view_file.$_ci_file);
+					if ($_ci_resolved !== '' && file_exists($_ci_resolved))
+					{
+						$_ci_path = $_ci_resolved;
+						$file_exists = TRUE;
+						break;
+					}
+				}
+
 				if ( ! $cascade)
 				{
 					break;
@@ -1042,6 +1065,14 @@ class LegacyLoader
 		if ( ! $file_exists && is_string($_ci_path) && $_ci_path !== "" && ! file_exists($_ci_path))
 		{
 			show_error('Unable to load the requested file: '.$_ci_file);
+		}
+
+		// Guard: never hand an empty or non-existent path to include().
+		// An empty path triggers a fatal ValueError ("Path cannot be empty")
+		// on PHP >= 8.0 instead of a clean framework error page.
+		if ( ! is_string($_ci_path) || $_ci_path === '' || ! file_exists($_ci_path))
+		{
+			show_error('Unable to load the requested file: '.(is_string($_ci_file) && $_ci_file !== '' ? $_ci_file : $_ci_view));
 		}
 
 		// This allows anything loaded using $this->load (views, files, etc.)

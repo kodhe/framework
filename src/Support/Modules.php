@@ -3,9 +3,7 @@
 declare(strict_types=1);
 
 namespace Kodhe\Framework\Support;
-global $CFG;
 
-use Kodhe\Framework\Http\Routing\Router;
 use Kodhe\Framework\Exceptions\Http\BadRequestException;
 
 // Guarantee the case-insensitive app path helpers (app_path_in(),
@@ -15,6 +13,7 @@ use Kodhe\Framework\Exceptions\Http\BadRequestException;
 if ( ! function_exists('app_path_in'))
 {
     foreach (array(
+        __DIR__ . '/app_path.php',
         dirname(__DIR__, 2).'/framework/src/Support/app_path.php',
         dirname(__DIR__, 2).'/../framework/src/Support/app_path.php',
     ) as $__app_path_helper) {
@@ -26,12 +25,48 @@ if ( ! function_exists('app_path_in'))
 }
 unset($__app_path_helper);
 
+// Modules::load() instantiates the legacy-capable Router from the http
+// package. That package is not a hard dependency of the framework Support
+// layer, so guarantee the class is loadable before referencing it; the
+// monorepo layout keeps the file at a stable relative path.
+if ( ! class_exists(\Kodhe\Framework\Http\Routing\Router::class, false))
+{
+    foreach (array(
+        // Monorepo layout: packages/http/src/Routing/Router.php
+        dirname(__DIR__, 2).'/http/src/Routing/Router.php',
+        // Installed as standalone packages side by side
+        dirname(__DIR__, 4).'/http/src/Routing/Router.php',
+    ) as $__router_file) {
+        if (is_file($__router_file)) {
+            require_once $__router_file;
+            break;
+        }
+    }
+    spl_autoload_call(\Kodhe\Framework\Http\Routing\Router::class);
+}
+unset($__router_file);
+
 class Modules
 {
     public static $routes = array();
     public static $registry = array();
     public static $locations = array();
     public static $assets = array();
+    
+    /**
+     * @var string The module currently being dispatched, when known.
+     *             UnifiedRouter and the module-aware loader keep this in
+     *             sync; helpers like current_module() read it back.
+     */
+    protected static $currentModule = '';
+
+    /**
+     * @var bool Whether init() has completed a location resolution pass.
+     *           Guards against re-scanning on every Modules::init() call
+     *           once the singleton state is warm (and after refreshCache()
+     *           resets $locations deliberately).
+     */
+    protected static $initialized = false;
     
     /**
      * @var array Cache of all modules with their paths
@@ -48,7 +83,13 @@ class Modules
      */
     public static function init()
     {
-        if (empty(self::$locations)) {
+        if (self::$initialized || empty(self::$locations)) {
+            return;
+        }
+
+        self::$initialized = true;
+
+        {
             // Initialize cache file path
             self::initCache();
             
@@ -63,18 +104,41 @@ class Modules
             if (is_array($config_locations) && !empty($config_locations)) {
                 self::$locations = $config_locations;
             } else {
-                // Default module locations
-                self::$locations = array(
-                    resolve_path(APPPATH, 'modules/') => '../modules/',
-                    // Add other default locations if needed
-                );
-                
+                // Default module locations. Projects store modules under a
+                // first-level application folder that may be spelled either
+                // lowercase ('modules/', plain CI3 style) or PascalCase
+                // ('Modules/', Kodhe style). On case-sensitive filesystems
+                // (Linux) a hardcoded lowercase lookup silently finds no
+                // modules at all, so resolve the real on-disk name with the
+                // case-insensitive app_folder() helper and register both the
+                // absolute path and its web-relative offset (used by the
+                // router when building asset/view URLs).
+                self::$locations = array();
+
+                if (defined('APPPATH')) {
+                    $modules_folder    = app_folder('modules');
+                    $modules_folder_lc = strtolower($modules_folder);
+
+                    self::$locations[resolve_path(APPPATH, $modules_folder . '/')] = '../' . $modules_folder_lc . '/';
+                }
+
                 // Check if IGO core path exists and add it
                 if (defined('BASHPATH')) {
-                    $igo_path = resolve_path(BASHPATH, 'modules/');
-                    if (is_dir($igo_path)) {
-                        self::$locations[$igo_path] = '../../modules/';
+                    $igo_folder = is_dir(BASHPATH . 'modules') ? 'modules' : (is_dir(BASHPATH . 'Modules') ? 'Modules' : null);
+                    if ($igo_folder !== null) {
+                        $igo_path = resolve_path(BASHPATH, $igo_folder . '/');
+                        if (is_dir($igo_path)) {
+                            self::$locations[$igo_path] = '../../' . strtolower($igo_folder) . '/';
+                        }
                     }
+                }
+
+                if (empty(self::$locations)) {
+                    // No usable base path defined: keep the historical
+                    // fallback so behavior stays identical to plain CI3.
+                    self::$locations = array(
+                        resolve_path(APPPATH ?? '', 'modules/') => '../modules/',
+                    );
                 }
             }
             
@@ -89,6 +153,105 @@ class Modules
             // Scan and cache all modules with their paths
             self::scanAndCacheAllModules();
         }
+    }
+
+    /**
+     * @var bool Whether registerAutoloading() has run this request.
+     */
+    protected static $autoloadingRegistered = false;
+
+    /**
+     * Register every discovered module's namespace with the Kodhe
+     * Autoloader, based on each module's setup.php ('namespace' key).
+     *
+     * Without this, classes like Modules\Blog\Controllers\Post are simply
+     * not autoloadable: no PSR-4 prefix maps 'Modules\' to the modules
+     * folder, so route resolution finds the route but controller execution
+     * fails and the visitor gets a 404 page. We add both the exact
+     * namespace declared in setup.php and the conventional
+     * 'Modules\<StudlyFolderName>' mapping (pointing at the real,
+     * case-correct folder path), and guarantee the autoloader is actually
+     * registered with spl_autoload_register().
+     *
+     * Idempotent: safe to call from every boot path.
+     */
+    public static function registerAutoloading(): void
+    {
+        if (self::$autoloadingRegistered) {
+            return;
+        }
+        self::$autoloadingRegistered = true;
+
+        self::init();
+
+        if (!class_exists('\\Kodhe\\Framework\\Support\\Autoloader')) {
+            return;
+        }
+
+        $autoloader = \Kodhe\Framework\Support\Autoloader::getInstance();
+
+        foreach (self::$modulesCache as $module => $paths) {
+            foreach ($paths as $path) {
+                $path = rtrim($path, '/\\') . DIRECTORY_SEPARATOR;
+
+                // Conventional mapping: Modules\<StudlyCaseFolder> => <path>
+                $folder = basename($path);
+                $autoloader->addPrefix('Modules\\' . $folder, $path);
+
+                // Exact mapping from the module manifest, when present.
+                $setupFile = app_path_in($path, 'setup.php');
+                if (is_file($setupFile)) {
+                    $setup = require $setupFile;
+                    if (is_array($setup) && !empty($setup['namespace'])) {
+                        $autoloader->addPrefix(trim((string) $setup['namespace'], '\\'), $path);
+                    }
+                    unset($setup);
+                }
+            }
+        }
+
+        // Make sure our loader actually runs (composer's autoloader may be
+        // the only one registered when bootstrap/app.php was skipped).
+        $autoloader->register();
+    }
+
+    /**
+     * Set the module currently being dispatched.
+     *
+     * Called by the routers/loaders once a module has been resolved for the
+     * active request so helpers like current_module() can read it back.
+     */
+    public static function setCurrentModule(string $module): void
+    {
+        self::$currentModule = $module;
+    }
+
+    /**
+     * Get the module currently being dispatched ('' when outside a module).
+     */
+    public static function getCurrentModule(): string
+    {
+        return self::$currentModule;
+    }
+
+    /**
+     * Return basic metadata about a module: name, on-disk path(s), and the
+     * contents of its module_config array (when present).
+     */
+    public static function getModuleInfo(string $module_name): array
+    {
+        self::init();
+
+        if (!isset(self::$modulesCache[$module_name])) {
+            return array();
+        }
+
+        return array(
+            'name'   => $module_name,
+            'path'   => self::getFirstModulePath($module_name),
+            'paths'  => self::$modulesCache[$module_name],
+            'config' => self::config($module_name),
+        );
     }
     
     /**
@@ -374,6 +537,7 @@ class Modules
         // Reset data to force rescan
         self::$locations = array();
         self::$modulesCache = array();
+        self::$initialized = false;
         
         // Clear existing cache
         self::clearCache();
@@ -553,49 +717,98 @@ class Modules
     }
     
     /** Load a module controller **/
-    public static function load($module) 
+public static function load($module)
     {
         self::init();
-        
+
         $params = NULL;
         $alias = strtolower(basename($module));
 
-        if (!isset(self::$registry[$alias])) 
+        if (!isset(self::$registry[$alias]))
         {
-            $router = new Router();
-            $located = $router->locate(explode('/', $module));
-            
-            $class = '';
-            if (is_array($located) && !empty($located)) {
-                $class = $located[0];
+            $segments = explode('/', $module);
+            array_pop($segments); // method name or stray trailing segment
+            $module_name = implode('/', $segments);
+
+            if ($module_name === '') {
+                $module_name = $alias;
             }
-    
-            if (empty($class)) {
-                log_message('debug', "Module controller not found: {$module}");
-                return FALSE;
+
+            $class = ucfirst(basename($module));
+            $path  = null;
+
+            // Preferred path: locate the controller directly inside the
+            // module cache. This is case-insensitive and never requires a
+            // full router bootstrap (which depends on app()/config and
+            // re-parses every route file).
+            list($found_path, $found_name) = self::find($class, $module_name, 'controllers/');
+            if ($found_path !== FALSE) {
+                $class = $found_name;
+                $path  = dirname($found_path) . '/';
+            } else {
+                // Fallback: run the request through the legacy-capable
+                // router and resolve the directory it picked. The router's
+                // $directory is an offset relative to APPPATH for module
+                // routes ('../modules/blog/controllers/') but relative to
+                // APPPATH.'controllers/' for plain app controllers, so try
+                // both bases before giving up.
+                $router  = new Router();
+                $located = $router->locate(explode('/', $module));
+
+                $loc_class = '';
+                if (is_array($located) && !empty($located)) {
+                    $loc_class = $located[0];
+                }
+
+                if (empty($loc_class)) {
+                    log_message('debug', "Module controller not found: {$module}");
+                    return FALSE;
+                }
+
+                $class = $loc_class;
+                $directory = $router->fetch_directory();
+
+                $candidates = array();
+                if ($directory !== '' && strncmp($directory, '../', 3) === 0) {
+                    $candidates[] = resolve_path(APPPATH, $directory);
+                }
+                $candidates[] = resolve_path(APPPATH, 'controllers/') . $directory;
+
+                foreach ($candidates as $candidate_dir) {
+                    $probe = $candidate_dir . ucfirst($class) . '.php';
+                    if (file_exists($probe)) {
+                        $path = $candidate_dir;
+                        break;
+                    }
+                }
+
+                if ($path === null) {
+                    log_message('error', "Module controller file not found: {$module}");
+                    return FALSE;
+                }
             }
-    
-            $directory = $router->fetch_directory();
-            $path = resolve_path(APPPATH, 'controllers/') . $directory;
-            
+
             $class_suffix = function_exists('config_item') ? config_item('controller_suffix') : '';
             if ($class_suffix && strpos($class, $class_suffix) === FALSE) {
-                $class .= $class_suffix;
+                $suffixed = $path . $class . $class_suffix . '.php';
+                if (file_exists($suffixed)) {
+                    $class .= $class_suffix;
+                }
             }
-            
+
             $file_path = $path . ucfirst($class) . '.php';
-            
+
             if (!file_exists($file_path)) {
                 log_message('error', "Module controller file not found: {$file_path}");
                 return FALSE;
             }
-            
+
             self::load_file(ucfirst($class), $path);
-            
-            $controller = ucfirst($class);    
+
+            $controller = ucfirst($class);
             self::$registry[$alias] = new $controller($params);
         }
-        
+
         return self::$registry[$alias];
     }
     
@@ -621,12 +834,23 @@ class Modules
         } 
         else 
         {
-            include $location;
+            $loaded = include $location;
 
-            if (!isset($$type) || !is_array($$type))                
+            // Auto-detect modern style: file returns the array directly
+            // (e.g. "return ['key' => 'value'];") as well as the classic
+            // CI3 style ("$route['key'] = value; ... return $route;").
+            if ($type !== 'other' && is_array($loaded))
+            {
+                $result = $loaded;
+            }
+            elseif (isset($$type) && is_array($$type))
+            {
+                $result = $$type;
+            }
+            else
+            {
                 show_error("{$location} does not contain a valid {$type} array");
-
-            $result = $$type;
+            }
         }
         log_message('debug', "File loaded: {$location}");
         return $result;
@@ -687,9 +911,22 @@ class Modules
 
         if (empty(self::$routes[$module])) 
         {
+            // Try config/routes.php first, then the Routes/ folder
+            // (both spellings resolved case-insensitively on Linux).
             list($path) = self::find('routes', $module, 'config/');
             if ($path) {
                 self::$routes[$module] = self::load_file('routes', $path, 'route');
+            } else {
+                // Probe both 'Routes/' and lowercase 'routes/' folder
+                // spellings so either project convention works on
+                // case-sensitive filesystems (Linux).
+                foreach (array('Routes/', 'routes/') as $routes_dir) {
+                    list($path) = self::find('web.php', $module, $routes_dir);
+                    if ($path) {
+                        self::$routes[$module] = self::load_file('web', $path, 'route');
+                        break;
+                    }
+                }
             }
         }
 

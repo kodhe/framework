@@ -19,7 +19,8 @@
     "kodhe/pagination": "Resolved by the container service `pagination` (Kodhe\\Framework\\Pagination\\Pagination)",
     "kodhe/test": "Resolved by the container service `unit_test` (Kodhe\\Framework\\Test\\UnitTest)",
     "kodhe/agent": "Resolved by the container service `agent` (Kodhe\\Framework\\Agent\\UserAgent)",
-    "kodhe/auth": "Session-based authentication guard with remember-me (Kodhe\\Framework\\Auth\\Auth)"
+    "kodhe/auth": "Session-based authentication guard with remember-me (Kodhe\\Framework\\Auth\\Auth)",
+    "psr/event-dispatcher": "Required by the Support\\\\Legacy\\\\Bridge\\\\HookBridge PSR-14 adapter (any implementation, e.g. kodhe/events)"
   },
   "require-dev": {
     "phpunit/phpunit": "^9.0"

@@ -16,7 +16,7 @@ if ( ! function_exists('app_config_file_in'))
 	unset($__kodhe_app_path);
 }
 
-class Hooks
+class Hooks implements HookDispatcherInterface
 {
 
 	/**
@@ -69,14 +69,57 @@ class Hooks
 		}
 
 		// Grab the "hooks" definition file.
+		// Supports both declaration styles:
+		//  - legacy CI3 style: the included file assigns a local $hook array
+		//  - modern "return-style": the file returns an array keyed by hook
+		//    point name (as documented in the scaffolded Config/hooks.php)
+		$modern_hooks = array();
+
 		if (file_exists($hooks_file = app_config_file_in(APPPATH, 'hooks.php')))
 		{
-			include($hooks_file);
+			$_loaded = include($hooks_file);
+			if (is_array($_loaded))
+			{
+				$modern_hooks = $_loaded;
+			}
 		}
 
 		if (file_exists($hooks_file = app_config_file_in(APPPATH, ENVIRONMENT.'/hooks.php')))
 		{
-			include($hooks_file);
+			$_loaded = include($hooks_file);
+			if (is_array($_loaded))
+			{
+				foreach ($_loaded as $_name => $_defs)
+				{
+					$modern_hooks[$_name] = array_merge(
+						(array) ($modern_hooks[$_name] ?? array()),
+						is_array($_defs) ? $_defs : array($_defs)
+					);
+				}
+			}
+		}
+
+		// Merge return-style entries into the legacy $hook registry so both
+		// formats end up normalized ($hook[name][] = definition).
+		if ( ! empty($modern_hooks))
+		{
+			isset($hook) AND is_array($hook) OR $hook = array();
+
+			foreach ($modern_hooks as $_name => $_defs)
+			{
+				// A single definition (assoc array or callable) vs a list of them.
+				if (isset($_defs['class']) OR isset($_defs['function']) OR is_callable($_defs))
+				{
+					$hook[$_name][] = $_defs;
+				}
+				elseif (is_array($_defs))
+				{
+					foreach ($_defs as $_def)
+					{
+						$hook[$_name][] = $_def;
+					}
+				}
+			}
 		}
 
 		// If there are no hooks, we're done.

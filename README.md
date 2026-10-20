@@ -12,16 +12,16 @@
 
 ---
 
-## 📖 Deskripsi
+## 📖 Description
 
-Kodhe Framework adalah package inti yang menyediakan fondasi utama untuk aplikasi berbasis Kodhe. Package ini mencakup Dependency Injection Container, sistem konfigurasi, application bootstrap, exception handling, controller base classes, dan berbagai helper functions.
+Kodhe Framework is the core package that provides the main foundation for Kodhe-based applications. It includes a Dependency Injection Container, a configuration system, application bootstrap, exception handling, controller base classes, and various helper functions.
 
-Package ini dirancang untuk bekerja seamlessly dengan package Kodhe lainnya seperti `kodhe/http`, `kodhe/view`, `kodhe/database`, dan lain-lain.
+It is designed to work seamlessly with other Kodhe packages such as `kodhe/http`, `kodhe/view`, `kodhe/database`, and more.
 
-## ✨ Fitur Utama
+## ✨ Key Features
 
 ### 🔧 **Dependency Injection Container**
-- Service registration dan resolution
+- Service registration and resolution
 - Singleton pattern support
 - Automatic dependency resolution
 - Closure-based bindings
@@ -71,7 +71,7 @@ Package ini dirancang untuk bekerja seamlessly dengan package Kodhe lainnya sepe
 - Legacy CodeIgniter 3 compatibility layer
 - File/Namespace helper loaders
 
-## 📦 Instalasi
+## 📦 Installation
 
 ### Requirements
 
@@ -85,7 +85,7 @@ Package ini dirancang untuk bekerja seamlessly dengan package Kodhe lainnya sepe
 composer require kodhe/framework
 ```
 
-Package akan otomatis menginstall dependencies:
+The package automatically installs these dependencies:
 - `paragonie/random_compat` ^9.99
 - `kodhe/http` *
 
@@ -111,19 +111,19 @@ composer require kodhe/validation
 composer require kodhe/agent
 ```
 
-## 🏗️ Struktur Package
+## 🏗️ Package Structure
 
 ```
 framework/
 ├── Resources/
-│   ├── fonts/              # Font files untuk typography
+│   ├── fonts/              # Font files for typography
 │   └── language/           # Translation files
 ├── src/
 │   ├── Config/
 │   │   ├── Loaders/
-│   │   │   ├── ArrayLoader.php     # Load config dari array
-│   │   │   ├── PhpLoader.php       # Load config dari file PHP
-│   │   │   ├── FileLoader.php      # Load config dari file
+│   │   │   ├── ArrayLoader.php     # Loads config from an array
+│   │   │   ├── PhpLoader.php       # Loads config from PHP files
+│   │   │   ├── FileLoader.php      # Loads config from files
 │   │   │   └── LegacyLoader.php    # CI3 compatibility loader
 │   │   ├── Config.php              # Main config class
 │   │   ├── ConfigInterface.php     # Config contract
@@ -187,7 +187,7 @@ framework/
 └── README.md
 ```
 
-## 🚀 Penggunaan
+## 🚀 Usage
 
 ### 1. **Application Bootstrap**
 
@@ -469,17 +469,17 @@ $modulePath = Modules::locate('blog');
 | `FileNotFound` | 404 error handler controller |
 | `CPException` | Control panel exception handler |
 
-## ⚙️ Konfigurasi
+## ⚙️ Configuration
 
 ### Config Paths
 
-Secara default, framework mencari file konfigurasi di:
+By default, the framework looks for configuration files in:
 
 ```php
 APPPATH . 'config/'
 ```
 
-Anda dapat menambahkan path tambahan:
+You can add additional paths:
 
 ```php
 $config->_config_paths[] = '/path/to/custom/config';
@@ -487,7 +487,7 @@ $config->_config_paths[] = '/path/to/custom/config';
 
 ### Service Registration
 
-Daftarkan service providers di aplikasi Anda:
+Register service providers in your application:
 
 ```php
 $app->registerProvider(App\Providers\AppServiceProvider::class);
@@ -505,6 +505,25 @@ $container->setThrowOnDuplicate(false);
 
 // Check current setting
 $throwOnDuplicate = $container->getThrowOnDuplicate();
+```
+
+### Legacy Hooks & PSR-14 Bridge
+
+The CI3-style hook system (`config/hooks.php`, container service `hooks`) is
+still supported. To migrate gradually, the framework ships a two-way adapter
+in `src/Support/Legacy/Bridge/` that works with **any** PSR-14 dispatcher
+(`kodhe/events`, Symfony, League, …) — it does not live in the events package,
+so events stay a general-purpose subsystem:
+
+```php
+use Kodhe\Framework\Support\Legacy\Bridge\HookBridge;
+
+// hooks -> events: every call_hook('pre_system') also emits "hook.pre_system"
+$hooks = new HookBridge($legacyHooks, $psr14Dispatcher);
+$app->instance('hooks', $hooks);
+
+// events -> hooks: forward new PSR-14 events back into existing hook definitions
+$psr14Dispatcher->on('hook.*', $hooks->asListener());
 ```
 
 ## 🧪 Testing
@@ -531,59 +550,59 @@ vendor/bin/phpunit -v
 
 ### Test Coverage
 
-Package ini mencakup unit tests untuk:
+This package includes unit tests for:
 
 - **ContainerTest** - Dependency Injection Container (register, make, singleton, bindings)
-- **ApplicationTest** - Application bootstrap dan lifecycle
-- **ConfigTest** - Configuration loading dan manipulation
+- **ApplicationTest** - Application bootstrap and lifecycle
+- **ConfigTest** - Configuration loading and manipulation
 - **AutoloaderTest** - PSR-4 autoloading functionality
 
 
-## 🔄 Migrasi dari Versi Sebelumnya
+## 🔄 Migration from Previous Versions
 
 ### Changes in 1.1.1
 
-- ✅ Extracted CodeIgniter 3 Legacy Loader (`LegacyLoader`) ke separate package: `kodhe/legacy-loader`
-- ✅ `FileLoader` masih extends `LegacyLoader` untuk full CI3 compatibility
-- ✅ Framework sekarang requires `kodhe/legacy-loader` secara otomatis
+- ✅ Extracted the CodeIgniter 3 legacy loader (`LegacyLoader`) into a separate package: `kodhe/legacy-loader`
+- ✅ `FileLoader` still extends `LegacyLoader` for full CI3 compatibility
+- ✅ The framework now requires `kodhe/legacy-loader` automatically
 
-Jika Anda upgrade dari versi sebelumnya:
+If you are upgrading from a previous version:
 
 ```bash
 composer update kodhe/framework
 ```
 
-Legacy loader akan terinstall otomatis.
+The legacy loader will be installed automatically.
 
-## 🤝 Kontribusi
+## 🤝 Contributing
 
-Kami menyambut kontribusi! Silakan:
+Contributions are welcome! Please:
 
 1. Fork repository
-2. Buat feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit perubahan (`git commit -m 'Add amazing feature'`)
-4. Push ke branch (`git push origin feature/amazing-feature`)
-5. Buka Pull Request
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## 📄 License
 
-Kodhe Framework dilisensikan di bawah [MIT License](LICENSE).
+Kodhe Framework is licensed under the [MIT License](LICENSE).
 
 ## 🆘 Support
 
-Untuk pertanyaan, issue, atau request fitur:
+For questions, issues, or feature requests:
 
 - 📧 Email: support@kodhe.com
 - 💬 GitHub Issues: https://github.com/kodhe/kodhe/issues
-- 📖 Dokumentasi: https://kodhe.com/docs
+- 📖 Documentation: https://kodhe.com/docs
 
 ## 🙏 Credits
 
-Dibuat dan maintained oleh [Karya Kode Team](https://github.com/kodhe).
+Created and maintained by the [Karya Kode Team](https://github.com/kodhe).
 
 Special thanks to:
-- CodeIgniter 3 team untuk inspiration legacy compatibility
-- Semua contributor Kodhe Framework
+- The CodeIgniter 3 team for the legacy-compatibility inspiration
+- All Kodhe Framework contributors
 
 ---
 
